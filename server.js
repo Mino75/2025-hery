@@ -62,7 +62,7 @@ const app = express();
 
 // CACHE VERSION MANAGEMENT - Change this to deploy new version
 const CACHE_VERSION = process.env.CACHE_VERSION || 'v2';
-const APP_NAME = process.env.APP_NAME || 'zmeya';
+const APP_NAME = process.env.APP_NAME || 'hery';
 
 // Cache Lock Rescue - Intercept main.js to inject rescue code
 app.get('/main.js', (req, res) => {
@@ -152,3 +152,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
