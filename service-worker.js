@@ -56,8 +56,8 @@
  */
 // CONFIGURABLE PARAMETERS - Override with environment variables
 const CONFIG = {
-  CACHE_NAME: self.SW_CACHE_NAME || 'zmeya-v2',
-  TEMP_CACHE_NAME: self.SW_TEMP_CACHE_NAME || 'zmeya-temp-v2',
+  CACHE_NAME: self.SW_CACHE_NAME || 'hery-v2',
+  TEMP_CACHE_NAME: self.SW_TEMP_CACHE_NAME || 'hery-temp-v2',
   FIRST_TIME_TIMEOUT: parseInt(self.SW_FIRST_TIME_TIMEOUT) || 30000, // 30 seconds
   RETURNING_USER_TIMEOUT: parseInt(self.SW_RETURNING_USER_TIMEOUT) || 5000, // 5 seconds
   ENABLE_LOGS: self.SW_ENABLE_LOGS !== 'false' // true by default, false if set to 'false'
@@ -81,6 +81,7 @@ const ASSETS = [
   '/main.js',
   '/styles.js',
   '/manifest.json',
+  '/trainings.json',
   '/icon-512.png',
   '/icon-192.png',
   '/favicon.ico'
@@ -376,3 +377,4 @@ async function getCacheInfo() {
     cachedUrls: keys.map(req => req.url)
   };
 }
+
