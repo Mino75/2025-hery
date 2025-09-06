@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Heri tech</title>
+<script defer src="https://kizuna.kahiether.com/main.js?website-url=https://yoursite.com&personalinfostored=no&enablemdquizz=yes&enablejssandbox=yes&enableprivacy=yes"></script>
+<script defer src="https://analytics.kahiether.com/script.js" data-website-id="543f781e-bcac-4b1c-aeb9-5198c7a6e3b9"></script>
+<link rel="manifest" href="manifest.json" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script defer src="styles.js"></script>
+  <script defer src="main.js"></script>
+</head>
+<body>
+  <!-- Onboarding (first-run) -->
+  <section id="screen-onboarding" class="screen">
+    <header class="topbar">
+      <h1 class="brand">Heritech</h1>
+    </header>
+
+    <div class="card">
+      <h2 class="card-title">Set your profile</h2>
+      <p class="card-sub">We’ll use this once to personalize calories & targets.</p>
+
+      <div class="form">
+        <label class="field">
+          <span>Gender</span>
+          <select id="ob-gender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Weight (kg)</span>
+          <input id="ob-weight" type="number" inputmode="decimal" min="30" max="250" placeholder="70" />
+        </label>
+
+        <label class="field">
+          <span>Height (cm)</span>
+          <input id="ob-height" type="number" inputmode="numeric" min="120" max="230" placeholder="175" />
+        </label>
+
+        <button id="ob-save" class="btn primary">Save & Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main (training) -->
+  <section id="screen-main" class="screen hidden">
+    <header class="topbar">
+      <h1 class="brand">Herytech</h1>
+      <div class="actions">
+        <button id="historyBtn" class="chip" aria-label="History">History</button>
+        <div class="weekly-chip" id="weeklyChip">0 / 5 days</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="row between center">
+        <div class="select-wrap">
+          <label for="sport" class="tiny-label">Sport</label>
+          <select id="sport"></select>
+        </div>
+
+        <div class="select-wrap">
+          <label for="langMode" class="tiny-label">Coach voice</label>
+          <select id="langMode">
+            <option value="random">Random Languages</option>
+            <option value="en">English</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+            <option value="zh">中文</option>
+            <option value="ja">日本語</option>
+            <option value="ru">Русский</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="timer-wrap">
+        <div id="timer" class="timer">00:00</div>
+        <div id="subtimer" class="subtimer">—</div>
+      </div>
+
+      <!-- Exercise title + explanation (in selected/random language) -->
+      <div class="explain">
+        <div id="exTitle" class="ex-title">—</div>
+        <div id="exExplain" class="ex-text">—</div>
+      </div>
+
+      <div id="status" class="status">Pick a sport and press play.</div>
+
+      <div class="controls">
+        <button id="playBtn" class="fab" aria-label="Start">
+          <!-- Play -->
+          <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+            <path d="M8 5v14l11-7z"></path>
+          </svg>
+        </button>
+
+        <button id="skipBtn" class="fab tertiary" aria-label="Skip" disabled>
+          <!-- Next/Skip -->
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <path d="M7 6l8 6-8 6V6zm9 0h2v12h-2z"></path>
+          </svg>
+        </button>
+
+        <button id="stopBtn" class="fab secondary" aria-label="Stop" disabled>
+          <!-- Stop -->
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <path d="M6 6h12v12H6z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="row gap">
+      <div class="card grow">
+        <h3 class="card-title small">Calories / Distance / Weight</h3>
+        <div id="calories" class="metric">—</div>
+      </div>
+      <div class="card grow">
+        <h3 class="card-title small">Last vs Today</h3>
+        <div id="lastPerf" class="metric">—</div>
+      </div>
+    </div>
+
+    <footer class="foot">
+      <small>Max 5 full training days/week • Full day ≥ 60 min </small>
+    </footer>
+  </section>
+
+  <!-- History popup (modal) — FORCE HIDDEN AT START -->
+  <div id="historyModal"
+       class="modal hidden"
+       aria-modal="true"
+       aria-hidden="true"
+       role="dialog"
+       style="display:none">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 class="modal-title">Training History</h3>
+        <button id="closeHistory" class="icon-btn" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M6 6l12 12M6 18L18 6"/>
+          </svg>
+        </button>
+      </div>
+      <div id="historyList" class="modal-body"></div>
+    </div>
+    <div id="modalBackdrop" class="backdrop"></div>
+  </div>
+</body>
+</html>
