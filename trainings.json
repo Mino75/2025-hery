@@ -1,54 +1,539 @@
 {
   "commonPhrases": {
-    "start": {
-      "en": ["Start!", "Let's go!", "Begin now!"],
-      "fr": ["Commence!", "C'est parti!", "On y va!"],
-      "es": ["¡Empieza!", "¡Vamos!", "¡Comienza ya!"],
-      "zh": ["开始!", "走起!", "现在开始!"],
-      "ja": ["開始!", "行こう!", "今すぐ開始!"],
-      "ru": ["Начинай!", "Поехали!", "Старт!"]
-    },
-    "encourage": {
-      "en": ["Keep going!", "Stay strong!", "Breathe and push!"],
-      "fr": ["Continue!", "Tiens bon!", "Respire et pousse!"],
-      "es": ["¡Sigue!", "¡Fuerza!", "¡Respira y empuja!"],
-      "zh": ["坚持!", "加油!", "呼吸，继续!"],
-      "ja": ["続けて!", "頑張れ!", "呼吸して押せ!"],
-      "ru": ["Продолжай!", "Держись!", "Дыши и работай!"]
-    },
-    "stop": {
-      "en": ["Stop!", "Rest now!", "Good set!"],
-      "fr": ["Stop!", "Repos!", "Belle série!"],
-      "es": ["¡Para!", "¡Descansa!", "¡Buena serie!"],
-      "zh": ["停!", "休息!", "很棒的一组!"],
-      "ja": ["止め!", "休め!", "良いセット!"],
-      "ru": ["Стоп!", "Отдых!", "Отличный подход!"]
-    }
+"start": {
+  "en": [
+    "Get ready, we start in 3, 2, 1… let’s go!",
+    "Hands up, focus, the round begins now!",
+    "Stay sharp, and… 3, 2, 1… begin!"
+  ],
+  "fr": [
+    "Prépare-toi, on démarre dans 3, 2, 1… c’est parti !",
+    "Garde haute, concentration… le round commence !",
+    "Sois prêt… et… 3, 2, 1… on y va !"
+  ],
+  "es": [
+    "¡Prepárate, empezamos en 3, 2, 1… vamos!",
+    "¡Guarda arriba, concentración, comienza ya!",
+    "¡Listo… 3, 2, 1… empieza!"
+  ],
+  "zh": [
+    "准备好，3，2，1……开始！",
+    "保持防守，集中注意，现在开始！",
+    "预备……3，2，1……走！"
+  ],
+  "ja": [
+    "準備して、3、2、1…スタート！",
+    "ガードを上げて集中、ラウンド開始！",
+    "いくぞ…3、2、1…開始！"
+  ],
+  "ru": [
+    "Приготовься, старт через 3, 2, 1… поехали!",
+    "Руки вверх, соберись — раунд начинается!",
+    "Будь готов… 3, 2, 1… начало!"
+  ]
+},
+
+"encourage": {
+  "en": [
+    "Great work, keep that rhythm going!",
+    "Stay strong, hands high, you’ve got this!",
+    "Breathe steady, keep moving, almost there!"
+  ],
+  "fr": [
+    "Super, garde ce rythme, continue comme ça !",
+    "Tiens bon, garde haute, tu gères !",
+    "Respire bien, bouge sans t’arrêter, presque au bout !"
+  ],
+  "es": [
+    "¡Muy bien, mantén ese ritmo!",
+    "¡Fuerza, guarda alta, lo tienes!",
+    "¡Respira, sigue moviéndote, ya casi llegas!"
+  ],
+  "zh": [
+    "很好，坚持这个节奏！",
+    "加油，保持防守，你能行！",
+    "呼吸稳定，继续移动，快到了！"
+  ],
+  "ja": [
+    "いいぞ、そのリズムを続けて！",
+    "頑張れ、ガードを上げたまま！",
+    "呼吸を整えて動き続けろ、もう少し！"
+  ],
+  "ru": [
+    "Отлично, держи этот ритм!",
+    "Крепче, руки выше, у тебя получится!",
+    "Дыши ровно, двигайся, почти конец!"
+  ]
+},
+
+"stop": {
+  "en": [
+    "Almost there… last push… 3, 2, 1… stop! Great set!",
+    "And… time! Breathe, shake it out, great round!",
+    "Final seconds… 3, 2, 1… done! Excellent work!"
+  ],
+  "fr": [
+    "On y est presque… dernière ligne droite… 3, 2, 1… stop ! Belle série !",
+    "Et… temps ! Respire, relâche, excellent round !",
+    "Dernières secondes… 3, 2, 1… terminé ! Super boulot !"
+  ],
+  "es": [
+    "¡Ya casi… último esfuerzo… 3, 2, 1… stop! ¡Muy bien!",
+    "¡Y… tiempo! Respira, relájate, gran round.",
+    "¡Segundos finales… 3, 2, 1… terminado! ¡Excelente!"
+  ],
+  "zh": [
+    "快到了…最后冲刺…3，2，1…停！漂亮！",
+    "时间到！深呼吸，放松，回合结束！",
+    "最后几秒…3，2，1…完成！干得好！"
+  ],
+  "ja": [
+    "もう少し…最後の追い込み…3、2、1…ストップ！ナイス！",
+    "そして…タイム！深呼吸してリラックス、いいラウンド！",
+    "ラスト数秒…3、2、1…終了！素晴らしい！"
+  ],
+  "ru": [
+    "Почти финиш… последние усилия… 3, 2, 1… стоп! Отличная серия!",
+    "И… время! Дыши, встряхнись, отличный раунд!",
+    "Финальные секунды… 3, 2, 1… готово! Молодец!"
+  ]
+}
+
   },
   "sports": {
     "boxing": {
       "exercises": [
-        { "name": "Jab–Cross Flow", "duration": 90, "reps": 4, "pause": 20,
-          "explanation": { "en":"Left jab then right cross. Guard up, pivot rear foot.",
-            "fr":"Direct gauche puis croisé droit. Garde haute, pivote.", "es":"Jab izq y cruzado der. Guarda alta.",
-            "zh":"左刺拳接右直拳，保持防守，后脚转体。", "ja":"左ジャブ→右クロス。ガード高く、後足でピボット。", "ru":"Левый джеб – правый кросс. Держи защиту, разворот стопы." } },
-        { "name": "Hook–Uppercut Drill", "duration": 90, "reps": 4, "pause": 20,
-          "explanation": { "en":"Left hook then right uppercut. Rotate hips, chin tucked.",
-            "fr":"Crochet gauche puis uppercut droit. Hanches, menton rentré.", "es":"Gancho izq y uppercut der. Caderas, barbilla baja.",
-            "zh":"左勾拳接右上勾拳，转髋，下巴内收。", "ja":"左フック→右アッパー。腰を回し顎を引く。", "ru":"Левый хук – правый апперкот. Бедра, подбородок вниз." } },
-        { "name": "Slip & Counter", "duration": 80, "reps": 5, "pause": 15,
-          "explanation": { "en":"Slip outside and counter cross. Small head movement.",
-            "fr":"Esquive extérieure puis contre en croisé. Petit mouvement.", "es":"Esquiva afuera y contra cruzado.",
-            "zh":"向外闪躲后反击直拳，头部小幅移动。", "ja":"外へスリップしてクロスでカウンター。", "ru":"Слип наружу и контратака кроссом. Маленькое движение головы." } },
-        { "name": "Footwork + Feints", "duration": 120, "reps": 3, "pause": 20,
-          "explanation": { "en":"Circle, step in/out with feints. Stay on the balls of feet.",
-            "fr":"Cercles, entrées/sorties avec feintes. Pointe des pieds.", "es":"Gira, entra/sale con amagos.",
-            "zh":"绕圈、进退配合虚晃，脚尖发力。", "ja":"回り込み、出入り＋フェイント。", "ru":"Круги, вход-выход и финты. На носках." } },
-        { "name": "Speed Bag Rhythm", "duration": 75, "reps": 4, "pause": 15,
-          "explanation": { "en":"Light, fast rhythm on bag. Elbows parallel.",
-            "fr":"Rythme rapide et léger. Coudes parallèles.", "es":"Ritmo rápido y ligero. Codos paralelos.",
-            "zh":"轻快节奏击沙包，手肘平行。", "ja":"素早いリズムでスピードバッグ、肘は平行。", "ru":"Легкий быстрый ритм на груше, локти параллельно." } }
-      ]
+  { "name": "Jab–Cross Combo", "duration": 90, "reps": 4, "pause": 20,
+    "explanation": {
+      "en": "Left jab then right cross. Guard high, pivot rear foot.",
+      "fr": "Direct gauche puis croisé droit. Garde haute, pivote le pied arrière.",
+      "es": "Jab izq seguido de cruzado der. Guarda alta, pivota pie trasero.",
+      "zh": "左刺拳接右直拳，保持防守，后脚转体。",
+      "ja": "左ジャブ→右クロス。ガード高く、後足でピボット。",
+      "ru": "Левый джеб – правый кросс. Защита высоко, разворот задней стопы."
+    } },
+
+  { "name": "Jab–Cross–Hook", "duration": 90, "reps": 4, "pause": 20,
+    "explanation": {
+      "en": "Jab, cross, then left hook. Rotate hips, chin tucked.",
+      "fr": "Direct gauche, croisé droit puis crochet gauche. Hanches, menton rentré.",
+      "es": "Jab, cruzado y gancho izq. Gira caderas, barbilla baja.",
+      "zh": "刺拳、直拳，再接左勾拳。转髋，下巴内收。",
+      "ja": "ジャブ→クロス→左フック。腰を回し、顎を引く。",
+      "ru": "Джеб, кросс, левый хук. Вращай бедра, подбородок вниз."
+    } },
+
+  { "name": "Hook–Uppercut Drill", "duration": 90, "reps": 4, "pause": 20,
+    "explanation": {
+      "en": "Left hook then right uppercut. Rotate core, keep guard.",
+      "fr": "Crochet gauche puis uppercut droit. Tourne le tronc, garde en place.",
+      "es": "Gancho izq y uppercut der. Rota el core, guarda arriba.",
+      "zh": "左勾拳接右上勾拳，转动核心，保持防守。",
+      "ja": "左フック→右アッパー。体幹を回し、ガード維持。",
+      "ru": "Левый хук – правый апперкот. Поворот корпуса, держи защиту."
+    } },
+
+  { "name": "Uppercut–Cross", "duration": 80, "reps": 4, "pause": 20,
+    "explanation": {
+      "en": "Right uppercut then left cross. Drive from legs, rotate shoulders.",
+      "fr": "Uppercut droit puis direct gauche. Impulsion des jambes, rotation des épaules.",
+      "es": "Uppercut der y luego cruzado izq. Empuje de piernas, hombros giran.",
+      "zh": "右上勾后接左直拳。腿发力，带动肩部。",
+      "ja": "右アッパー→左クロス。脚から力を伝え肩を回す。",
+      "ru": "Правый апперкот – левый кросс. Сила от ног, вращай плечи."
+    } },
+
+  { "name": "Double Jab–Cross", "duration": 80, "reps": 4, "pause": 20,
+    "explanation": {
+      "en": "Double left jab to set range, finish with right cross.",
+      "fr": "Double jab pour mesurer, termine par croisé droit.",
+      "es": "Doble jab para medir, cierra con cruzado derecho.",
+      "zh": "双刺拳找距离，接右直拳结束。",
+      "ja": "ダブルジャブで距離作り→右クロスで締める。",
+      "ru": "Двойной джеб для дистанции, затем правый кросс."
+    } },
+
+  { "name": "Cross–Hook–Cross", "duration": 90, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Right cross, left hook, right cross. Snap punches, reset guard.",
+      "fr": "Croisé droit, crochet gauche, croisé droit. Claquant, garde revient.",
+      "es": "Cruzado der, gancho izq, cruzado der. Golpes secos, guarda vuelve.",
+      "zh": "右直—左勾—右直。干脆收回成防守。",
+      "ja": "右クロス→左フック→右クロス。切れよく、ガード復帰。",
+      "ru": "Правый кросс, левый хук, правый кросс. Удары резкие, верни защиту."
+    } },
+
+  { "name": "Jab–Body Cross", "duration": 80, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Head jab, step in and cross to body. Change levels.",
+      "fr": "Jab tête, entre et croisé au corps. Change de niveau.",
+      "es": "Jab a la cabeza, entra y cruzado al cuerpo. Cambia niveles.",
+      "zh": "头部刺拳，前进后直击身体。上下变换。",
+      "ja": "頭へジャブ、踏み込み体へのクロス。レベル変化。",
+      "ru": "Джеб в голову, шаг и кросс по корпусу. Меняй уровни."
+    } },
+
+  { "name": "1–2–3–2–1 Ladder", "duration": 100, "reps": 3, "pause": 30,
+    "explanation": {
+      "en": "Jab–cross–hook–cross–jab. Flow smoothly, keep balance.",
+      "fr": "Direct–croisé–crochet–croisé–direct. Enchaîne fluide, reste équilibré.",
+      "es": "Jab–cruzado–gancho–cruzado–jab. Fluidez y equilibrio.",
+      "zh": "刺–直–勾–直–刺，连贯发力，重心稳定。",
+      "ja": "ジャブ→クロス→フック→クロス→ジャブ。滑らかに、バランス維持。",
+      "ru": "Джеб–кросс–хук–кросс–джеб. Плавно, держи баланс."
+    } },
+
+  { "name": "Slip Outside & Counter Cross", "duration": 80, "reps": 5, "pause": 20,
+    "explanation": {
+      "en": "Slip outside opponent’s jab and fire a right cross.",
+      "fr": "Esquive extérieure sur le jab, contre en croisé droit.",
+      "es": "Esquiva afuera del jab y contra con cruzado derecho.",
+      "zh": "向外闪躲对手刺拳，随即右直反击。",
+      "ja": "相手のジャブを外へスリップし右クロスでカウンター。",
+      "ru": "Слип наружу от джеба и контратака правым кроссом."
+    } },
+
+  { "name": "Slip Inside & Counter Hook", "duration": 80, "reps": 5, "pause": 20,
+    "explanation": {
+      "en": "Slip inside and answer with a left hook to head.",
+      "fr": "Esquive intérieure puis crochet gauche à la tête.",
+      "es": "Esquiva por dentro y responde con gancho izq a la cabeza.",
+      "zh": "向内闪躲后回击左勾拳打头。",
+      "ja": "内側へスリップ→左フックでカウンター。",
+      "ru": "Слип внутрь и ответ левым хуком в голову."
+    } },
+
+  { "name": "Parry & Jab", "duration": 70, "reps": 5, "pause": 20,
+    "explanation": {
+      "en": "Parry incoming jab with rear hand, jab back instantly.",
+      "fr": "Pare le jab de la main arrière, réplique direct gauche.",
+      "es": "Paréa el jab con mano trasera y devuelve con jab.",
+      "zh": "用后手格挡对手刺拳，立刻反刺拳。",
+      "ja": "後ろ手でジャブをパリーし即座にジャブで返す。",
+      "ru": "Отбей джеб задней рукой и сразу ответь своим джебом."
+    } },
+
+  { "name": "Shoulder Roll & Counter Right", "duration": 70, "reps": 5, "pause": 25,
+    "explanation": {
+      "en": "Roll shoulder to deflect cross, counter with right hand.",
+      "fr": "Roulement d’épaule pour dévier le croisé, contre main droite.",
+      "es": "Shoulder roll para desviar el cruzado y contra con derecha.",
+      "zh": "肩部滚动化解直拳，右手反击。",
+      "ja": "ショルダーロールでクロスをいなし右でカウンター。",
+      "ru": "Шолдер-ролл против кросса и контратака правой."
+    } },
+
+  { "name": "Duck & Body Hook", "duration": 70, "reps": 5, "pause": 25,
+    "explanation": {
+      "en": "Duck under hook and rip a left hook to the body.",
+      "fr": "Passe sous le crochet et crochet gauche au corps.",
+      "es": "Agáchate bajo el gancho y mete gancho izq al cuerpo.",
+      "zh": "低身躲勾拳，左勾击打身体。",
+      "ja": "相手のフックをくぐり体へ左フック。",
+      "ru": "Нырок под хук и левый хук по корпусу."
+    } },
+
+  { "name": "Step Back Counter Cross", "duration": 80, "reps": 5, "pause": 25,
+    "explanation": {
+      "en": "Pull back to make miss, step in with a hard cross.",
+      "fr": "Tire en arrière pour faire rater, rentre croisé puissant.",
+      "es": "Retrocede para que falle y entra con cruzado fuerte.",
+      "zh": "后拉诱使落空，前踏重直反击。",
+      "ja": "引いて空振りさせ、踏み込み強いクロス。",
+      "ru": "Шаг назад — соперник промах — вход правым кроссом."
+    } },
+
+  { "name": "Footwork Circles", "duration": 120, "reps": 3, "pause": 30,
+    "explanation": {
+      "en": "Circle left and right, vary speed. Stay on balls of feet.",
+      "fr": "Tourne à gauche/droite, varie la vitesse. Sur la pointe des pieds.",
+      "es": "Gira a ambos lados y varía ritmo. En metatarso.",
+      "zh": "左右绕圈，变速移动。脚尖发力。",
+      "ja": "左右に回り込み、速度変化。前足部で軽く。",
+      "ru": "Движение по кругу в обе стороны, меняй темп. На носках."
+    } },
+
+  { "name": "Pivot & Angle", "duration": 100, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Throw 1–2, pivot 90° to create angle, re-engage.",
+      "fr": "Envoie 1–2, pivote à 90° pour l’angle, réengage.",
+      "es": "Lanza 1–2, pivota 90° para ángulo y reingresa.",
+      "zh": "打1–2后转体90度造角，再进入。",
+      "ja": "1–2後に90°ピボットで角度作り、再アタック。",
+      "ru": "Комбо 1–2, поворот на 90° для угла, снова атака."
+    } },
+
+  { "name": "In–Out Entries with Feints", "duration": 90, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Feint, step in with jab, step out safely. Repeat fluidly.",
+      "fr": "Feinte, entre au jab, ressors en sécurité. Mouvement fluide.",
+      "es": "Finta, entra con jab y sal seguro. Repite fluido.",
+      "zh": "虚晃后刺拳进入，再安全退出。流畅重复。",
+      "ja": "フェイント→ジャブで入り→安全に離脱。滑らかに反復。",
+      "ru": "Финт, вход джебом и безопасный выход. Плавно повторяй."
+    } },
+
+  { "name": "Lateral Shuffle + Jab", "duration": 90, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Side-shuffle two steps, plant and jab. Keep stance.",
+      "fr": "Deux pas latéraux, pose et jab. Garde la posture.",
+      "es": "Dos pasos laterales, planta y jab. Mantén la guardia.",
+      "zh": "侧向小步两步，定点刺拳。姿态稳定。",
+      "ja": "横へ二歩シャッフル→止めてジャブ。構え維持。",
+      "ru": "Два боковых шага, стоп и джеб. Сохраняй стойку."
+    } },
+
+  { "name": "Cut the Ring Drill", "duration": 100, "reps": 4, "pause": 30,
+    "explanation": {
+      "en": "Angle off to trap opponent near ropes; step diagonally.",
+      "fr": "Coupe le ring pour coincer près des cordes; pas en diagonale.",
+      "es": "Corta el ring y acorrala en cuerdas; pasos diagonales.",
+      "zh": "切角拦截，把对手逼向绳边；斜向步伐。",
+      "ja": "リングカットでロープへ追い込む。斜めステップ。",
+      "ru": "Перекрой ринг и прижми к канатам; диагональные шаги."
+    } },
+
+  { "name": "Speed Bag Rhythm", "duration": 75, "reps": 4, "pause": 20,
+    "explanation": {
+      "en": "Light, fast rhythm on speed bag. Elbows parallel.",
+      "fr": "Rythme rapide et léger sur la poire. Coudes parallèles.",
+      "es": "Ritmo rápido y ligero en la pera. Codos paralelos.",
+      "zh": "轻快击打速度球，肘部平行。",
+      "ja": "スピードバッグを素早いリズムで。肘は平行。",
+      "ru": "Быстрый легкий ритм на груше. Локти параллельно."
+    } },
+
+  { "name": "Double-End Bag Timing", "duration": 90, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Aim for clean rhythm: jab, slip, jab. Watch rebound.",
+      "fr": "Rythme propre : jab, esquive, jab. Lis le rebond.",
+      "es": "Ritmo limpio: jab, esquiva, jab. Lee el rebote.",
+      "zh": "节奏：刺拳、闪躲、再刺拳。观察回弹。",
+      "ja": "リズム良く：ジャブ→スリップ→ジャブ。跳ね返りを見る。",
+      "ru": "Ритм: джеб, слип, джеб. Читай отскок груши."
+    } },
+
+  { "name": "Fast Punch Burnout", "duration": 40, "reps": 6, "pause": 30,
+    "explanation": {
+      "en": "Non-stop straight punches at max speed for 40 seconds.",
+      "fr": "Directs sans arrêt à vitesse max pendant 40 secondes.",
+      "es": "Directos sin parar a máxima velocidad por 40 s.",
+      "zh": "40秒不停歇高速直拳。",
+      "ja": "40秒間、全力でストレート連打。",
+      "ru": "40 сек максимальные прямые без остановки."
+    } },
+
+  { "name": "Hand-Speed Pyramid", "duration": 60, "reps": 5, "pause": 30,
+    "explanation": {
+      "en": "10 fast jabs, 10 crosses, 10 1–2s; then 8–8–8, etc.",
+      "fr": "10 jabs, 10 croisés, 10 1–2; puis 8–8–8, etc.",
+      "es": "10 jabs, 10 cruzados, 10 1–2; luego 8–8–8.",
+      "zh": "10刺、10直、10次1–2；再8–8–8。",
+      "ja": "ジャブ10、クロス10、1–2を10、その後8–8–8。",
+      "ru": "10 джебов, 10 кроссов, 10 1–2; затем 8–8–8."
+    } },
+
+  { "name": "Power Shots Heavy Bag", "duration": 30, "reps": 6, "pause": 40,
+    "explanation": {
+      "en": "Explosive power punches on heavy bag. Focus hip rotation.",
+      "fr": "Coups explosifs au sac lourd. Accent rotation des hanches.",
+      "es": "Golpes potentes al saco pesado. Enfoca rotación de cadera.",
+      "zh": "重沙袋爆发力击打，强调髋部转动。",
+      "ja": "サンドバッグで爆発的な強打。腰の回転重視。",
+      "ru": "Взрывные удары по тяжёлому мешку. Вращай бёдра."
+    } },
+
+  { "name": "Hook Power Sets", "duration": 35, "reps": 6, "pause": 40,
+    "explanation": {
+      "en": "10 hard left hooks, 10 hard right hooks. Reset and repeat.",
+      "fr": "10 crochets gauches puissants, 10 crochets droits. Repars.",
+      "es": "10 ganchos izq fuertes, 10 der fuertes. Repite.",
+      "zh": "左勾10下、右勾10下，强力输出，重复。",
+      "ja": "左フック10発、右フック10発を強打。繰り返す。",
+      "ru": "10 мощных левых хуков, 10 правых. Повторяй."
+    } },
+
+  { "name": "Uppercut Burst Series", "duration": 30, "reps": 6, "pause": 40,
+    "explanation": {
+      "en": "Rapid uppercuts for 15s, brief set, repeat. Keep legs loaded.",
+      "fr": "Uppercuts rapides 15 s, courte pause, répète. Jambes engagées.",
+      "es": "Uppercuts rápidos 15 s, breve pausa, repite. Piernas cargadas.",
+      "zh": "上勾拳快速15秒，短休后重复。腿部蓄力。",
+      "ja": "アッパーを15秒高速、短休憩で反復。脚に荷重。",
+      "ru": "Быстрые апперкоты 15 с, короткий отдых, повтор. Ноги заряжены."
+    } },
+
+  { "name": "Medicine Ball Rotational Throws", "duration": 60, "reps": 5, "pause": 45,
+    "explanation": {
+      "en": "Side tosses into wall, both sides. Explode from hips.",
+      "fr": "Lancers latéraux contre mur des deux côtés. Explose des hanches.",
+      "es": "Lanzamientos laterales a la pared en ambos lados. Explota caderas.",
+      "zh": "药球侧向掷墙，两侧交替。髋部爆发。",
+      "ja": "メディシンボールの回旋スロー。左右行う。腰から爆発。",
+      "ru": "Боковые броски медбола в стену, обе стороны. Взрыв от бёдер."
+    } },
+
+  { "name": "Shadowboxing Free", "duration": 180, "reps": 3, "pause": 60,
+    "explanation": {
+      "en": "Free shadowboxing. Mix attacks, defense, footwork fluidly.",
+      "fr": "Shadowboxing libre. Attaques, défenses et déplacements fluides.",
+      "es": "Sombra libre. Mezcla ataque, defensa y pies con fluidez.",
+      "zh": "自由影子拳，攻防与步法流畅结合。",
+      "ja": "自由シャドー。攻防とフットワークを滑らかに。",
+      "ru": "Свободный шадоу-боксинг. Смешивай атаки, защиты и ноги."
+    } },
+
+  { "name": "Sparring Visualization", "duration": 180, "reps": 3, "pause": 60,
+    "explanation": {
+      "en": "Imagine an opponent. Read cues, feint, counter, move.",
+      "fr": "Visualise un adversaire. Lis les signaux, feinte, contre, bouge.",
+      "es": "Imagina un rival. Lee señales, finta, contra y muévete.",
+      "zh": "想象对手：读节奏、做假动作、反击与移动。",
+      "ja": "相手を想定。サインを読み、フェイント、カウンター、移動。",
+      "ru": "Вообрази соперника: читай, финть, контрите и двигайся."
+    } },
+
+  { "name": "Body–Head Switch", "duration": 90, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Hook to body then hook to head. Change levels sharply.",
+      "fr": "Crochet au corps puis à la tête. Changement de niveau net.",
+      "es": "Gancho al cuerpo y luego a la cabeza. Cambia niveles.",
+      "zh": "先打身体再打头部勾拳，迅速换层次。",
+      "ja": "体→頭へフック切替。素早くレベル変更。",
+      "ru": "Хук по корпусу, затем в голову. Резко меняй уровень."
+    } },
+
+  { "name": "Jab–Cross to the Body", "duration": 80, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Lower level, jab–cross to body, exit with angle.",
+      "fr": "Baisse le niveau, jab–croisé au corps, sors en angle.",
+      "es": "Baja nivel, jab–cruzado al cuerpo y sal con ángulo.",
+      "zh": "降低重心，刺–直打身体，斜向撤出。",
+      "ja": "レベルを下げ体へ1–2、角度を作って離脱。",
+      "ru": "Снизь уровень, джеб–кросс по корпусу и выход под углом."
+    } },
+
+  { "name": "Feint to Draw, Counter 1–2", "duration": 90, "reps": 4, "pause": 30,
+    "explanation": {
+      "en": "Use a feint to draw jab, slip and answer 1–2.",
+      "fr": "Feinte pour provoquer le jab, esquive et réponds 1–2.",
+      "es": "Finta para provocar el jab, esquiva y responde 1–2.",
+      "zh": "用假动作诱发对手刺拳，闪躲后以1–2反击。",
+      "ja": "フェイントでジャブを誘い、スリップして1–2で返す。",
+      "ru": "Финтом вытяни джеб, слип и ответ 1–2."
+    } },
+
+  { "name": "Rear Uppercut to Body + Cross", "duration": 90, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Rear uppercut to body, rise with cross to head.",
+      "fr": "Uppercut arrière au corps, remonte croisé tête.",
+      "es": "Uppercut trasero al cuerpo y sube con cruzado a la cabeza.",
+      "zh": "后手上勾打身体，起身接头部直拳。",
+      "ja": "後ろ手アッパーで体→起き上がり頭へクロス。",
+      "ru": "Задний апперкот в корпус, затем кросс в голову."
+    } },
+
+  { "name": "High Guard Walk & Jab", "duration": 100, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Walk forward in high guard; jab off the step.",
+      "fr": "Avance en haute garde; jab sur le pas.",
+      "es": "Camina en guardia alta; jab al paso.",
+      "zh": "高防前压，踏步即刺拳。",
+      "ja": "ハイガードで前進。踏み込みでジャブ。",
+      "ru": "Иди вперёд в высокой защите; джеб на шаге."
+    } },
+
+  { "name": "Inside Fighting Drill", "duration": 90, "reps": 4, "pause": 30,
+    "explanation": {
+      "en": "Close range: short hooks and uppercuts; head on chest.",
+      "fr": "Courte distance : crochets et uppercuts courts; tête collée.",
+      "es": "Corta distancia: ganchos/uppercuts cortos; cabeza pegada.",
+      "zh": "贴身距离：短勾与上勾，头靠近胸口。",
+      "ja": "至近距離でショートフックとアッパー。頭を密着。",
+      "ru": "Ближний бой: короткие хуки и апперкоты; голова прижата."
+    } },
+
+  { "name": "Rope Slip Line", "duration": 120, "reps": 3, "pause": 30,
+    "explanation": {
+      "en": "Under a rope: slip left/right and counter on beats.",
+      "fr": "Sous une corde : esquives gauche/droite et contre au tempo.",
+      "es": "Bajo cuerda: esquiva a ambos lados y contragolpea al ritmo.",
+      "zh": "在绳下左右闪躲，按节奏反击。",
+      "ja": "ロープの下で左右にスリップし、拍でカウンター。",
+      "ru": "Под верёвкой: слипы влево/вправо и контратаки по ритму."
+    } },
+
+  { "name": "Southpaw Switch Drill", "duration": 90, "reps": 4, "pause": 30,
+    "explanation": {
+      "en": "Switch to southpaw for 10s, then orthodox. Keep balance.",
+      "fr": "Passe gaucher 10 s puis orthodoxe. Garde l’équilibre.",
+      "es": "Cambia a zurdo 10 s y vuelve a diestro. Equilibrio.",
+      "zh": "切换左势10秒再回正架，保持平衡。",
+      "ja": "サウスポー10秒→オーソドックスへ戻す。バランス維持。",
+      "ru": "Переход в левшу на 10 с, затем обратно. Держи баланс."
+    } },
+
+  { "name": "Clinch Break & Hit", "duration": 60, "reps": 5, "pause": 30,
+    "explanation": {
+      "en": "Frame to break clinch, step off and land short cross.",
+      "fr": "Cadre pour rompre le clinch, décalage et petit croisé.",
+      "es": "Enmarca para romper clinch, sal de lado y cruza corto.",
+      "zh": "架开抱缠，侧移后短直拳命中。",
+      "ja": "クリンチをフレームで外し、ずらしてショートクロス。",
+      "ru": "Разорви клинч фреймом, шаг в сторону и короткий кросс."
+    } },
+
+  { "name": "Crossover Step Angle", "duration": 90, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Crossover step outside lead and fire 2–3.",
+      "fr": "Pas croisé à l’extérieur du lead et tire 2–3.",
+      "es": "Paso cruzado por fuera del lead y lanza 2–3.",
+      "zh": "外侧交叉步，打出2–3连击。",
+      "ja": "リード外へクロスオーバーして2–3を放つ。",
+      "ru": "Кросс-овер за передней ногой и комбо 2–3."
+    } },
+
+  { "name": "Defense Chain: Slip–Duck–Slip", "duration": 70, "reps": 6, "pause": 25,
+    "explanation": {
+      "en": "Link slips and duck in one sequence; keep eyes forward.",
+      "fr": "Enchaîne esquive–duck–esquive; regard vers l’avant.",
+      "es": "Une esquiva–agache–esquiva; mirada al frente.",
+      "zh": "连贯完成闪躲–低身–闪躲，目视前方。",
+      "ja": "スリップ→ダック→スリップを連鎖。視線は前へ。",
+      "ru": "Цепочка: слип–нырок–слип. Смотри вперёд."
+    } },
+
+  { "name": "Counter Off the Jab", "duration": 80, "reps": 5, "pause": 25,
+    "explanation": {
+      "en": "Catch jab with lead hand, fire cross or hook immediately.",
+      "fr": "Attrape le jab de la main avant, enchaîne croisé ou crochet.",
+      "es": "Atrapa el jab con mano adelantada, cruza o gancho al instante.",
+      "zh": "前手接住对手刺拳，立刻直拳或勾拳反击。",
+      "ja": "前手でジャブをキャッチし即座にクロス/フック。",
+      "ru": "Поймай джеб передней рукой и сразу кросс/хук."
+    } },
+
+  { "name": "Feint Low, Hit High", "duration": 90, "reps": 4, "pause": 25,
+    "explanation": {
+      "en": "Feint to body, snap jab–cross to head. Sell the feint.",
+      "fr": "Feinte au corps, jab–croisé claquant à la tête. Vends la feinte.",
+      "es": "Finta al cuerpo, jab–cruzado a la cabeza. Vende la finta.",
+      "zh": "先对身体做假，随后头部1–2迅速命中。",
+      "ja": "体へフェイント→頭へジャブ・クロス。しっかり見せる。",
+      "ru": "Финт в корпус и быстрый джеб–кросс в голову. Продавай финт."
+    } },
+
+  { "name": "Corner Escape Drill", "duration": 100, "reps": 4, "pause": 30,
+    "explanation": {
+      "en": "From corner: block, pivot out, jab to exit lane.",
+      "fr": "Depuis le coin : bloc, pivot sortie, jab pour ouvrir.",
+      "es": "Desde la esquina: bloquea, pivota y sale con jab.",
+      "zh": "被逼角落：架挡、转体脱离，用刺拳开路。",
+      "ja": "コーナーでブロック→ピボットで脱出→ジャブで道作り。",
+      "ru": "В углу: блок, поворот для выхода, джеб на дорожку."
+    } }
+]
+
     },
     "judo": {
       "exercises": [
@@ -100,46 +585,1271 @@
     },
     "wushu": {
       "exercises": [
-        { "name":"Ma Bu (horse stance)", "duration":180, "reps":3, "pause":20,
-          "explanation":{"en":"Low stance, knees out, back straight, steady breath.",
-            "fr":"Posture basse, genoux ouverts, dos droit.", "es":"Postura baja, rodillas hacia fuera.",
-            "zh":"马步下沉，膝外撑，背直。", "ja":"馬歩を低く、膝を外へ。", "ru":"Ма бу низко, колени наружу."}},
-        { "name":"Gong Bu + Straight Punch", "duration":150, "reps":4, "pause":15,
-          "explanation":{"en":"Bow stance, rear leg extended, punch forward.",
-            "fr":"Gong bu, jambe arrière tendue, poing en avant.", "es":"Gong bu con puño recto.",
-            "zh":"弓步，后腿伸直，向前直拳。", "ja":"弓歩＋正拳突き。", "ru":"Гун бу и прямой удар."}},
-        { "name":"Pu Bu (side squat)", "duration":150, "reps":4, "pause":15,
-          "explanation":{"en":"Drop into side squat, stretch adductors, keep balance.",
-            "fr":"Flexion latérale profonde, étire adducteurs.", "es":"Sentadilla lateral profunda.",
-            "zh":"仆步侧蹲，拉伸内侧肌群，保持平衡。", "ja":"僕歩で横に沈み、内転筋を伸ばす。", "ru":"Пу бу: боковое приседание, растяжка."}},
-        { "name":"Tan Tui (kicks)", "duration":150, "reps":4, "pause":15,
-          "explanation":{"en":"Alternating front kicks. Snap from hips, guard up.",
-            "fr":"Coups de pied frontaux alternés. Frappe des hanches.", "es":"Patadas frontales alternas.",
-            "zh":"弹腿交替，髋部发力，双手护住。", "ja":"弾腿交互。腰からスナップ。", "ru":"Тан Туй: попеременные передние удары."}},
-        { "name":"Sweep Kick (Sao Tui)", "duration":160, "reps":4, "pause":15,
-          "explanation":{"en":"Low sweep along floor, torso upright.",
-            "fr":"Balayage bas, buste droit.", "es":"Barrido bajo con tronco erguido.",
-            "zh":"低位扫腿，躯干直立。", "ja":"低いスイープ、体幹は立てる。", "ru":"Низкий подсек, корпус прямой."}},
-        { "name":"Mabu → Gongbu transitions", "duration":160, "reps":4, "pause":15,
-          "explanation":{"en":"Transition between horse and bow stances with control.",
-            "fr":"Transition contrôlée entre ma bu et gong bu.", "es":"Transición entre posturas ma bu y gong bu.",
-            "zh":"马步↔弓步平稳切换。", "ja":"馬歩↔弓歩の切替を滑らかに。", "ru":"Переходы ма бу↔гун бу."}},
-        { "name":"Basic Taolu (shadow)", "duration":180, "reps":3, "pause":20,
-          "explanation":{"en":"Short form sequence: stances, punches, kicks chained.",
-            "fr":"Courte forme: postures, poings, coups de pied enchaînés.", "es":"Forma corta: posturas y golpes encadenados.",
-            "zh":"简短套路：步法、拳法、腿法连贯。", "ja":"短い套路：立ち方・突き・蹴りを連携。", "ru":"Короткое таолу: стойки, удары, связки."}},
-        { "name":"Xie Bu (cross stance)", "duration":120, "reps":4, "pause":15,
-          "explanation":{"en":"Cross stance down, spine long, balance steady.",
-            "fr":"Xie bu bas, colonne longue, équilibre stable.", "es":"Postura cruzada baja, columna larga.",
-            "zh":"歇步下沉，脊柱延展，稳定平衡。", "ja":"歇歩で沈み、背骨を長く保つ。", "ru":"Се бу: низкая крестовая стойка."}},
-        { "name":"Fist & Palm salute", "duration":120, "reps":3, "pause":15,
-          "explanation":{"en":"Practice the礼 Bai Shou: fists and palm salute, crisp timing.",
-            "fr":"Salue wushu, timing net.", "es":"Saludo de wushu con buen timing.",
-            "zh":"练习抱拳礼，动作干净利落。", "ja":"武術の抱拳礼を正確に。", "ru":"Поклон Ушу, четкая координация."}},
-        { "name":"Stretch chain (hips/hamstrings)", "duration":180, "reps":2, "pause":20,
-          "explanation":{"en":"Dynamic then static stretches for kicks range.",
-            "fr":"Étirements dynamiques puis statiques pour l’amplitude.", "es":"Estiramientos dinámicos y estáticos.",
-            "zh":"先动后静的拉伸，提高腿法幅度。", "ja":"可動域のため動的→静的ストレッチ。", "ru":"Динамическая/статическая растяжка."}}
+        { "name":"🐅 Tiger Stance 虎步 (Hǔ Bù)", "duration":180, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Hold the Tiger stance low, legs solid, arms shaped like claws, steady breath.",
+      "fr":"Tiens la posture du Tigre, basse, jambes solides, bras en griffes, respiration régulière.",
+      "es":"Mantén postura del Tigre, baja, piernas firmes, brazos en garras, respira constante.",
+      "zh":"保持虎步下沉，双腿稳固，双臂如爪，呼吸平稳。",
+      "ja":"虎歩を低く保ち、脚を強く、腕を爪の形にし呼吸を整える。",
+      "ru":"Стойка тигра: низко, ноги крепкие, руки когтями, дыхание ровное."
+    }},
+
+  { "name":"🐅 Tiger Claw 虎爪 (Hǔ Zhǎo)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Strike forward with open claw, fingers hooked as if tearing fabric.",
+      "fr":"Frappe en avant en griffe, doigts crochés comme pour déchirer un tissu.",
+      "es":"Golpea adelante con garra abierta, dedos enganchados como rasgando tela.",
+      "zh":"虎爪前击，手指勾曲，如撕布般。",
+      "ja":"虎爪を前に打ち、布を裂くように。",
+      "ru":"Удар тигровым когтем вперёд, будто рвёшь ткань."
+    }},
+
+  { "name":"🐅 Tiger Pounce 虎扑 (Hǔ Pū)", "duration":30, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Leap forward low, both hands clawing like a tiger attacking prey.",
+      "fr":"Bondis bas en avant, deux mains en griffes comme un tigre qui attaque.",
+      "es":"Salta bajo al frente con garras como tigre cazando.",
+      "zh":"虎扑前跃，双手成爪，如猛虎扑食。",
+      "ja":"低く前へ跳び、両手を爪にして獲物を襲う虎のように。",
+      "ru":"Прыжок вперёд, обе руки когтями как тигр на добычу."
+    }},
+
+  { "name":"🐅 Tiger Push 推虎 (Tuī Hǔ)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Push forward with both palms, as if crushing prey with tiger’s weight.",
+      "fr":"Pousse avec les deux paumes, comme écraser une proie avec le poids du tigre.",
+      "es":"Empuja con ambas palmas como aplastando con peso de tigre.",
+      "zh":"双掌前推，如猛虎压制。",
+      "ja":"両掌を前に押し、虎が獲物を潰すように。",
+      "ru":"Толчок обеими ладонями, словно тигр давит добычу."
+    }},
+
+  { "name":"🐅 Tiger Tail Sweep 虎尾扫 (Hǔ Wěi Sǎo)", "duration":20, "reps":10, "pause":20,
+    "explanation":{
+      "en":"Sweep leg low in a circle, like whipping with a tiger’s tail.",
+      "fr":"Balaye bas avec la jambe, comme fouetter avec la queue du tigre.",
+      "es":"Barrido bajo como látigo de cola de tigre.",
+      "zh":"低位扫腿，如虎尾甩击。",
+      "ja":"脚を低く払う、虎の尾のように。",
+      "ru":"Подсек ногой как удар хвостом тигра."
+    }},
+
+  { "name":"🐅 Tiger Roar 虎啸 (Hǔ Xiào)", "duration":15, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Strike with a loud shout, channeling power like a tiger’s roar.",
+      "fr":"Frappe avec un cri puissant, énergie comme le rugissement du tigre.",
+      "es":"Golpea con grito fuerte, energía como rugido de tigre.",
+      "zh":"出拳同时怒吼，如虎啸发劲。",
+      "ja":"拳を打ちながら大声で気合、虎の咆哮のように。",
+      "ru":"Удар с криком, как рёв тигра."
+    }},
+
+  { "name":"🐅 Tiger Rising Strike 虎起 (Hǔ Qǐ)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Rise up with upward strike, like tiger leaping upwards.",
+      "fr":"Monte avec un coup ascendant, comme un tigre bondissant.",
+      "es":"Golpe ascendente como tigre que salta hacia arriba.",
+      "zh":"上冲发力，如猛虎跃起。",
+      "ja":"上へ突き上げる、跳ね上がる虎のように。",
+      "ru":"Восходящий удар, словно тигр прыгает вверх."
+    }},
+
+  { "name":"🐅 Tiger Step 虎步行 (Hǔ Bù Xíng)", "duration":60, "reps":3, "pause":25,
+    "explanation":{
+      "en":"Advance with heavy deliberate steps, like tiger stalking prey.",
+      "fr":"Avance par pas lourds et puissants, comme un tigre qui traque.",
+      "es":"Camina con pasos pesados, como tigre acechando presa.",
+      "zh":"沉稳虎步，如猛虎潜行。",
+      "ja":"重く力強い歩みで進む、獲物を狙う虎のように。",
+      "ru":"Тяжёлые шаги вперёд, как тигр подкрадывается."
+    }},
+
+  { "name":"🐅 Tiger Mouth Block 虎口挡 (Hǔ Kǒu Dǎng)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Block with hand shaped like tiger’s mouth, thumb and index spread.",
+      "fr":"Bloque avec la main formant la gueule du tigre, pouce et index écartés.",
+      "es":"Bloquea con mano en forma de boca de tigre, pulgar e índice abiertos.",
+      "zh":"手成虎口，拦挡对方攻势。",
+      "ja":"手を虎の口の形にして防御する。",
+      "ru":"Блок рукой в форме пасти тигра."
+    }},
+
+  { "name":"🐅 Tiger Shoulder Bump 虎撞肩 (Hǔ Zhuàng Jiān)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Charge shoulder forward, like tiger striking prey with body.",
+      "fr":"Charge l’épaule en avant, comme le tigre qui percute sa proie.",
+      "es":"Carga el hombro al frente como tigre golpeando presa.",
+      "zh":"肩向前撞，如虎扑击。",
+      "ja":"肩で突進し、獲物を打つ虎のように。",
+      "ru":"Толчок плечом вперёд, словно тигр сбивает добычу."
+    }},
+
+  { "name":"🐅 Tiger Grab & Pull 虎抓拉 (Hǔ Zhuā Lā)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Grab forward with claws and pull back strongly as if tearing.",
+      "fr":"Attrape en griffes et tire fortement vers toi, comme pour déchirer.",
+      "es":"Agarra con garras y tira fuerte hacia ti, como rasgar.",
+      "zh":"虎爪前抓，猛力拉回，如撕裂般。",
+      "ja":"前に爪で掴み、強く引き寄せる、裂くように。",
+      "ru":"Схвати когтями и резко тяни на себя, будто рвёшь."
+    }},
+
+  { "name":"🐅 Tiger Kick 虎踢 (Hǔ Tī)", "duration":20, "reps":8, "pause":20,
+    "explanation":{
+      "en":"Front kick with heavy intent, like tiger striking with paw.",
+      "fr":"Coup de pied frontal lourd, comme le tigre qui frappe de la patte.",
+      "es":"Patada frontal pesada como golpe de garra de tigre.",
+      "zh":"前踢有力，如虎掌击。",
+      "ja":"重い前蹴り、虎の前足のように。",
+      "ru":"Тяжёлый прямой удар ногой, как лапа тигра."
+    }},
+
+  { "name":"🐅 Tiger Claw Downward 虎爪下劈 (Hǔ Zhǎo Xià Pī)", "duration":20, "reps":8, "pause":20,
+    "explanation":{
+      "en":"Strike downward with claw hands, like tiger crushing down prey.",
+      "fr":"Frappe vers le bas en griffes, comme le tigre qui écrase sa proie.",
+      "es":"Golpea hacia abajo con garras, como tigre aplastando.",
+      "zh":"虎爪下劈，如虎压制猎物。",
+      "ja":"爪の手で下に打ち、獲物を押し潰す虎のように。",
+      "ru":"Удар когтями вниз, словно тигр придавливает добычу."
+    }},
+
+  { "name":"🐅 Tiger Guard 虎守 (Hǔ Shǒu)", "duration":90, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Hold compact guard posture, arms bent like claws, focus inward.",
+      "fr":"Tiens une garde compacte, bras pliés en griffes, concentration intérieure.",
+      "es":"Mantén guardia compacta, brazos en garras, concentración.",
+      "zh":"紧守之势，双臂弯曲如爪，意守内收。",
+      "ja":"コンパクトな構え、腕を爪にして集中。",
+      "ru":"Компактная защита, руки когтями, сосредоточенность внутренняя."
+    }},
+
+  { "name":"🐅 Tiger Leap Back 虎跳退 (Hǔ Tiào Tuì)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Leap backward lightly, like tiger retreating ready to spring.",
+      "fr":"Bondis en arrière souplement, comme le tigre prêt à rebondir.",
+      "es":"Salta atrás suave, como tigre listo a volver a atacar.",
+      "zh":"轻跃后退，如虎蓄势再扑。",
+      "ja":"軽く後ろへ跳び、再び飛びかかる虎のように。",
+      "ru":"Прыжок назад, как тигр, готовый снова прыгнуть."
+    }},
+
+  { "name":"🐅 Double Tiger Claw 双虎爪 (Shuāng Hǔ Zhǎo)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Strike with both claws together forward, tearing motion.",
+      "fr":"Frappe avec deux griffes ensemble, geste de déchirure.",
+      "es":"Golpea con ambas garras juntas al frente, rasgando.",
+      "zh":"双爪并出，如撕裂之势。",
+      "ja":"両方の爪で同時に突き裂くように打つ。",
+      "ru":"Удар двумя когтями одновременно, движение разрывания."
+    }},
+
+  { "name":"🐅 Tiger’s Back Fist 虎背拳 (Hǔ Bèi Quán)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Strike with the back of fist, quick and heavy like tiger swatting.",
+      "fr":"Frappe avec le revers du poing, rapide et lourd comme le tigre qui frappe.",
+      "es":"Golpea con dorso del puño, rápido y pesado como manotazo de tigre.",
+      "zh":"以拳背击，如虎拍打。",
+      "ja":"拳の甲で打つ、虎が払うように。",
+      "ru":"Удар тыльной стороной кулака, как тигр лапой."
+    }},
+
+  { "name":"🐅 Tiger Shake 虎抖 (Hǔ Dǒu)", "duration":25, "reps":5, "pause":20,
+    "explanation":{
+      "en":"Explosive body shake to break free from hold, like tiger shaking prey.",
+      "fr":"Secousse explosive du corps pour se libérer, comme le tigre qui secoue sa proie.",
+      "es":"Sacudida explosiva para liberarse, como tigre que sacude presa.",
+      "zh":"全身猛抖，如虎甩动猎物。",
+      "ja":"全身を爆発的に振動させ、獲物を振る虎のように。",
+      "ru":"Взрывная тряска телом, словно тигр встряхивает добычу."
+    }},
+
+  { "name":"🐅 Tiger Eye Strike 虎眼点 (Hǔ Yǎn Diǎn)", "duration":15, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Quick strike with two fingers forward, like piercing tiger’s gaze.",
+      "fr":"Frappe rapide de deux doigts en avant, comme le regard perçant du tigre.",
+      "es":"Golpe rápido con dos dedos, como mirada penetrante de tigre.",
+      "zh":"双指快点，如虎目锐利。",
+      "ja":"二本指で素早く突く、虎の鋭い目のように。",
+      "ru":"Быстрый укол двумя пальцами, словно пронзительный взгляд тигра."
+    }},
+
+  { "name":"🐅 Tiger Crushing Stomp 虎踏 (Hǔ Tà)", "duration":20, "reps":8, "pause":20,
+    "explanation":{
+      "en":"Stamp down powerfully with foot, like tiger crushing the ground.",
+      "fr":"Piétine puissamment avec le pied, comme le tigre écrase le sol.",
+      "es":"Pisotón fuerte con pie, como tigre aplastando suelo.",
+      "zh":"猛踏大地，如虎压地。",
+      "ja":"足を強く踏みつける、地を潰す虎のように。",
+      "ru":"Сильный топот ногой, как тигр давит землю."
+    }},
+  { "name":"🐍 Snake Creeps Down 蛇下势 (Shé Xià Shì)", "duration":120, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Sink low, one leg extended, body close to the ground, like snake sliding silently.",
+      "fr":"Descends bas, une jambe tendue, corps près du sol, comme un serpent qui glisse.",
+      "es":"Baja bajo, una pierna extendida, cuerpo cerca del suelo, como serpiente deslizándose.",
+      "zh":"蛇下势，一腿伸展，身体贴地，如蛇滑行。",
+      "ja":"蛇下勢、片脚を伸ばし、体を低く蛇のように滑る。",
+      "ru":"Змеиная стойка: одна нога вытянута, корпус близко к земле как змея."
+    }},
+
+  { "name":"🐍 Snake Strike 蛇击 (Shé Jī)", "duration":15, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Quick forward thrust of fingers, like snake striking prey suddenly.",
+      "fr":"Coup rapide des doigts en avant, comme le serpent qui frappe sa proie.",
+      "es":"Impulso rápido de los dedos al frente, como serpiente atacando.",
+      "zh":"蛇击，指尖快速前点，如蛇捕食。",
+      "ja":"蛇撃、指先を素早く突き出す、蛇のように。",
+      "ru":"Быстрый укол пальцами вперёд, словно змея атакует добычу."
+    }},
+
+  { "name":"🐍 Snake Coil Arms 蛇缠手 (Shé Chán Shǒu)", "duration":30, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Circle arms smoothly like coiling snake, soft then tighten.",
+      "fr":"Fais onduler les bras comme un serpent qui s’enroule, souplesse puis tension.",
+      "es":"Brazos ondulan como serpiente que se enrolla, suave y luego firme.",
+      "zh":"双臂环绕，如蛇缠绕，先柔后紧。",
+      "ja":"両腕を円に回し、蛇が巻きつくように、柔から強へ。",
+      "ru":"Круговые движения руками, словно змея обвивает."
+    }},
+
+  { "name":"🐍 Snake Flick 蛇弹 (Shé Tán)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Flick wrist and fingers fast, like snake’s tongue tasting air.",
+      "fr":"Fais claquer poignet et doigts, comme la langue du serpent qui goûte l’air.",
+      "es":"Chasquido rápido de muñeca y dedos, como lengua de serpiente.",
+      "zh":"手腕与指尖弹动，如蛇吐信。",
+      "ja":"手首と指先を素早く弾く、蛇の舌のように。",
+      "ru":"Резкий щелчок кистью и пальцами, как язык змеи."
+    }},
+
+  { "name":"🐍 Snake Step 蛇步 (Shé Bù)", "duration":60, "reps":3, "pause":20,
+    "explanation":{
+      "en":"Glide in low steps, knees bent, like snake sliding stealthily.",
+      "fr":"Avance en pas bas et coulés, genoux pliés, comme un serpent furtif.",
+      "es":"Avanza con pasos bajos y fluidos, como serpiente sigilosa.",
+      "zh":"蛇步，屈膝低行，如蛇潜行。",
+      "ja":"膝を曲げ低く進む、蛇のように滑る。",
+      "ru":"Низкие скользящие шаги, словно змея крадётся."
+    }},
+
+  { "name":"🐍 Snake Guard 蛇守 (Shé Shǒu)", "duration":90, "reps":1, "pause":25,
+    "explanation":{
+      "en":"Hold guard with arms like two snakes raised, waiting to strike.",
+      "fr":"Tiens une garde avec les bras levés comme deux serpents prêts à frapper.",
+      "es":"Guarda con brazos como dos serpientes alzadas listas para atacar.",
+      "zh":"双臂抬起守势，如双蛇待击。",
+      "ja":"両腕を蛇のように構え、打つ準備。",
+      "ru":"Оборона с руками как две змеи, готовые к удару."
+    }},
+
+  { "name":"🐍 Snake Head Block 蛇头挡 (Shé Tóu Dǎng)", "duration":20, "reps":6, "pause":15,
+    "explanation":{
+      "en":"Deflect upward with hand shaped like snake head, fluid and quick.",
+      "fr":"Dévie vers le haut avec la main en forme de tête de serpent.",
+      "es":"Desvía hacia arriba con mano en forma de cabeza de serpiente.",
+      "zh":"手如蛇头，上挡灵活。",
+      "ja":"手を蛇の頭の形にして上に受ける。",
+      "ru":"Блок рукой как голова змеи, быстро вверх."
+    }},
+
+  { "name":"🐍 Snake Body Wave 蛇身波 (Shé Shēn Bō)", "duration":40, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Wave whole body smoothly, spine flexible like snake moving.",
+      "fr":"Ondule tout le corps, colonne souple comme serpent en mouvement.",
+      "es":"Onda corporal completa, columna flexible como serpiente moviéndose.",
+      "zh":"全身波动，脊柱柔软如蛇。",
+      "ja":"全身を波のように動かし、蛇のようにしなやかに。",
+      "ru":"Волна всем телом, позвоночник гибкий как у змеи."
+    }},
+
+  { "name":"🐍 Snake Double Strike 双蛇击 (Shuāng Shé Jī)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Both hands thrust forward together, like twin snakes attacking.",
+      "fr":"Deux mains jaillissent ensemble, comme deux serpents qui attaquent.",
+      "es":"Ambas manos avanzan juntas como dos serpientes atacando.",
+      "zh":"双手并出，如双蛇齐击。",
+      "ja":"両手を同時に突き出す、二匹の蛇のように。",
+      "ru":"Обе руки вперёд, словно две змеи атакуют."
+    }},
+
+  { "name":"🐍 Snake Wrap 蛇缠 (Shé Chán)", "duration":30, "reps":5, "pause":20,
+    "explanation":{
+      "en":"Wrap arm around opponent’s guard like snake coiling tree.",
+      "fr":"Enroule ton bras autour de la garde comme un serpent autour d’un arbre.",
+      "es":"Enrolla brazo alrededor de guardia como serpiente en árbol.",
+      "zh":"手臂缠绕，如蛇缠树。",
+      "ja":"腕を巻きつける、木に巻きつく蛇のように。",
+      "ru":"Обвить руку соперника, как змея обвивает дерево."
+    }},
+
+  { "name":"🐍 Snake Tongue Jab 蛇舌点 (Shé Shé Diǎn)", "duration":15, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Fast finger jab out and retract, like snake tongue flicking.",
+      "fr":"Pique rapide des doigts en avant, comme la langue de serpent qui sort.",
+      "es":"Picotazo rápido de dedos como lengua de serpiente.",
+      "zh":"手指快点，伸缩如蛇吐信。",
+      "ja":"指を素早く突き出し戻す、蛇の舌のように。",
+      "ru":"Быстрый укол пальцами, как язык змеи."
+    }},
+
+  { "name":"🐍 Snake Eye Focus 蛇眼 (Shé Yǎn)", "duration":120, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Stand still, focus eyes sharp like snake fixing on prey, meditative.",
+      "fr":"Tiens immobile, regarde avec intensité comme serpent fixant sa proie.",
+      "es":"Mantente quieto, mirada fija como serpiente en presa.",
+      "zh":"静立凝视，如蛇盯猎物，冥想。",
+      "ja":"じっとして目を鋭く、獲物を狙う蛇のように。",
+      "ru":"Стой неподвижно, взгляд пронзительный как у змеи на добыче."
+    }},
+
+  { "name":"🐍 Snake Rising 蛇起 (Shé Qǐ)", "duration":30, "reps":5, "pause":20,
+    "explanation":{
+      "en":"Rise from low crouch spiraling upward like snake uncoiling.",
+      "fr":"Lève-toi d’une position basse en spirale, comme serpent qui se déploie.",
+      "es":"Sube desde agachado en espiral, como serpiente desenrollándose.",
+      "zh":"下蹲起身，螺旋上升，如蛇舒展。",
+      "ja":"低い姿勢から立ち上がり、蛇がほどけるように螺旋状に伸びる。",
+      "ru":"Подъём из приседа вверх по спирали, как змея распрямляется."
+    }},
+
+  { "name":"🐍 Snake Breath 蛇息 (Shé Xī)", "duration":180, "reps":1, "pause":60,
+    "explanation":{
+      "en":"Slow breathing exercise, hissing softly like snake, calming and meditative.",
+      "fr":"Exercice de respiration lente, sifflement doux comme serpent, méditatif.",
+      "es":"Respiración lenta, siseo suave como serpiente, meditativo.",
+      "zh":"缓慢呼吸，轻声嘶如蛇，冥想宁静。",
+      "ja":"ゆっくり呼吸し、蛇のように静かに音を出す、瞑想。",
+      "ru":"Медленное дыхание, мягкое шипение как змея, медитация."
+    }},
+  { "name":"🦢 Crane Stance 鹤立 (Hè Lì)", "duration":120, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Balance on one leg, other knee lifted, arms out like wings.",
+      "fr":"Tiens en équilibre sur une jambe, genou levé, bras ouverts comme des ailes.",
+      "es":"Equilibra en una pierna, rodilla arriba, brazos extendidos como alas.",
+      "zh":"鹤立，一腿独站，双臂展开如翼。",
+      "ja":"鶴立ち、片足で立ち膝を上げ、両腕を翼のように広げる。",
+      "ru":"Стойка журавля: на одной ноге, колено поднято, руки как крылья."
+    }},
+
+  { "name":"🦢 Crane Beak Strike 鹤嘴 (Hè Zuǐ)", "duration":20, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Strike forward with fingers joined into a beak shape, quick and precise.",
+      "fr":"Frappe en avant avec les doigts serrés en forme de bec, rapide et précis.",
+      "es":"Golpea al frente con dedos unidos como pico, rápido y preciso.",
+      "zh":"手指并拢如鹤嘴，快速刺击。",
+      "ja":"指をそろえて鶴のくちばしの形にし、素早く突く。",
+      "ru":"Удар пальцами, сложенными как клюв, быстро и точно."
+    }},
+
+  { "name":"🦢 Crane Wing Block 鹤翅挡 (Hè Chì Dǎng)", "duration":25, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Sweep arms outward like spreading wings to block incoming strike.",
+      "fr":"Balaye les bras vers l’extérieur comme des ailes pour bloquer une attaque.",
+      "es":"Brazos se abren como alas bloqueando ataque.",
+      "zh":"双臂外展，如鹤展翅以格挡。",
+      "ja":"両腕を翼のように広げて攻撃を防ぐ。",
+      "ru":"Разведи руки наружу как крылья журавля для блока."
+    }},
+
+  { "name":"🦢 Crane Hop 鹤跳 (Hè Tiào)", "duration":30, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Small hops forward and sideways on one leg, light like a crane.",
+      "fr":"Petits sauts en avant et côté sur une jambe, légers comme une grue.",
+      "es":"Pequeños saltos en una pierna, ligeros como grulla.",
+      "zh":"单腿轻跳，前后左右，如鹤轻盈。",
+      "ja":"片足で軽く跳ねる、鶴のように。",
+      "ru":"Небольшие прыжки на одной ноге, лёгкие как журавль."
+    }},
+
+  { "name":"🦢 Crane Step 鹤步 (Hè Bù)", "duration":60, "reps":3, "pause":20,
+    "explanation":{
+      "en":"Walk with lifted knees and light steps, like crane pacing in marsh.",
+      "fr":"Avance par pas hauts et légers, genoux levés, comme la grue dans les marais.",
+      "es":"Camina con pasos altos y ligeros, rodillas levantadas como grulla.",
+      "zh":"抬膝轻步，如鹤行沼泽。",
+      "ja":"膝を高く上げ軽く歩む、沼の鶴のように。",
+      "ru":"Ходьба с поднятыми коленями, лёгкая как журавль на болоте."
+    }},
+
+  { "name":"🦢 Crane Neck Stretch 鹤颈伸 (Hè Jǐng Shēn)", "duration":40, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Extend arm forward long and straight, like crane stretching neck.",
+      "fr":"Tends le bras droit et long, comme la grue étire son cou.",
+      "es":"Extiende brazo recto y largo, como cuello de grulla.",
+      "zh":"手臂前伸，如鹤颈舒展。",
+      "ja":"腕をまっすぐ長く伸ばす、鶴の首のように。",
+      "ru":"Протяни руку вперёд прямо, как журавль вытягивает шею."
+    }},
+
+  { "name":"🦢 Crane Peck 鹤啄 (Hè Zhuó)", "duration":15, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Sharp downward jab with beak hand, like crane pecking ground.",
+      "fr":"Piquet sec vers le bas avec la main en bec, comme la grue qui picore.",
+      "es":"Picotazo hacia abajo con mano en pico, como grulla picoteando.",
+      "zh":"手作鹤嘴，下点，如鹤啄地。",
+      "ja":"鶴のくちばしの手で地面を突くように。",
+      "ru":"Удар рукой клювом вниз, как журавль клюёт землю."
+    }},
+
+  { "name":"🦢 Crane Guard 鹤守 (Hè Shǒu)", "duration":90, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Hold balanced guard, one arm high, one low, like crane poised.",
+      "fr":"Tiens une garde équilibrée, un bras haut, un bas, comme la grue en vigilance.",
+      "es":"Guarda equilibrada, un brazo alto y otro bajo, como grulla alerta.",
+      "zh":"一手高一手低，守势稳如鹤。",
+      "ja":"片腕を上、片腕を下にして構え、鶴のように。",
+      "ru":"Оборона с одной рукой наверху, другой внизу, как журавль."
+    }},
+
+  { "name":"🦢 Crane Spread Wings 鹤展翅 (Hè Zhǎn Chì)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Spread both arms wide in flowing motion, like crane stretching wings.",
+      "fr":"Déploie largement les deux bras, fluide, comme la grue déploie ses ailes.",
+      "es":"Extiende brazos fluidamente como grulla desplegando alas.",
+      "zh":"双臂舒展，如鹤展翅。",
+      "ja":"両腕を大きく広げ、鶴が翼を広げるように。",
+      "ru":"Разведи руки плавно как журавль раскрывает крылья."
+    }},
+
+  { "name":"🦢 Crane Step Back 鹤退 (Hè Tuì)", "duration":30, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Step back lightly, arms raised, like crane evading.",
+      "fr":"Recule par pas légers, bras levés, comme la grue qui esquive.",
+      "es":"Retrocede con pasos ligeros, brazos altos como grulla esquivando.",
+      "zh":"轻退步，双手抬起，如鹤避让。",
+      "ja":"軽く後ろへ下がり、両腕を上げて鶴のように。",
+      "ru":"Лёгкий шаг назад, руки вверх, как журавль уходит."
+    }},
+
+  { "name":"🦢 Crane Kick 鹤踢 (Hè Tī)", "duration":20, "reps":8, "pause":20,
+    "explanation":{
+      "en":"Front kick from one-leg stance, sharp and direct like crane peck.",
+      "fr":"Coup de pied frontal depuis l’équilibre sur une jambe, net et direct.",
+      "es":"Patada frontal desde equilibrio en una pierna, directa como picotazo.",
+      "zh":"单腿立踢，动作锐利如鹤啄。",
+      "ja":"片足立ちから前蹴り、鶴のくちばしのように鋭い。",
+      "ru":"Прямой удар ногой с одной опоры, резкий как клюв журавля."
+    }},
+
+  { "name":"🦢 Crane Circle 鹤圈 (Hè Quān)", "duration":40, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Circle arms smoothly like wings circling air around.",
+      "fr":"Fais tourner les bras en cercle comme des ailes brassant l’air.",
+      "es":"Haz círculos con brazos como alas moviendo aire.",
+      "zh":"双臂划圈，如鹤振翅。",
+      "ja":"両腕で円を描き、翼で空気を動かすように。",
+      "ru":"Круги руками, как крылья журавля."
+    }},
+
+  { "name":"🦢 Crane Meditation 鹤息 (Hè Xī)", "duration":180, "reps":1, "pause":60,
+    "explanation":{
+      "en":"Stand tall, breathe slowly, arms like folded wings, calm as crane resting.",
+      "fr":"Tiens debout, respire lentement, bras comme des ailes repliées, calme.",
+      "es":"De pie, respira lento, brazos como alas plegadas, calma.",
+      "zh":"立姿，缓慢呼吸，双臂如翼合拢，安静如鹤。",
+      "ja":"立ってゆっくり呼吸し、腕を翼のように畳み静かに。",
+      "ru":"Стой прямо, медленно дыши, руки как сложенные крылья журавля."
+    }},
+
+  { "name":"🦢 Crane Double Beak 双鹤嘴 (Shuāng Hè Zuǐ)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Strike forward with both hands in beak shape, simultaneous attack.",
+      "fr":"Frappe en avant avec les deux mains en bec, attaque simultanée.",
+      "es":"Golpea con ambas manos en pico al frente, simultáneo.",
+      "zh":"双手并作鹤嘴，同时刺击。",
+      "ja":"両手をくちばしの形にして同時に突く。",
+      "ru":"Удар двумя руками как клювами одновременно."
+    }},
+
+  { "name":"🦢 Crane Wing Fold 鹤收翅 (Hè Shōu Chì)", "duration":30, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Bring arms back inward smoothly, folding wings to close guard.",
+      "fr":"Ramène les bras vers l’intérieur en douceur, ailes qui se replient en garde.",
+      "es":"Lleva brazos adentro suavemente, alas que se cierran en guardia.",
+      "zh":"双臂内收，如鹤收翅归守。",
+      "ja":"両腕を内側へ戻し、鶴が翼を畳むように。",
+      "ru":"Руки плавно внутрь, как журавль складывает крылья."
+    }},
+  { "name":"🐉 Dragon Stance 龙步 (Lóng Bù)", "duration":150, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Sink into a low coiled stance, body rooted but flexible, like dragon resting.",
+      "fr":"Descends en posture basse enroulée, corps enraciné mais souple, comme un dragon au repos.",
+      "es":"Baja a postura baja enrollada, cuerpo enraizado pero flexible, como dragón descansando.",
+      "zh":"龙步下沉，身体扎实而灵动，如龙盘卧。",
+      "ja":"龍歩、低く沈み体をしっかりと保ちながらも柔軟に、休む龍のように。",
+      "ru":"Стойка дракона: низкая и обвитая, тело устойчивое, но гибкое как дракон."
+    }},
+
+  { "name":"🐉 Dragon Coil 龙盘 (Lóng Pán)", "duration":40, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Spiral arms inward and outward, twisting body like dragon coiling.",
+      "fr":"Enroule et déroule les bras en spirale, corps qui tourne comme dragon qui s’enroule.",
+      "es":"Enrolla brazos en espiral, cuerpo gira como dragón enrollándose.",
+      "zh":"手臂螺旋缠绕，身体扭动，如龙盘绕。",
+      "ja":"腕を螺旋に回し、体をひねる、龍が巻きつくように。",
+      "ru":"Спиральные движения руками и телом, словно дракон обвивается."
+    }},
+
+  { "name":"🐉 Dragon Rising 龙升 (Lóng Shēng)", "duration":30, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Rise up from low stance with spiraling strike, like dragon ascending to sky.",
+      "fr":"Relève-toi d’une posture basse avec un coup spiralé, comme un dragon qui monte au ciel.",
+      "es":"Levántate desde postura baja con golpe en espiral, como dragón ascendiendo.",
+      "zh":"下势起身，出螺旋劲，如龙升天。",
+      "ja":"低い姿勢から立ち上がり、螺旋の力を放つ、龍が天へ昇るように。",
+      "ru":"Подъём из низкой стойки с ударом по спирали, как дракон взлетает."
+    }},
+
+  { "name":"🐉 Dragon Tail Sweep 龙尾扫 (Lóng Wěi Sǎo)", "duration":20, "reps":10, "pause":20,
+    "explanation":{
+      "en":"Sweep leg in wide circle, like dragon’s tail whipping around.",
+      "fr":"Balaye la jambe en grand cercle, comme la queue du dragon qui fouette.",
+      "es":"Barrido de pierna en círculo grande, como cola de dragón azotando.",
+      "zh":"腿大幅环扫，如龙尾甩击。",
+      "ja":"脚を大きく円に払う、龍の尾が打つように。",
+      "ru":"Круговой подсек ногой, словно хвост дракона хлещет."
+    }},
+
+  { "name":"🐉 Dragon Claw 龙爪 (Lóng Zhǎo)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Strike with curved claw hand, fingers tense, like dragon gripping.",
+      "fr":"Frappe avec main en griffe courbée, doigts tendus, comme dragon qui saisit.",
+      "es":"Golpea con mano en garra curva, dedos tensos, como dragón agarrando.",
+      "zh":"手作龙爪，指弯紧扣，如龙攫取。",
+      "ja":"指を曲げて龍爪の形で打つ、掴む龍のように。",
+      "ru":"Удар рукой когтями дракона, пальцы напряжены как захват."
+    }},
+
+  { "name":"🐉 Dragon Step 龙行步 (Lóng Xíng Bù)", "duration":60, "reps":3, "pause":25,
+    "explanation":{
+      "en":"Advance in sliding steps, shoulders turning, like dragon gliding.",
+      "fr":"Avance par pas glissés, épaules tournantes, comme le dragon qui plane.",
+      "es":"Avanza con pasos deslizantes, hombros girando, como dragón planeando.",
+      "zh":"滑步前进，肩随身转，如龙游走。",
+      "ja":"滑らかに歩を進め、肩を回す、龍が空を進むように。",
+      "ru":"Скользящие шаги с поворотами плеч, как дракон скользит."
+    }},
+
+  { "name":"🐉 Dragon Breath 龙息 (Lóng Xī)", "duration":180, "reps":1, "pause":60,
+    "explanation":{
+      "en":"Deep breathing exercise, inhaling through nose, exhaling with power, like dragon exhaling mist.",
+      "fr":"Exercice de respiration profonde, inspire par le nez, expire avec puissance, comme le dragon qui souffle la brume.",
+      "es":"Respiración profunda, inhalando por nariz y exhalando fuerte, como dragón exhalando niebla.",
+      "zh":"深呼吸，鼻吸口呼，如龙吐雾。",
+      "ja":"深く呼吸し、鼻から吸い口から力強く吐く、龍が霧を吐くように。",
+      "ru":"Глубокое дыхание, вдох носом, мощный выдох, как дракон извергает туман."
+    }},
+
+  { "name":"🐉 Dragon Twist 龙扭 (Lóng Niǔ)", "duration":30, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Twist waist sharply, arms follow spiral, like dragon turning mid-air.",
+      "fr":"Tourne la taille vivement, les bras en spirale, comme le dragon qui virevolte.",
+      "es":"Gira la cintura en espiral, brazos acompañan, como dragón girando.",
+      "zh":"腰身急扭，双臂随螺旋，如龙翻腾。",
+      "ja":"腰を鋭くひねり、腕を螺旋に回す、龍が舞うように。",
+      "ru":"Резкий поворот корпуса, руки по спирали, словно дракон разворачивается."
+    }},
+
+  { "name":"🐉 Dragon Eye Focus 龙眼 (Lóng Yǎn)", "duration":120, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Stand still, eyes piercing and intent, meditative like dragon watching sky.",
+      "fr":"Tiens immobile, regard perçant et concentré, comme le dragon observant le ciel.",
+      "es":"Mantente quieto, mirada penetrante, como dragón observando cielo.",
+      "zh":"静立凝视，如龙望天。",
+      "ja":"じっとして目を鋭く、天を見つめる龍のように。",
+      "ru":"Неподвижная стойка, взгляд проницательный, как дракон смотрит в небо."
+    }},
+
+  { "name":"🐉 Dragon Palm Strike 龙掌 (Lóng Zhǎng)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Push palm forward spiraling, like dragon unleashing hidden force.",
+      "fr":"Pousse la paume en spirale vers l’avant, comme le dragon libère sa force.",
+      "es":"Empuja palma en espiral, como dragón liberando fuerza.",
+      "zh":"掌前推出，带螺旋劲，如龙发力。",
+      "ja":"掌を前に螺旋で押し出し、龍が力を出すように。",
+      "ru":"Толчок ладонью по спирали вперёд, словно дракон выпускает силу."
+    }},
+
+  { "name":"🐉 Dragon Ascend Kick 龙腾踢 (Lóng Téng Tī)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Kick upward from spiral stance, like dragon leaping to clouds.",
+      "fr":"Donne un coup de pied ascendant en spirale, comme le dragon bondit aux nuages.",
+      "es":"Patada ascendente desde postura en espiral, como dragón saltando a nubes.",
+      "zh":"螺旋起腿上踢，如龙腾云。",
+      "ja":"螺旋の姿勢から上に蹴る、龍が雲へ飛ぶように。",
+      "ru":"Восходящий удар ногой из спиральной стойки, как дракон взлетает к облакам."
+    }},
+
+  { "name":"🐉 Dragon Soar 龙飞 (Lóng Fēi)", "duration":60, "reps":3, "pause":25,
+    "explanation":{
+      "en":"Move in flowing sequence of steps and strikes, like dragon soaring across sky.",
+      "fr":"Exécute une séquence fluide de pas et de frappes, comme le dragon qui vole dans le ciel.",
+      "es":"Secuencia fluida de pasos y golpes, como dragón volando en el cielo.",
+      "zh":"步法连贯，拳掌相随，如龙飞天际。",
+      "ja":"連続の歩法と突きを流れるように行う、龍が空を翔るように。",
+      "ru":"Плавная последовательность шагов и ударов, словно дракон парит по небу."
+    }},
+      { "name":"🐒 Monkey Stance 猴步 (Hóu Bù)", "duration":120, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Low crouched stance, arms forward bent, playful but alert like monkey.",
+      "fr":"Posture accroupie basse, bras pliés en avant, joueur mais attentif comme le singe.",
+      "es":"Postura baja agachada, brazos doblados adelante, juguetón pero alerta como mono.",
+      "zh":"猴步，身体下蹲，双臂前伸，灵动警觉。",
+      "ja":"猿歩、低くしゃがみ腕を前に曲げ、猿のように敏捷に。",
+      "ru":"Стойка обезьяны: низкий присед, руки согнуты вперёд, игривый но внимательный."
+    }},
+
+  { "name":"🐒 Monkey Hop 猴跳 (Hóu Tiào)", "duration":25, "reps":8, "pause":20,
+    "explanation":{
+      "en":"Quick hops forward and sideways, light and playful like monkey.",
+      "fr":"Petits bonds rapides en avant et sur les côtés, légers comme le singe.",
+      "es":"Saltos rápidos adelante y a los lados, ligeros como mono.",
+      "zh":"猴跳，前后左右敏捷跳动。",
+      "ja":"猿跳び、前後左右に軽く跳ねる。",
+      "ru":"Быстрые прыжки вперёд и в стороны, лёгкие как обезьяна."
+    }},
+
+  { "name":"🐒 Monkey Roll 猴滚 (Hóu Gǔn)", "duration":30, "reps":6, "pause":25,
+    "explanation":{
+      "en":"Forward roll on ground, agile recovery like playful monkey.",
+      "fr":"Roulade avant au sol, récupération agile comme le singe joueur.",
+      "es":"Rodada hacia adelante, recuperación ágil como mono.",
+      "zh":"猴滚，前滚翻身，灵巧复位。",
+      "ja":"猿転がり、前に回転して素早く起き上がる。",
+      "ru":"Кувырок вперёд с быстрым подъёмом, как обезьяна."
+    }},
+
+  { "name":"🐒 Monkey Back Roll 猴后滚 (Hóu Hòu Gǔn)", "duration":30, "reps":6, "pause":25,
+    "explanation":{
+      "en":"Backward roll smoothly, agile like monkey escaping.",
+      "fr":"Roulade arrière fluide, agile comme singe qui s’échappe.",
+      "es":"Rodada hacia atrás fluida, ágil como mono escapando.",
+      "zh":"猴后滚，向后翻滚，灵活逃脱。",
+      "ja":"猿後転がり、後ろへ転がって素早く逃げる。",
+      "ru":"Кувырок назад плавный и быстрый, как обезьяна уходит."
+    }},
+
+  { "name":"🐒 Monkey Scratch 猴挠 (Hóu Náo)", "duration":20, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Quick scratching hand motions, mischievous and sharp.",
+      "fr":"Mouvements rapides de griffures des mains, espiègles et vifs.",
+      "es":"Movimientos rápidos de rasguño con manos, traviesos y agudos.",
+      "zh":"猴挠，双手快速划动，如顽皮抓挠。",
+      "ja":"猿の掻き動作、素早く鋭く。",
+      "ru":"Быстрые движения руками, словно обезьяна чешется."
+    }},
+
+  { "name":"🐒 Monkey Pick Fruit 猴摘果 (Hóu Zhāi Guǒ)", "duration":25, "reps":8, "pause":20,
+    "explanation":{
+      "en":"Reach upward and grab down like monkey picking fruit.",
+      "fr":"Tends les bras vers le haut et attrape comme le singe qui cueille un fruit.",
+      "es":"Extiende brazos arriba y agarra como mono recogiendo fruta.",
+      "zh":"猴摘果，伸手高举抓下。",
+      "ja":"猿が果実を取るように、腕を伸ばして掴む。",
+      "ru":"Руки вверх и вниз, как обезьяна срывает плод."
+    }},
+
+  { "name":"🐒 Monkey Side Leap 猴侧跳 (Hóu Cè Tiào)", "duration":25, "reps":8, "pause":20,
+    "explanation":{
+      "en":"Leap sideways with playful agility, hands swinging.",
+      "fr":"Bondis latéralement avec agilité, mains balançant.",
+      "es":"Salto lateral ágil, brazos balanceando.",
+      "zh":"猴侧跳，敏捷横跃，双手摆动。",
+      "ja":"猿が横に跳ぶように、腕を振って敏捷に。",
+      "ru":"Прыжок в сторону с руками в движении, как обезьяна."
+    }},
+
+  { "name":"🐒 Monkey Guard 猴守 (Hóu Shǒu)", "duration":100, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Hold playful guard, crouched low, eyes sharp like monkey watching.",
+      "fr":"Tiens une garde accroupie, regard vif, comme le singe qui observe.",
+      "es":"Guarda baja en cuclillas, ojos atentos como mono mirando.",
+      "zh":"猴守，低蹲守势，目光机警。",
+      "ja":"猿の構え、低くしゃがみ目を鋭くする。",
+      "ru":"Защитная стойка обезьяны: присед, острый взгляд."
+    }},
+
+  { "name":"🐒 Monkey Palm Strike 猴掌击 (Hóu Zhǎng Jī)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Open palm strike with playful snap, like monkey slapping.",
+      "fr":"Frappe de paume vive et espiègle, comme le singe qui gifle.",
+      "es":"Golpe de palma juguetón como bofetada de mono.",
+      "zh":"猴掌击，手掌快速拍打。",
+      "ja":"猿掌打ち、軽快に掌を打つ。",
+      "ru":"Удар ладонью быстрый и игривый, как хлопок обезьяны."
+    }},
+
+  { "name":"🐒 Monkey Grab 猴抓 (Hóu Zhuā)", "duration":20, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Grab forward with claw hand, playful snatch like monkey stealing.",
+      "fr":"Attrape en avant en griffe, espiègle comme le singe qui vole.",
+      "es":"Agarra adelante con garra, juguetón como mono robando.",
+      "zh":"猴抓，前伸抓取，灵巧狡黠。",
+      "ja":"猿掴み、前に爪で掴む、盗む猿のように。",
+      "ru":"Захват рукой вперёд, игривый как обезьяна ворует."
+    }},
+
+  { "name":"🐒 Monkey Dodge 猴闪 (Hóu Shǎn)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Dodge sideways low, agile like monkey escaping strike.",
+      "fr":"Esquive basse latérale, agile comme singe qui échappe un coup.",
+      "es":"Esquiva baja lateral, ágil como mono escapando.",
+      "zh":"猴闪，低身侧避，敏捷脱身。",
+      "ja":"猿避け、低く横へかわす。",
+      "ru":"Уклонение вбок низко, как обезьяна уходит от удара."
+    }},
+
+  { "name":"🐒 Monkey Look Back 猴回望 (Hóu Huí Wàng)", "duration":30, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Turn head and body suddenly, like monkey looking back mischievously.",
+      "fr":"Tourne la tête et le corps brusquement, comme singe qui regarde derrière lui.",
+      "es":"Gira cabeza y cuerpo como mono mirando atrás.",
+      "zh":"猴回望，猛然转身回头。",
+      "ja":"猿が振り返るように素早く体を回す。",
+      "ru":"Резко поверни голову и корпус, как обезьяна озорно оглядывается."
+    }},
+
+  { "name":"🐒 Monkey Push 猴推 (Hóu Tuī)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Push forward with both palms suddenly, playful but strong.",
+      "fr":"Pousse soudainement avec les deux paumes, espiègle mais puissant.",
+      "es":"Empuja adelante con ambas palmas, juguetón pero fuerte.",
+      "zh":"猴推，双掌猛推，玩闹而有力。",
+      "ja":"猿の押し、両掌を素早く押し出す。",
+      "ru":"Резкий толчок ладонями вперёд, игривый, но сильный."
+    }},
+  [
+  { "name":"🐒 Monkey Slap 猴拍 (Hóu Pāi)", "duration":20, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Slap ground or thigh with palm, playful energy release.",
+      "fr":"Frappe le sol ou la cuisse avec la paume, énergie ludique.",
+      "es":"Golpea el suelo o muslo con palma, energía juguetona.",
+      "zh":"猴拍，手掌拍地或大腿，释放灵动之气。",
+      "ja":"猿の拍打、掌で地面や太ももを叩く。",
+      "ru":"Шлепок ладонью по земле или бедру, игривое высвобождение энергии."
+    }},
+
+  { "name":"🐒 Monkey Climb 猴爬 (Hóu Pá)", "duration":40, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Move arms and legs climbing motion, like monkey scaling tree.",
+      "fr":"Monte en mimant les bras et jambes qui grimpent, comme le singe.",
+      "es":"Imita trepar con brazos y piernas, como mono en árbol.",
+      "zh":"猴爬，四肢做攀爬动作，如猴登树。",
+      "ja":"猿登り、腕と脚で木登りを模倣。",
+      "ru":"Имитация лазанья руками и ногами, как обезьяна по дереву."
+    }},
+
+  { "name":"🐒 Monkey Crouch 猴蹲 (Hóu Dūn)", "duration":90, "reps":1, "pause":25,
+    "explanation":{
+      "en":"Hold crouch low with arms dangling, relaxed like resting monkey.",
+      "fr":"Tiens accroupi bas, bras pendants, détendu comme singe au repos.",
+      "es":"Agáchate bajo, brazos colgando, relajado como mono descansando.",
+      "zh":"猴蹲，低蹲，双臂下垂，放松如猴。",
+      "ja":"猿しゃがみ、腕を垂らしリラックス。",
+      "ru":"Присед низкий, руки свисают, расслабленно как обезьяна."
+    }},
+
+  { "name":"🐒 Monkey Kick 猴踢 (Hóu Tī)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Snap front kick suddenly from crouch, playful surprise.",
+      "fr":"Fais un coup de pied frontal brusque depuis la posture accroupie.",
+      "es":"Patada frontal desde cuclillas, repentina como sorpresa.",
+      "zh":"猴踢，蹲势中突然前踢，出其不意。",
+      "ja":"猿蹴り、しゃがんだ姿勢から突然前蹴り。",
+      "ru":"Резкий прямой удар ногой из приседа, неожиданно как у обезьяны."
+    }},
+
+  { "name":"🐒 Monkey Grab Fruit 猴抓果 (Hóu Zhuā Guǒ)", "duration":25, "reps":8, "pause":20,
+    "explanation":{
+      "en":"Snatch forward with both hands, like monkey seizing fruit quickly.",
+      "fr":"Attrape en avant avec les deux mains, comme le singe qui vole un fruit.",
+      "es":"Agarra al frente con ambas manos, como mono robando fruta.",
+      "zh":"猴抓果，双手快抓，如猴夺果。",
+      "ja":"猿が果物を奪うように両手で掴む。",
+      "ru":"Хват руками вперёд, как обезьяна выхватывает плод."
+    }},
+
+  { "name":"🐒 Monkey Leap Forward 猴扑 (Hóu Pū)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Leap forward on all fours, playful pounce like monkey.",
+      "fr":"Bondis en avant sur quatre appuis, espiègle comme le singe.",
+      "es":"Salto adelante en cuatro apoyos, juguetón como mono.",
+      "zh":"猴扑，四肢着地向前扑跃。",
+      "ja":"猿が四足で前に飛びかかるように。",
+      "ru":"Прыжок вперёд на четвереньках, игриво как обезьяна."
+    }},
+
+  { "name":"🐒 Monkey Double Palm 猴双掌 (Hóu Shuāng Zhǎng)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Strike forward with both palms together, playful but firm.",
+      "fr":"Frappe en avant avec les deux paumes ensemble, espiègle mais ferme.",
+      "es":"Golpea con ambas palmas juntas, juguetón pero firme.",
+      "zh":"猴双掌，双掌同时前推。",
+      "ja":"猿の両掌打ち、両手を同時に突き出す。",
+      "ru":"Удар обеими ладонями вперёд, игривый но сильный."
+    }},
+
+  { "name":"🐒 Monkey Spin 猴转 (Hóu Zhuǎn)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Spin body low with arms swinging, playful evasive spin.",
+      "fr":"Tourne le corps bas avec les bras qui balancent, rotation espiègle.",
+      "es":"Giro bajo con brazos balanceando, evasivo y juguetón.",
+      "zh":"猴转，低身旋转，双臂摆动。",
+      "ja":"猿回転、低く体を回して腕を振る。",
+      "ru":"Поворот корпуса низко с руками в движении, как обезьяна."
+    }},
+
+  { "name":"🐒 Monkey Claw 猴爪 (Hóu Zhǎo)", "duration":20, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Scratch forward with clawed hands, mischievous strike.",
+      "fr":"Griffe en avant avec les mains crochées, frappe espiègle.",
+      "es":"Arañazo hacia adelante con manos en garra.",
+      "zh":"猴爪，双手作抓，如猴挠物。",
+      "ja":"猿の爪で前に引っかく。",
+      "ru":"Царапок руками вперёд, как когти обезьяны."
+    }},
+
+  { "name":"🐒 Monkey Sway 猴摆 (Hóu Bǎi)", "duration":40, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Sway body side to side loosely, playful like monkey rocking.",
+      "fr":"Balance ton corps de côté en côté, espiègle comme le singe.",
+      "es":"Balancea cuerpo de lado a lado, juguetón como mono.",
+      "zh":"猴摆，身体左右摆动，轻松顽皮。",
+      "ja":"猿揺れ、体を左右に振る。",
+      "ru":"Покачивание корпуса из стороны в сторону, игриво как обезьяна."
+    }},
+
+  { "name":"🐒 Monkey Crouch Leap 猴蹲跳 (Hóu Dūn Tiào)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"From crouch, leap upward suddenly like monkey springing.",
+      "fr":"Depuis accroupi, bondis soudainement vers le haut comme le singe.",
+      "es":"Desde cuclillas, salto súbito hacia arriba como mono.",
+      "zh":"猴蹲跳，下蹲后猛然上跃。",
+      "ja":"しゃがんだ姿勢から急に跳ぶ、猿のように。",
+      "ru":"Прыжок вверх из приседа, как обезьяна."
+    }},
+
+  { "name":"🐒 Monkey Tease 猴戏 (Hóu Xì)", "duration":60, "reps":2, "pause":25,
+    "explanation":{
+      "en":"Playful feints with hands and hops, imitating monkey teasing.",
+      "fr":"Feintes ludiques avec les mains et petits sauts, comme singe qui taquine.",
+      "es":"Amagos juguetones con manos y saltos, como mono burlándose.",
+      "zh":"猴戏，双手假动作配合小跳，如猴戏耍。",
+      "ja":"猿芝居、手のフェイントと小さな跳び。",
+      "ru":"Игривые финты руками и прыжки, как обезьяна дразнит."
+    }},
+
+  { "name":"🐒 Monkey Meditation 猴息 (Hóu Xī)", "duration":180, "reps":1, "pause":60,
+    "explanation":{
+      "en":"Sit crouched, breathe softly, stillness with monkey spirit inside.",
+      "fr":"Assis accroupi, respire doucement, immobile avec l’esprit du singe.",
+      "es":"Agachado sentado, respira suave, quietud con espíritu de mono.",
+      "zh":"猴息，下蹲静坐，缓慢呼吸，心神如猴。",
+      "ja":"猿の呼吸、しゃがんで座り静かに呼吸。",
+      "ru":"Сидя на корточках, медленное дыхание, дух обезьяны внутри."
+    }},
+
+  { "name":"🐒 Monkey Shoulder Bump 猴撞肩 (Hóu Zhuàng Jiān)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Bump shoulder forward suddenly like monkey charging playfully.",
+      "fr":"Percute en avant avec l’épaule comme singe qui bouscule.",
+      "es":"Choque de hombro adelante como mono empujando.",
+      "zh":"猴撞肩，肩向前冲撞，顽皮有力。",
+      "ja":"猿が肩でぶつかるように前へ突進。",
+      "ru":"Толчок плечом вперёд, как обезьяна играет."
+    }},
+
+  { "name":"🐒 Monkey Circle Step 猴圈步 (Hóu Quān Bù)", "duration":60, "reps":3, "pause":25,
+    "explanation":{
+      "en":"Step in circular path low, hands swinging like monkey circling.",
+      "fr":"Marche en cercle bas, mains balançant comme singe qui tourne.",
+      "es":"Paso en círculo bajo, manos balanceando como mono.",
+      "zh":"猴圈步，低身绕圈行走，双手摆动。",
+      "ja":"猿が円を描いて低く歩くように。",
+      "ru":"Шаги по кругу низко, руки двигаются как у обезьяны."
+    }},
+
+  { "name":"🐒 Monkey Double Kick 猴双踢 (Hóu Shuāng Tī)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Leap with double front kick, playful burst.",
+      "fr":"Saute et donne deux coups de pied frontaux, élan joueur.",
+      "es":"Salto con doble patada frontal, explosión juguetona.",
+      "zh":"猴双踢，跳起双脚前踢。",
+      "ja":"猿の両蹴り、跳んで両足で前蹴り。",
+      "ru":"Прыжок с двойным ударом ногами вперёд, игриво."
+    }},
+
+  { "name":"🐒 Monkey Bow 猴拜 (Hóu Bài)", "duration":90, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Bow down playfully with hands forward, like monkey showing respect.",
+      "fr":"Incline-toi de façon espiègle avec les mains en avant, respect du singe.",
+      "es":"Inclínate juguetón con manos al frente, respeto del mono.",
+      "zh":"猴拜，双手前伸下拜，顽皮又恭敬。",
+      "ja":"猿が手を前にしてお辞儀するように。",
+      "ru":"Игривая поклонная поза, руки вперёд, уважение обезьяны."
+    }},
+      { "name":"🦗 Mantis Stance 螳螂步 (Tángláng Bù)", "duration":120, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Adopt low stance, arms bent with hooked hands like mantis claws.",
+      "fr":"Tiens une posture basse, bras pliés avec mains crochées comme griffes de mante.",
+      "es":"Adopta postura baja, brazos doblados con manos en garras de mantis.",
+      "zh":"螳螂步，身体下沉，双手成钩爪。",
+      "ja":"螳螂歩、低く沈み腕を曲げカマキリの爪のように。",
+      "ru":"Стойка богомола: низко, руки согнуты, кисти как крючки."
+    }},
+
+  { "name":"🦗 Mantis Hook Hand 螳螂勾手 (Tángláng Gōu Shǒu)", "duration":20, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Form hook hand with bent wrist and fingers, quick strikes.",
+      "fr":"Forme une main en crochet, poignet et doigts pliés, frappes rapides.",
+      "es":"Mano en gancho con muñeca y dedos doblados, golpes rápidos.",
+      "zh":"螳螂勾手，手腕弯曲，快速刺击。",
+      "ja":"螳螂の勾手、手首と指を曲げ素早く突く。",
+      "ru":"Крюкообразная рука, быстрые уколы."
+    }},
+
+  { "name":"🦗 Double Mantis Hook 双螳螂勾 (Shuāng Tángláng Gōu)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Both hands form mantis hooks, strike forward simultaneously.",
+      "fr":"Les deux mains en crochets de mante, frappant ensemble.",
+      "es":"Ambas manos en garras de mantis, golpe simultáneo.",
+      "zh":"双手成螳螂勾，同时前击。",
+      "ja":"両手をカマキリの爪にして同時に突く。",
+      "ru":"Обе руки крючками богомола, одновременный удар."
+    }},
+
+  { "name":"🦗 Mantis Peck 螳螂啄 (Tángláng Zhuó)", "duration":15, "reps":12, "pause":15,
+    "explanation":{
+      "en":"Fast poking strikes with mantis hand, like pecking motion.",
+      "fr":"Coups rapides en piquant avec la main de mante, comme des coups de bec.",
+      "es":"Golpes rápidos punzantes con mano de mantis.",
+      "zh":"螳螂啄，手如啄击，快速连发。",
+      "ja":"カマキリの突き、素早く連続で打つ。",
+      "ru":"Быстрые уколы рукой как клюв богомола."
+    }},
+
+  { "name":"🦗 Mantis Grab 螳螂抓 (Tángláng Zhuā)", "duration":20, "reps":10, "pause":15,
+    "explanation":{
+      "en":"Snatch forward with hook hands, pull back as if seizing prey.",
+      "fr":"Attrape en avant avec crochets, tire comme si tu saisis une proie.",
+      "es":"Agarra adelante con manos en gancho, tira como atrapando presa.",
+      "zh":"螳螂抓，前钩回拉，如捕猎物。",
+      "ja":"カマキリの掴み、前に引っ掛けて引く。",
+      "ru":"Захват крюкообразной рукой, резкий рывок назад."
+    }},
+
+  { "name":"🦗 Mantis Elbow Strike 螳螂肘击 (Tángláng Zhǒu Jī)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Close-range strike with elbow, paired with mantis guard.",
+      "fr":"Frappe de coude à courte distance, associée à la garde de mante.",
+      "es":"Golpe de codo a corta distancia con guardia de mantis.",
+      "zh":"螳螂肘击，贴身发力。",
+      "ja":"カマキリの肘打ち、近距離で放つ。",
+      "ru":"Удар локтем в ближнем бою с защитой богомола."
+    }},
+
+  { "name":"🦗 Mantis Block 螳螂挡 (Tángláng Dǎng)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Deflect strike with mantis hook hand upward or sideways.",
+      "fr":"Dévie une frappe avec la main en crochet de mante vers le haut ou le côté.",
+      "es":"Desvía golpe con mano en gancho hacia arriba o al lado.",
+      "zh":"螳螂勾手上或侧挡。",
+      "ja":"カマキリの勾手で上や横に受ける。",
+      "ru":"Блок рукой крюком вверх или вбок."
+    }},
+
+  { "name":"🦗 Mantis Step 螳螂步法 (Tángláng Bùfǎ)", "duration":60, "reps":3, "pause":20,
+    "explanation":{
+      "en":"Advance with triangular steps, agile like mantis stalking prey.",
+      "fr":"Avance par pas triangulaires, agile comme la mante en chasse.",
+      "es":"Avanza con pasos triangulares, ágil como mantis cazando.",
+      "zh":"螳螂三角步，灵活逼近。",
+      "ja":"カマキリの三角歩で素早く迫る。",
+      "ru":"Треугольные шаги, как богомол подкрадывается."
+    }},
+
+  { "name":"🦗 Mantis Catch 螳螂拿 (Tángláng Ná)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Catch opponent’s wrist with hook hand and twist sharply.",
+      "fr":"Attrape le poignet avec main en crochet et tords vivement.",
+      "es":"Agarra muñeca con mano en gancho y tuerce fuerte.",
+      "zh":"螳螂勾手拿腕，猛然扭转。",
+      "ja":"勾手で手首を掴み、素早くひねる。",
+      "ru":"Хват запястья крюком и резкий рывок."
+    }},
+
+  { "name":"🦗 Mantis Press 螳螂压 (Tángláng Yā)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Press downward with mantis hook hand, controlling opponent.",
+      "fr":"Appuie vers le bas avec la main en crochet de mante, contrôlant l’adversaire.",
+      "es":"Presiona hacia abajo con mano de mantis, controlando al oponente.",
+      "zh":"螳螂勾手下压，制控对手。",
+      "ja":"カマキリの勾手で下に押さえ込む。",
+      "ru":"Нажатие рукой крюком вниз для контроля."
+    }},
+
+  { "name":"🦗 Mantis Backfist 螳螂背拳 (Tángláng Bèi Quán)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Strike with back of fist from mantis stance, quick snap.",
+      "fr":"Frappe du revers du poing depuis la posture de mante, vif.",
+      "es":"Golpea con dorso del puño desde postura de mantis.",
+      "zh":"螳螂步中背拳快击。",
+      "ja":"螳螂の姿勢から背拳を打つ。",
+      "ru":"Удар тыльной стороной кулака из стойки богомола."
+    }},
+
+  { "name":"🦗 Mantis Cross Step 螳螂歇步 (Tángláng Xiē Bù)", "duration":40, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Cross step low, arms guarding with mantis hooks.",
+      "fr":"Pas croisé bas, bras en garde avec crochets de mante.",
+      "es":"Paso cruzado bajo, brazos en guardia mantis.",
+      "zh":"螳螂歇步，双臂成勾手。",
+      "ja":"螳螂の交差歩、腕を勾手にして構える。",
+      "ru":"Низкий перекрестный шаг с защитой крюками богомола."
+    }},
+
+  { "name":"🦗 Mantis Rising Elbow 螳螂提肘 (Tángláng Tí Zhǒu)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Drive elbow upward while guarding with mantis hook.",
+      "fr":"Monte le coude en frappant vers le haut, garde en crochet de mante.",
+      "es":"Levanta codo golpeando hacia arriba, guardia de mantis.",
+      "zh":"螳螂勾手护身，同时提肘上击。",
+      "ja":"螳螂の勾手で守りつつ肘を上げて打つ。",
+      "ru":"Удар локтем вверх с защитой крюком."
+    }},
+
+  { "name":"🦗 Mantis Sweep 螳螂扫 (Tángláng Sǎo)", "duration":20, "reps":8, "pause":20,
+    "explanation":{
+      "en":"Low sweeping kick combined with mantis hook guard.",
+      "fr":"Balayage bas avec garde en crochet de mante.",
+      "es":"Barrido bajo con guardia de mantis.",
+      "zh":"螳螂勾手防守同时低扫。",
+      "ja":"螳螂の勾手を構えながら低く払う。",
+      "ru":"Низкий подсек ногой с защитой богомола."
+    }},
+
+  { "name":"🦗 Mantis Rising Kick 螳螂提腿 (Tángláng Tí Tuǐ)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Lift leg sharply like mantis raising claw to strike.",
+      "fr":"Lève la jambe brusquement comme la mante qui lève sa griffe.",
+      "es":"Levanta pierna bruscamente como mantis alzando garra.",
+      "zh":"螳螂提腿，如螳螂抬爪击。",
+      "ja":"脚を鋭く上げ、カマキリが爪を振り上げるように。",
+      "ru":"Поднятие ноги как богомол поднимает коготь."
+    }},
+
+  { "name":"🦗 Mantis Twist 螳螂扭身 (Tángláng Niǔ Shēn)", "duration":30, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Twist waist with hooked hands slashing across.",
+      "fr":"Tourne la taille avec les mains en crochet qui tranchent.",
+      "es":"Gira cintura con manos en gancho cortando.",
+      "zh":"勾手扭身，横向斩击。",
+      "ja":"勾手で腰をひねり斜めに打つ。",
+      "ru":"Поворот корпуса с крюками рук, удар вбок."
+    }},
+
+  { "name":"🦗 Mantis Shadow Drill 螳螂影练 (Tángláng Yǐng Liàn)", "duration":90, "reps":2, "pause":30,
+    "explanation":{
+      "en":"Shadowbox sequence of mantis steps, hooks, and strikes.",
+      "fr":"Enchaînement à vide de pas, crochets et frappes de mante.",
+      "es":"Secuencia en sombra de pasos, ganchos y golpes de mantis.",
+      "zh":"螳螂影练，步法勾手拳法连贯。",
+      "ja":"螳螂の影練、歩法と勾手打ちの連続。",
+      "ru":"Отработка в тени: шаги, крюки, удары богомола."
+    }},
+
+  { "name":"🦗 Mantis Meditation 螳螂息 (Tángláng Xī)", "duration":180, "reps":1, "pause":60,
+    "explanation":{
+      "en":"Still stance breathing with mantis hand posture, calm focus.",
+      "fr":"Posture immobile avec respiration, mains en mantis, calme et concentré.",
+      "es":"Postura inmóvil respirando, manos en mantis, calma concentrada.",
+      "zh":"静立呼吸，双手螳螂势，专注宁静。",
+      "ja":"静かに立ち呼吸、螳螂の手で集中。",
+      "ru":"Неподвижная стойка, дыхание, руки как у богомола, спокойствие."
+    }},
+    
+  { "name":"🦗 Mantis Guard 螳螂守 (Tángláng Shǒu)", "duration":90, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Hold defensive guard with hooked hands, elbows close, eyes sharp.",
+      "fr":"Tiens une garde défensive avec mains crochées, coudes proches, regard vif.",
+      "es":"Guarda defensiva con manos en gancho, codos cerrados, ojos atentos.",
+      "zh":"螳螂守，双勾手护身，目光锐利。",
+      "ja":"螳螂の守り、勾手を構え鋭い目で集中。",
+      "ru":"Оборонительная стойка с руками-крюками, локти прижаты, взгляд острый."
+    }},
+
+  { "name":"🦗 Mantis Snap Kick 螳螂弹腿 (Tángláng Tán Tuǐ)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Fast snapping front kick, paired with mantis hands.",
+      "fr":"Coup de pied frontal sec et rapide, associé aux mains de mante.",
+      "es":"Patada frontal rápida con manos de mantis.",
+      "zh":"螳螂弹腿，双手配合，腿前踢。",
+      "ja":"螳螂の前蹴り、勾手と合わせて素早く。",
+      "ru":"Быстрый прямой удар ногой, руки в стиле богомола."
+    }},
+
+  { "name":"🦗 Mantis Palm Press 螳螂掌压 (Tángláng Zhǎng Yā)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Press forward with open palm, mantis hook ready to follow.",
+      "fr":"Pousse la paume en avant, crochet de mante prêt à suivre.",
+      "es":"Empuja palma al frente, gancho de mantis listo.",
+      "zh":"螳螂掌压，掌推出，勾手护随。",
+      "ja":"掌を押し出し、勾手で続ける。",
+      "ru":"Толчок ладонью вперёд, готов продолжить крюком."
+    }},
+
+  { "name":"🦗 Mantis Circle Step 螳螂圈步 (Tángláng Quān Bù)", "duration":40, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Step in circular path, mantis hands probing.",
+      "fr":"Pas circulaire, mains de mante qui sondent.",
+      "es":"Paso circular, manos de mantis tanteando.",
+      "zh":"螳螂圈步，绕步探手。",
+      "ja":"螳螂の円歩、手を探るように。",
+      "ru":"Круговые шаги, руки богомола проверяют защиту."
+    }},
+
+  { "name":"🦗 Mantis Shoulder Strike 螳螂撞肩 (Tángláng Zhuàng Jiān)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Drive shoulder into opponent, mantis guard up.",
+      "fr":"Percute avec l’épaule, garde de mante en place.",
+      "es":"Golpea con hombro, guardia de mantis arriba.",
+      "zh":"螳螂撞肩，肩冲撞，勾手护身。",
+      "ja":"肩で突進、勾手で守る。",
+      "ru":"Толчок плечом с защитой богомола."
+    }},
+
+  { "name":"🦗 Mantis Rising Palm 螳螂托掌 (Tángláng Tuō Zhǎng)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Lift palm upward sharply, like mantis lifting prey.",
+      "fr":"Monte la paume vivement, comme mante qui soulève sa proie.",
+      "es":"Eleva palma bruscamente, como mantis levantando presa.",
+      "zh":"螳螂托掌，上托有力。",
+      "ja":"掌を鋭く上に持ち上げる、獲物を持ち上げるカマキリのように。",
+      "ru":"Резкий подъём ладонью вверх, как богомол поднимает добычу."
+    }},
+
+  { "name":"🦗 Mantis Flick 螳螂弹指 (Tángláng Tán Zhǐ)", "duration":15, "reps":12, "pause":15,
+    "explanation":{
+      "en":"Snap fingers outward from hook hand, sharp flicking strike.",
+      "fr":"Fais claquer les doigts depuis la main crochetée, frappe vive.",
+      "es":"Chasquido de dedos desde mano en gancho, golpe vivo.",
+      "zh":"螳螂弹指，勾手发弹劲。",
+      "ja":"勾手から指を弾き出す、鋭い打ち。",
+      "ru":"Щелчок пальцами из крюка, резкий удар."
+    }},
+
+  { "name":"🦗 Mantis Evasion 螳螂闪身 (Tángláng Shǎn Shēn)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Shift body sideways quickly to evade, mantis stance ready.",
+      "fr":"Décale ton corps vite sur le côté pour esquiver, garde de mante prête.",
+      "es":"Desplaza cuerpo al lado para esquivar, guardia de mantis lista.",
+      "zh":"螳螂闪身，迅速侧移。",
+      "ja":"体を横に素早くずらしてかわす。",
+      "ru":"Смещение корпуса в сторону для уклонения, стойка богомола."
+    }},
+
+  { "name":"🦗 Mantis Cut Down 螳螂劈 (Tángláng Pī)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Chop down with hooked hand, sharp and decisive.",
+      "fr":"Abaisse la main en crochet vivement, geste tranchant.",
+      "es":"Corte hacia abajo con mano en gancho, decidido.",
+      "zh":"螳螂劈，勾手下劈。",
+      "ja":"勾手で下に叩き落とす。",
+      "ru":"Рубящий удар вниз рукой-крюком."
+    }},
+
+  { "name":"🦗 Mantis Guard Change 螳螂换守 (Tángláng Huàn Shǒu)", "duration":40, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Switch mantis guard smoothly from left to right.",
+      "fr":"Change la garde de mante de gauche à droite en douceur.",
+      "es":"Cambia guardia de mantis de izquierda a derecha suavemente.",
+      "zh":"螳螂换守，左右切换。",
+      "ja":"螳螂の構えを左右に切り替える。",
+      "ru":"Смена стойки богомола слева направо."
+    }},
+
+  { "name":"🦗 Mantis Hook and Pull 螳螂勾拉 (Tángláng Gōu Lā)", "duration":25, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Hook opponent’s arm then pull sharply downward.",
+      "fr":"Croche l’avant-bras puis tire vivement vers le bas.",
+      "es":"Engancha brazo y tira bruscamente hacia abajo.",
+      "zh":"螳螂勾拉，猛拉对手手臂。",
+      "ja":"勾手で腕を引っ掛け下に引く。",
+      "ru":"Захват руки крюком и резкий рывок вниз."
+    }},
+
+  { "name":"🦗 Mantis Leap 螳螂跳 (Tángláng Tiào)", "duration":30, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Leap forward low, mantis hands leading strike.",
+      "fr":"Bondis en avant bas, mains de mante en attaque.",
+      "es":"Salto bajo al frente con manos de mantis.",
+      "zh":"螳螂跳，低跃前击。",
+      "ja":"螳螂跳び、低く前に跳ねて攻撃。",
+      "ru":"Низкий прыжок вперёд, руки как у богомола."
+    }},
+
+  { "name":"🦗 Mantis Rising Knee 螳螂提膝 (Tángláng Tí Xī)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Lift knee sharply, mantis hands guarding.",
+      "fr":"Monte le genou vivement, mains de mante en garde.",
+      "es":"Eleva rodilla rápido, manos en guardia.",
+      "zh":"螳螂提膝，双手护身。",
+      "ja":"螳螂の膝上げ、手で守りながら。",
+      "ru":"Подъём колена с руками богомола."
+    }},
+
+  { "name":"🦗 Mantis Feint 螳螂虚招 (Tángláng Xū Zhāo)", "duration":30, "reps":4, "pause":20,
+    "explanation":{
+      "en":"Fake strike with mantis hand then quickly switch real attack.",
+      "fr":"Fais une feinte avec main de mante puis attaque réelle rapide.",
+      "es":"Finta con mano de mantis y ataca de verdad rápido.",
+      "zh":"螳螂虚招，佯攻后真击。",
+      "ja":"螳螂のフェイント、すぐに本打ちに切り替える。",
+      "ru":"Ложный удар рукой богомола, затем настоящий."
+    }},
+
+  { "name":"🦗 Mantis Push 螳螂推 (Tángláng Tuī)", "duration":20, "reps":8, "pause":15,
+    "explanation":{
+      "en":"Push forward with both mantis hands, firm shove.",
+      "fr":"Pousse en avant avec les deux mains de mante, poussée ferme.",
+      "es":"Empuja adelante con ambas manos de mantis.",
+      "zh":"螳螂双手前推。",
+      "ja":"螳螂の両手で前に押す。",
+      "ru":"Толчок вперёд обеими руками богомола."
+    }},
+
+  { "name":"🦗 Mantis Spin 螳螂旋 (Tángláng Xuán)", "duration":30, "reps":6, "pause":20,
+    "explanation":{
+      "en":"Spin body with mantis hands slashing out.",
+      "fr":"Tourne le corps avec mains de mante qui frappent.",
+      "es":"Gira cuerpo con manos de mantis golpeando.",
+      "zh":"螳螂旋，旋身出击。",
+      "ja":"螳螂の回転、体を回して打つ。",
+      "ru":"Вращение корпуса с ударами руками богомола."
+    }},
+
+  { "name":"🦗 Mantis Combo Drill 螳螂组合练 (Tángláng Zǔhé Liàn)", "duration":90, "reps":2, "pause":30,
+    "explanation":{
+      "en":"Practice sequence of mantis hooks, steps, and strikes continuously.",
+      "fr":"Pratique enchaînement continu de crochets, pas et frappes de mante.",
+      "es":"Secuencia continua de ganchos, pasos y golpes de mantis.",
+      "zh":"螳螂组合练，步手连贯。",
+      "ja":"螳螂の組合せ練習、勾手と歩法を連続で。",
+      "ru":"Связка: крюки, шаги и удары богомола без остановки."
+    }},
+
+  { "name":"🦗 Mantis Closing Form 螳螂收势 (Tángláng Shōu Shì)", "duration":120, "reps":1, "pause":30,
+    "explanation":{
+      "en":"Finish in mantis salute posture, calm breathing to end sequence.",
+      "fr":"Termine en salut de mante, respiration calme pour conclure.",
+      "es":"Finaliza en saludo de mantis, respiración calmada.",
+      "zh":"螳螂收势，抱拳礼，呼吸归静。",
+      "ja":"螳螂の収勢、礼で終え呼吸を整える。",
+      "ru":"Завершающая поза: поклон богомола и спокойное дыхание."
+    }}
+
       ]
     },
     "pushups": {
@@ -200,3 +1910,4 @@
     }
   }
 }
+
