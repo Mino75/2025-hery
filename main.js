@@ -548,16 +548,37 @@ async function stopWorkout(){
 async function openHistory(){
   const tx = db.transaction("history","readonly");
   const req = tx.objectStore("history").getAll();
-  req.onsuccess = () => {
-    const items = (req.result||[]).sort((a,b)=>Number(b.date)-Number(a.date)); // newest first
-    historyList.innerHTML = items.length
-      ? items.map(renderHistItem).join("")
-      : `<div class="hist-item"><div>No sessions yet.</div></div>`;
-    historyModal.classList.remove('hidden');
-    historyModal.style.display = 'grid';
-    historyModal.setAttribute('aria-hidden','false');
-    document.body.classList.add('modal-open');
-  };
+    req.onsuccess = () => {
+      const items = (req.result||[]).sort((a,b)=>Number(b.date)-Number(a.date)); // newest first
+
+      if (!items.length) {
+        historyList.innerHTML = `<div class="hist-item"><div>No sessions yet.</div></div>`;
+        return;
+      }
+
+      let html = "";
+      let lastDay = null;
+
+      for (const it of items) {
+        const d = new Date(Number(it.date));
+        const dayKey = d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+
+        if (dayKey !== lastDay) {
+          // start a new group with a header
+          html += `<div class="hist-day-sep"><strong>${dayKey}</strong></div>`;
+          lastDay = dayKey;
+        }
+        html += renderHistItem(it);
+      }
+
+      historyList.innerHTML = html;
+
+      historyModal.classList.remove('hidden');
+      historyModal.style.display = 'grid';
+      historyModal.setAttribute('aria-hidden','false');
+      document.body.classList.add('modal-open');
+    };
+
 }
 function renderHistItem(it){
   const d = new Date(Number(it.date));
