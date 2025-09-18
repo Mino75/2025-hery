@@ -1,38 +1,90 @@
-/* =========================
-   HERYTECH – Mobile-first
+/* ========================= 
+   HERYTECH – Mobile-first (robust + silent-skip with auto-reschedule)
    ========================= */
 
-// ---------- CONFIG ----------
+/* ---------- CONFIG ---------- */
 const MIN_FULL_DAY = 60 * 60;     // Full-day threshold (seconds)
 const MAX_DAYS_PER_WEEK = 5;
 const VOICE_LANG = { en:"en-US", fr:"fr-FR", es:"es-ES", zh:"zh-CN", ja:"ja-JP", ru:"ru-RU" };
 
-// ---------- GLOBAL STATE ----------
+/* Speech/skip behavior */
+const SKIP_SILENCE_MS = 900;      // mute window after each skip (extends with each skip)
+const INTRO_DEBOUNCE_MS = 650;    // delay before speaking intro of the current exercise
+
+/* ---------- GLOBAL STATE ---------- */
 let db, profile = null, trainings = null, voicesReady = false;
 
+// Workout state (robust + resumable)
 let workout = {
-  running:false, sessionSecs:0, globalSec:0,
-  currentSport:null, queue:[], queueSport:null,
-  ex:null, rep:0, repTime:0, inPause:false, pauseTime:0,
-  displayLang:"en", tickId:null
+  running: false,
+  startedAt: null,        // ms timestamp — single source of truth for elapsed time
+  sessionSecs: 0,         // display copy (frozen at stop)
+  globalSec: 0,
+
+  currentSport: null,
+  queue: [],
+  queueSport: null,
+
+  ex: null, rep: 0, repTime: 0, inPause: false, pauseTime: 0,
+  displayLang: "en",
+  tickId: null
 };
 
-// ---------- INDEXEDDB ----------
-const request = indexedDB.open("HerytechDB", 2);
+// Skip/intro control
+let skipMuteUntil = 0;     // until when TTS is muted
+let introTimer = null;     // pending intro timer
+let exerciseRunId = 0;     // increments on each nextExercise()
+
+// Wake Lock (best-effort)
+let wakeLock = null;
+
+/* ---------- INDEXEDDB ---------- */
+/* Version bump to 3 — only adds the "runtime" store (history/profile remain unchanged) */
+const request = indexedDB.open("HerytechDB", 3);
+
 request.onupgradeneeded = (e) => {
   db = e.target.result;
-  if (!db.objectStoreNames.contains("history")) db.createObjectStore("history", { keyPath:"id" });
-  if (!db.objectStoreNames.contains("profile")) db.createObjectStore("profile", { keyPath:"id" });
+
+  if (!db.objectStoreNames.contains("history")) {
+    db.createObjectStore("history", { keyPath:"id" });
+  }
+  if (!db.objectStoreNames.contains("profile")) {
+    db.createObjectStore("profile", { keyPath:"id" });
+  }
+  // New store for resilience (one record: id:"current")
+  if (!db.objectStoreNames.contains("runtime")) {
+    db.createObjectStore("runtime", { keyPath:"id" });
+  }
 };
+
 request.onsuccess = async (e) => {
   db = e.target.result;
+
+  // Close DB cleanly if a future versionchange happens
+  db.onversionchange = () => {
+    try { db.close(); } catch {}
+    console.warn("DB version change; closed.");
+  };
+
   profile = await loadProfile();
   toggleScreens(!!profile);
+
+  trainings = await loadTrainings();
+  if (trainings && trainings.sports) {
+    Object.keys(trainings.sports).forEach((k) => {
+      const opt = document.createElement("option");
+      opt.value = k; opt.textContent = capitalize(k);
+      sportSel.appendChild(opt);
+    });
+  }
+
+  await resumeIfRuntimeActive();
   updateWeeklyChip();
 };
+
 request.onerror = () => console.error("IndexedDB open failed");
 
-// ---------- DOM ----------
+/* ---------- DOM ---------- */
 const $ = (sel) => document.querySelector(sel);
 const screenOnboarding = $("#screen-onboarding");
 const screenMain = $("#screen-main");
@@ -62,9 +114,9 @@ const closeHistory = $("#closeHistory");
 const historyList = $("#historyList");
 const modalBackdrop = $("#modalBackdrop");
 
-// ---------- INIT ----------
+/* ---------- INIT ---------- */
 document.addEventListener("DOMContentLoaded", async () => {
-  // Guarantee modal is hidden before any paint
+  // Ensure modal is hidden before first paint (you already fixed blur/z-index)
   historyModal.classList.add('hidden');
   historyModal.style.display = 'none';
 
@@ -72,18 +124,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   function initVoices(){ voicesReady = true; }
   window.speechSynthesis.onvoiceschanged = initVoices;
   if (speechSynthesis.getVoices().length) initVoices();
-
-  // Load trainings (with safe fallback for file://)
-  trainings = await loadTrainings();
-
-  // Populate sports
-  if (trainings && trainings.sports) {
-    Object.keys(trainings.sports).forEach((k) => {
-      const opt = document.createElement("option");
-      opt.value = k; opt.textContent = capitalize(k);
-      sportSel.appendChild(opt);
-    });
-  }
 
   // Wire UI
   obSave.addEventListener("click", handleSaveProfile);
@@ -94,9 +134,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   historyBtn.addEventListener("click", openHistory);
   closeHistory.addEventListener("click", closeHistoryModal);
   modalBackdrop.addEventListener("click", closeHistoryModal);
+
+  // Robustness: handle background/foreground transitions
+  document.addEventListener("visibilitychange", onVisibilityChange, { passive:true });
+  window.addEventListener("pagehide", releaseScreenWakeLock, { passive:true });
 });
 
-// ---------- LOADERS ----------
+/* ---------- LOADERS ---------- */
 async function loadProfile() {
   return new Promise((resolve) => {
     const tx = db.transaction("profile", "readonly");
@@ -119,11 +163,72 @@ async function loadTrainings() {
     return await r.json();
   } catch (err) {
     console.warn("Failed to fetch trainings.json, using fallback.", err);
-    return TRAININGS_FALLBACK; // small built-in dataset
+    return TRAININGS_FALLBACK;
   }
 }
 
-// ---------- UI HELPERS ----------
+/* ---------- RUNTIME PERSISTENCE ---------- */
+async function readRuntime() {
+  return new Promise((resolve) => {
+    const tx = db.transaction("runtime", "readonly");
+    const req = tx.objectStore("runtime").get("current");
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => resolve(null);
+  });
+}
+async function writeRuntime(payload) {
+  return new Promise((resolve) => {
+    const tx = db.transaction("runtime", "readwrite");
+    tx.objectStore("runtime").put({ id: "current", ...payload });
+    tx.oncomplete = () => resolve(true);
+  });
+}
+async function clearRuntime() {
+  return new Promise((resolve) => {
+    const tx = db.transaction("runtime", "readwrite");
+    tx.objectStore("runtime").delete("current");
+    tx.oncomplete = () => resolve(true);
+  });
+}
+async function resumeIfRuntimeActive() {
+  const rt = await readRuntime();
+  if (!rt || !rt.running || !rt.startedAt) return;
+
+  // Minimal resume: show active session, accurate elapsed time, metrics
+  workout.running = true;
+  workout.startedAt = rt.startedAt;
+  workout.currentSport = rt.sport || Object.keys(trainings?.sports || { bike:1 })[0];
+
+  playBtn.disabled = true;
+  stopBtn.disabled = true;   // disabled until UI settles (enable below)
+  skipBtn.disabled = true;
+
+  exTitleEl.textContent = "Active session";
+  exExplainEl.textContent = "Resumed after background.";
+  statusEl.textContent = "Session resumed.";
+
+  langModeSel.value = rt.langPref || "random";
+
+  if (workout.tickId) clearInterval(workout.tickId);
+  workout.tickId = setInterval(backgroundTick, 1000);
+
+  await requestScreenWakeLock();
+
+  // Update UI immediately; then enable Stop
+  renderElapsedIntoUI();
+  updateMetrics();
+  stopBtn.disabled = false;
+}
+
+/* ---------- UTILS ---------- */
+function getElapsedSecs() {
+  if (!workout.startedAt) return 0;
+  return Math.max(0, Math.floor((Date.now() - workout.startedAt) / 1000));
+}
+function renderElapsedIntoUI() {
+  const secs = getElapsedSecs();
+  timerEl.textContent = formatMMSS(secs);
+}
 function toggleScreens(hasProfile){
   screenOnboarding.classList.toggle("hidden", !!hasProfile);
   screenMain.classList.toggle("hidden", !hasProfile);
@@ -135,7 +240,7 @@ function formatMMSS(totalSec){
   return `${m}:${s}`;
 }
 
-// ---------- SPEECH ----------
+/* ---------- SPEECH ---------- */
 function pickVoice(lang) {
   const list = speechSynthesis.getVoices() || [];
   const bcp47 = VOICE_LANG[lang] || "en-US";
@@ -167,15 +272,21 @@ function speakCommon(bucket, langPref="random"){
   }
   return speakFromMap(pool, langPref);
 }
+function canSpeak() {
+  return Date.now() >= skipMuteUntil;
+}
 
-// ---------- HISTORY / RULES ----------
+/* ---------- HISTORY / RULES ---------- */
 async function getThisWeekHistory() {
   const now = Date.now();
   const weekAgo = now - 7*24*60*60*1000;
   return new Promise((resolve) => {
     const tx = db.transaction("history","readonly");
     const req = tx.objectStore("history").getAll();
-    req.onsuccess = () => resolve((req.result||[]).filter(r => r.date > weekAgo));
+    req.onsuccess = () => {
+      const rows = (req.result||[]);
+      resolve(rows.filter(r => Number(r.date) > weekAgo));
+    };
     req.onerror = () => resolve([]);
   });
 }
@@ -183,7 +294,7 @@ async function updateWeeklyChip() {
   const hist = await getThisWeekHistory();
   const fullDays = hist.filter(h => h.fullDay).length;
   weeklyChipEl.textContent = `${fullDays} / ${MAX_DAYS_PER_WEEK} days`;
-  playBtn.disabled = fullDays >= MAX_DAYS_PER_WEEK;
+  playBtn.disabled = fullDays >= MAX_DAYS_PER_WEEK || workout.running;
 }
 async function canTrainToday() {
   const hist = await getThisWeekHistory();
@@ -192,13 +303,14 @@ async function canTrainToday() {
 function saveSession(seconds){
   return new Promise((resolve) => {
     const fullDay = seconds >= MIN_FULL_DAY;
+    const now = Date.now();
     const tx = db.transaction("history","readwrite");
-    tx.objectStore("history").put({ id:Date.now(), date:Date.now(), duration:seconds, fullDay });
+    tx.objectStore("history").put({ id: now, date: now, duration: seconds, fullDay });
     tx.oncomplete = () => resolve(fullDay);
   });
 }
 
-// ---------- METRICS ----------
+/* ---------- METRICS ---------- */
 function calcCalories(sport, weightKg, durationSec){
   const MET = { boxing:9, judo:8, wushu:7.5, bike:7, pushups:5, abs:4 }[sport] || 6;
   return Math.round((MET * 3.5 * weightKg / 200) * (durationSec/60));
@@ -208,8 +320,17 @@ function estimateDistance(sport, durationSec){
   const kmph = 22;
   return +(kmph * (durationSec/3600)).toFixed(2);
 }
+function updateMetrics(){
+  const sport = workout.currentSport || sportSel.value || Object.keys(trainings?.sports || { bike:1 })[0];
+  const elapsed = workout.running ? getElapsedSecs() : workout.sessionSecs;
+  const cals = calcCalories(sport, profile?.weight||70, elapsed);
+  const km = estimateDistance(sport, elapsed);
+  let msg = `Calories ≈ ${cals}`;
+  if (km!=null) msg += ` • Distance ≈ ${km} km`;
+  caloriesEl.textContent = msg;
+}
 
-// ---------- ONBOARDING ----------
+/* ---------- ONBOARDING ---------- */
 async function handleSaveProfile(){
   const gender = obGender.value;
   const weight = parseFloat(obWeight.value||"0");
@@ -222,7 +343,7 @@ async function handleSaveProfile(){
   updateWeeklyChip();
 }
 
-// ---------- QUEUE ----------
+/* ---------- QUEUE ---------- */
 function buildQueueForSport(sportKey){
   const list = trainings.sports[sportKey].exercises.slice();
   for (let i=list.length-1;i>0;i--){
@@ -232,36 +353,86 @@ function buildQueueForSport(sportKey){
   return list;
 }
 
-// ---------- WORKOUT ----------
+/* ---------- INTRO SCHEDULER (debounced + mute-aware) ---------- */
+// Schedules the intro voice for the current exercise, respecting the skip-mute window.
+// If it fires while still muted (rare race), it auto-reschedules.
+function scheduleIntroForCurrentExercise(pref){
+  if (introTimer) { clearTimeout(introTimer); introTimer = null; }
+  const myRunId = ++exerciseRunId;
+
+  const now = Date.now();
+  const delay = Math.max(INTRO_DEBOUNCE_MS, skipMuteUntil - now);
+
+  introTimer = setTimeout(() => {
+    if (!workout.running) return;
+    if (myRunId !== exerciseRunId) return;        // user moved to another exercise
+    if (Date.now() < skipMuteUntil) {             // still muted? reschedule
+      scheduleIntroForCurrentExercise(pref);
+      return;
+    }
+    // Speak explanation + "start" cue now
+    const { lang } = speakFromMap(workout.ex.explanation, pref);
+    workout.displayLang = lang;
+    speakCommon("start", pref);
+  }, Math.max(0, delay));
+}
+
+/* ---------- WORKOUT ---------- */
 async function startWorkout(){
   if (!trainings || !trainings.sports) { statusEl.textContent="Trainings not loaded."; return; }
   if (!(await canTrainToday())) { statusEl.textContent="Weekly limit reached. Rest soldier!"; playBtn.disabled=true; return; }
 
   workout.currentSport = sportSel.value || Object.keys(trainings.sports)[0];
+
+  // Build exercise queue for live coaching (not required for persistence)
   if (!workout.queue.length || workout.currentSport !== workout.queueSport) {
     workout.queue = buildQueueForSport(workout.currentSport);
     workout.queueSport = workout.currentSport;
   }
-  workout.sessionSecs = 0; workout.globalSec = 0;
-  workout.running = true; playBtn.disabled = true; stopBtn.disabled = false; skipBtn.disabled = false;
+
+  // Start time is the truth for elapsed time
+  workout.startedAt = Date.now();
+  workout.sessionSecs = 0;
+  workout.globalSec = 0;
+  workout.running = true;
+
+  playBtn.disabled = true;
+  stopBtn.disabled = false;
+  skipBtn.disabled = false;
+
+  // Persist runtime to survive reload/crash/background
+  await writeRuntime({
+    running: true,
+    startedAt: workout.startedAt,
+    sport: workout.currentSport,
+    langPref: (langModeSel.value || "random")
+  });
 
   nextExercise();
+  await requestScreenWakeLock();
 }
 
 function nextExercise(){
+  if (!workout.running) return;
+
   if (!workout.queue.length) workout.queue = buildQueueForSport(workout.currentSport);
   workout.ex = workout.queue.pop();
   workout.rep = 1; workout.repTime = 0; workout.pauseTime = 0; workout.inPause = false;
 
   const pref = langModeSel.value || "random";
-  const { lang } = speakFromMap(workout.ex.explanation, pref);
-  workout.displayLang = lang;
+
+  // Decide display language now (text updates immediately)
+  const langs = Object.keys(VOICE_LANG);
+  const chosen = pref === "random" ? langs[Math.floor(Math.random()*langs.length)] : pref;
+  workout.displayLang = chosen;
 
   exTitleEl.textContent = workout.ex.name;
   exExplainEl.textContent = workout.ex.explanation[workout.displayLang] || workout.ex.explanation.en || "—";
 
   statusEl.textContent = `${workout.ex.reps} reps • ${workout.ex.duration}s / rep • pause ${workout.ex.pause||0}s`;
-  speakCommon("start", pref);
+
+  // Debounced intro that also waits out the mute window (auto-reschedules if needed)
+  scheduleIntroForCurrentExercise(pref);
 
   if (workout.tickId) clearInterval(workout.tickId);
   workout.tickId = setInterval(tick, 1000);
@@ -269,100 +440,129 @@ function nextExercise(){
 
 function tick(){
   if (!workout.running) return;
-  workout.sessionSecs++; workout.globalSec++;
-  timerEl.textContent = formatMMSS(workout.sessionSecs);
 
+  // Elapsed time based on startedAt → accurate even if the tab slept
+  renderElapsedIntoUI();
+
+  // Live coaching (may miss ticks while hidden — acceptable)
   if (workout.inPause) {
     workout.pauseTime++;
     subtimerEl.textContent = `Pause ${workout.pauseTime}/${workout.ex.pause||0}s`;
     if (workout.pauseTime >= (workout.ex.pause||0)) {
       workout.inPause = false; workout.repTime = 0;
-      speakCommon("start", langModeSel.value);
+      if (canSpeak()) speakCommon("start", langModeSel.value);
     }
-    return;
-  }
+  } else {
+    workout.repTime++;
+    subtimerEl.textContent = `Rep ${workout.rep}/${workout.ex.reps} • ${workout.repTime}/${workout.ex.duration}s`;
 
-  workout.repTime++;
-  subtimerEl.textContent = `Rep ${workout.rep}/${workout.ex.reps} • ${workout.repTime}/${workout.ex.duration}s`;
-
-  if (workout.repTime === Math.floor(workout.ex.duration/2)) {
-    speakCommon("encourage", langModeSel.value);
-  }
-
-  if (workout.sessionSecs === 1800) speakText("Thirty minutes. Ping.","en");
-  if (workout.sessionSecs === 5400) speakText("One hour thirty. Ping.","en");
-  if (workout.sessionSecs === 7200) speakText("Two hours reached. Warning.","en");
-
-  if (workout.repTime >= workout.ex.duration) {
-    speakCommon("stop", langModeSel.value);
-    if (workout.rep < workout.ex.reps) {
-      workout.rep++; workout.inPause = !!workout.ex.pause; workout.pauseTime = 0;
-      return;
+    if (workout.repTime === Math.floor(workout.ex.duration/2)) {
+      if (canSpeak()) speakCommon("encourage", langModeSel.value);
     }
-    updateMetrics();
-    nextExercise();
+
+    if (workout.repTime >= workout.ex.duration) {
+      if (canSpeak()) speakCommon("stop", langModeSel.value);
+      if (workout.rep < workout.ex.reps) {
+        workout.rep++; workout.inPause = !!workout.ex.pause; workout.pauseTime = 0;
+      } else {
+        updateMetrics();
+        nextExercise();
+      }
+    }
   }
+
+  // Milestones (respect mute if you want them quiet during skip bursts)
+  const elapsed = getElapsedSecs();
+  if (elapsed === 1800 && canSpeak()) speakText("Thirty minutes. Ping.","en");
+  if (elapsed === 5400 && canSpeak()) speakText("One hour thirty. Ping.","en");
+  if (elapsed === 7200 && canSpeak()) speakText("Two hours reached. Warning.","en");
+
+  updateMetrics();
 }
 
-// ---- NEW: Skip current exercise (jump to next) ----
+// Minimal tick used during "resume" when we don't rebuild the full queue/exercise
+function backgroundTick() {
+  if (!workout.running) return;
+  renderElapsedIntoUI();
+  subtimerEl.textContent = "Running in background…";
+  updateMetrics();
+}
+
 function skipExercise(){
   if (!workout.running || !workout.ex) return;
-  // speak stop cue, update metrics (session time continues), then next
-  speakCommon("stop", langModeSel.value);
-  updateMetrics();
-  nextExercise();
-}
 
-function updateMetrics(){
-  const sport = workout.currentSport;
-  const cals = calcCalories(sport, profile?.weight||70, workout.sessionSecs);
-  const km = estimateDistance(sport, workout.sessionSecs);
-  let msg = `Calories ≈ ${cals}`;
-  if (km!=null) msg += ` • Distance ≈ ${km} km`;
-  caloriesEl.textContent = msg;
+  // Cancel any current or pending speech
+  try { speechSynthesis.cancel(); } catch {}
+  if (introTimer) { clearTimeout(introTimer); introTimer = null; }
+
+  // Extend mute window so rapid skipping stays silent
+  skipMuteUntil = Date.now() + SKIP_SILENCE_MS;
+
+  // No "stop/rest" voice for skipped items
+  updateMetrics();
+  nextExercise(); // scheduleIntroForCurrentExercise() accounts for mute window
 }
 
 async function stopWorkout(){
   if (!workout.running) return;
+  const realSecs = getElapsedSecs();
+
   workout.running = false;
   clearInterval(workout.tickId);
-  stopBtn.disabled = true; playBtn.disabled = false; skipBtn.disabled = true;
+  workout.tickId = null;
 
-  const fullDay = await saveSession(workout.sessionSecs);
+  // Clean speech timers
+  try { speechSynthesis.cancel(); } catch {}
+  if (introTimer) { clearTimeout(introTimer); introTimer = null; }
+
+  stopBtn.disabled = true;
+  playBtn.disabled = false;
+  skipBtn.disabled = true;
+
+  await clearRuntime();
+  await releaseScreenWakeLock();
+
+  const fullDay = await saveSession(realSecs);
   await updateWeeklyChip();
 
+  // Last vs Today
   const hist = await getThisWeekHistory();
+  hist.sort((a,b)=>Number(a.date)-Number(b.date));
   if (hist.length >= 2) {
     const prev = hist[hist.length-2];
-    const diff = workout.sessionSecs - prev.duration;
+    const diff = realSecs - Number(prev.duration || 0);
     const sign = diff >= 0 ? "+" : "–";
-    lastPerfEl.textContent = `Last: ${formatMMSS(prev.duration)} • Today: ${formatMMSS(workout.sessionSecs)} (${sign}${formatMMSS(Math.abs(diff))})`;
+    lastPerfEl.textContent = `Last: ${formatMMSS(Number(prev.duration||0))} • Today: ${formatMMSS(realSecs)} (${sign}${formatMMSS(Math.abs(diff))})`;
   } else {
-    lastPerfEl.textContent = `Today: ${formatMMSS(workout.sessionSecs)}`;
+    lastPerfEl.textContent = `Today: ${formatMMSS(realSecs)}`;
   }
 
   statusEl.textContent = fullDay ? "Full day logged. Hydrate and recover." : "Session logged (under 60 min).";
-  if (!(await canTrainToday())) { playBtn.disabled = true; statusEl.textContent = "Weekly limit reached. Rest soldier!"; }
+
+  // Freeze display at stop
+  workout.sessionSecs = realSecs;
+  renderElapsedIntoUI();
 }
 
-// ---------- HISTORY POPUP ----------
+/* ---------- HISTORY POPUP ---------- */
 async function openHistory(){
   const tx = db.transaction("history","readonly");
   const req = tx.objectStore("history").getAll();
   req.onsuccess = () => {
-    const items = (req.result||[]).sort((a,b)=>a.date-b.date);
+    const items = (req.result||[]).sort((a,b)=>Number(b.date)-Number(a.date)); // newest first
     historyList.innerHTML = items.length
       ? items.map(renderHistItem).join("")
       : `<div class="hist-item"><div>No sessions yet.</div></div>`;
     historyModal.classList.remove('hidden');
     historyModal.style.display = 'grid';
     historyModal.setAttribute('aria-hidden','false');
+    document.body.classList.add('modal-open');
   };
 }
 function renderHistItem(it){
-  const d = new Date(it.date);
+  const d = new Date(Number(it.date));
   const when = d.toLocaleString();
-  const dur = formatMMSS(it.duration||0);
+  const dur = formatMMSS(Number(it.duration||0));
   const badge = it.fullDay ? `<span class="badge green">Full day</span>` : `<span class="badge gray">Partial</span>`;
   return `
     <div class="hist-item">
@@ -378,9 +578,39 @@ function closeHistoryModal(){
   historyModal.classList.add('hidden');
   historyModal.style.display = 'none';
   historyModal.setAttribute('aria-hidden','true');
+  document.body.classList.remove('modal-open');
 }
 
-// ---------- TRAININGS FALLBACK (minimal) ----------
+/* ---------- VISIBILITY & WAKE LOCK ---------- */
+async function requestScreenWakeLock(){
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener?.('release', () => {});
+    }
+  } catch (e) {
+    // Not supported or denied; non-fatal
+  }
+}
+async function releaseScreenWakeLock(){
+  try { await wakeLock?.release(); } catch {}
+  wakeLock = null;
+}
+async function onVisibilityChange(){
+  if (document.hidden) {
+    try { speechSynthesis.cancel(); } catch {}
+  } else {
+    if (workout.running) {
+      renderElapsedIntoUI();
+      updateMetrics();
+      await requestScreenWakeLock();
+      // If we have an exercise and no pending intro, schedule one respecting mute window
+      if (!introTimer && workout.ex) scheduleIntroForCurrentExercise(langModeSel.value || "random");
+    }
+  }
+}
+
+/* ---------- TRAININGS FALLBACK (minimal) ---------- */
 const TRAININGS_FALLBACK = {
   "commonPhrases":{
     "start":{"en":["Start!","Go!"],"fr":["Commence!","C'est parti!"],"es":["¡Empieza!","¡Vamos!"],"zh":["开始!","出发!"],"ja":["開始!","行こう!"],"ru":["Начинай!","Вперед!"]},
