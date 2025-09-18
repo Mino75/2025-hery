@@ -65,8 +65,10 @@ input,select{
 .foot{padding:12px 0 24px; text-align:center; color:var(--muted); font-size:12px}
 
 /* Modal */
-.modal{position:fixed; inset:0; display:grid; place-items:center; z-index:50; pointer-events:auto}
-.modal.hidden{display:none !important; pointer-events:none !important}
+.modal{ position:fixed; inset:0; display:grid; place-items:center; z-index:50; }
+.modal-card{ position:relative; z-index:51; }   
+.backdrop{ position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.5); backdrop-filter:blur(1px); }
+
 .modal-card{
   width:min(92vw,680px); max-height:80vh; overflow:auto;
   background:var(--card); border:1px solid var(--stroke); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.45)
