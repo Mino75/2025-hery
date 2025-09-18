@@ -87,6 +87,16 @@ input,select{
 .badge.green{background:#0e1a12; color:#22c55e; border-color:#16331f}
 .badge.gray{background:#0f172a; color:#cbd5e1}
 
+.hist-day-sep {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--stroke);
+  padding-bottom: 2px;
+}
+
+
 @media (min-width:720px){
   .timer{font-size:72px}
   .fab{width:72px; height:72px}
