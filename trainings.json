@@ -101,7 +101,7 @@
 
   },
   "sports": {
-    "boxing": {
+    "boxing 🥊 ": {
       "exercises": [
   { "name": "Jab–Cross Combo", "duration": 90, "reps": 4, "pause": 20,
     "explanation": {
@@ -1892,7 +1892,63 @@
             "zh":"左右扭转上身，脚跟微提。", "ja":"体幹を左右にひねる。", "ru":"Повороты корпуса из стороны в сторону."}}
       ]
     },
-    "bike": {
+
+"swimming_pool": {
+    "exercises": [
+      {
+        "name": "Full swim session",
+        "duration": 4500,
+        "reps": 1,
+        "pause": 0,
+        "explanation": {
+          "en": "Complete swimming session including warm-up, drills, main set, cool-down, changing and shower.",
+          "fr": "Séance complète de natation incluant échauffement, éducatifs, série principale, retour au calme, vestiaire et douche.",
+          "es": "Sesión completa de natación con calentamiento, técnica, serie principal, vuelta a la calma, vestuario y ducha.",
+          "zh": "完整的游泳训练，包括热身、技术练习、主训练、放松以及更衣和淋浴。",
+          "ja": "ウォームアップ、ドリル、メインセット、クールダウンに加え、更衣とシャワーを含む全体スイムセッション。",
+          "ru": "Полная сессия плавания: разминка, упражнения, основная часть, заминка, переодевание и душ."
+        }
+      }
+    ]
+  },
+  "bike": {
+    "exercises": [
+      {
+        "name": "Outdoor cycling — full session",
+        "duration": 7200,
+        "reps": 1,
+        "pause": 0,
+        "explanation": {
+          "en": "Continuous outdoor ride including gear prep, endurance ride, and post-ride change/shower.",
+          "fr": "Sortie vélo continue incluant préparation du matériel, sortie d’endurance, et vestiaire/douche après.",
+          "es": "Salida en bici continua incluyendo preparación, rodaje de resistencia y cambio/ducha después.",
+          "zh": "完整的户外骑行，包括准备、耐力骑行和骑行后更衣淋浴。",
+          "ja": "ギア準備、持久ライド、終了後の着替え・シャワーを含む屋外ライド。",
+          "ru": "Непрерывная уличная поездка: подготовка, выносливость, переодевание и душ после."
+        }
+      }
+    ]
+  },
+  "walk": {
+    "exercises": [
+      {
+        "name": "Outdoor walk — full session",
+        "duration": 2700,
+        "reps": 1,
+        "pause": 0,
+        "explanation": {
+          "en": "Casual outdoor walk at conversational pace including prep and change.",
+          "fr": "Marche extérieure détendue à allure confortable incluant préparation et changement.",
+          "es": "Caminata exterior a ritmo conversacional incluyendo preparación y cambio.",
+          "zh": "轻松的户外步行，聊天速度，包括准备和更换衣物。",
+          "ja": "会話できるペースでの屋外ウォーキング。準備と着替えを含む。",
+          "ru": "Лёгкая прогулка на улице в разговорном темпе, включая подготовку и переодевание."
+        }
+      }
+    ]
+  },
+   
+    " 🚴 indoor bike": {
       "exercises": [
         { "name":"Endurance ride", "duration":1800, "reps":1, "pause":0,
           "explanation":{"en":"Steady cadence ~90 RPM, moderate resistance.",
@@ -1910,5 +1966,6 @@
     }
   }
 }
+
 
 
