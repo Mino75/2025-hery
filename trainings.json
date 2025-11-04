@@ -535,7 +535,7 @@
 ]
 
     },
-    "judo": {
+    "🥋 judo": {
       "exercises": [
         { "name":"Uchi-komi (entries)", "duration":180, "reps":5, "pause":20,
           "explanation":{"en":"Repeat entries: kuzushi then tsukuri. Sleeve–lapel grips.",
@@ -583,7 +583,7 @@
             "zh":"自由移动：入身、步法、转体。", "ja":"自由稽古の影練習。入り・足さばき・体捌き。", "ru":"Свободная тень-работа: входы, шаги, повороты."}}
       ]
     },
-    "wushu": {
+    "🐲 wushu": {
       "exercises": [
         { "name":"🐅 Tiger Stance 虎步 (Hǔ Bù)", "duration":180, "reps":1, "pause":30,
     "explanation":{
@@ -1852,7 +1852,7 @@
 
       ]
     },
-    "pushups": {
+    "💪 pushups": {
       "exercises": [
         { "name":"Standard push-ups", "duration":60, "reps":4, "pause":20,
           "explanation":{"en":"Body straight, chest close to floor, lockout.",
@@ -1872,7 +1872,7 @@
             "zh":"爆发推起空中击掌，落地缓冲。", "ja":"爆発的に押して空中で拍手。静かに着地。", "ru":"Взрывной толчок и хлопок в воздухе."}}
       ]
     },
-    "abs": {
+    "💪 abs": {
       "exercises": [
         { "name":"Plank hold", "duration":90, "reps":3, "pause":20,
           "explanation":{"en":"Elbows under shoulders, core tight, back flat.",
@@ -1893,7 +1893,7 @@
       ]
     },
 
-"swimming_pool": {
+"🏊🏽 swimming_pool": {
     "exercises": [
       {
         "name": "Full swim session",
@@ -1911,7 +1911,7 @@
       }
     ]
   },
-  "bike": {
+  "🚵🏻 bike": {
     "exercises": [
       {
         "name": "Outdoor cycling — full session",
@@ -1929,7 +1929,7 @@
       }
     ]
   },
-  "walk": {
+  "🚶🏽 walk": {
     "exercises": [
       {
         "name": "Outdoor walk — full session",
@@ -1966,6 +1966,7 @@
     }
   }
 }
+
 
 
 
