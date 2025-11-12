@@ -1852,26 +1852,66 @@
 
       ]
     },
-    "💪 pushups": {
-      "exercises": [
-        { "name":"Standard push-ups", "duration":60, "reps":4, "pause":20,
-          "explanation":{"en":"Body straight, chest close to floor, lockout.",
-            "fr":"Corps gainé, poitrine proche du sol, extension.", "es":"Cuerpo alineado, extensión completa.",
-            "zh":"身体成一直线，完全伸直。", "ja":"体を一直線に、肘を伸ばす。", "ru":"Корпус прямой, полная фиксация."}},
-        { "name":"Diamond push-ups", "duration":50, "reps":4, "pause":20,
-          "explanation":{"en":"Hands diamond under chest. Elbows in.",
-            "fr":"Mains en losange, coudes rentrés.", "es":"Manos en diamante, codos pegados.",
-            "zh":"菱形手位，肘内收。", "ja":"ダイヤモンド型、肘を内側へ。", "ru":"Ладони ромбом, локти внутрь."}},
-        { "name":"Wide-grip push-ups", "duration":50, "reps":4, "pause":20,
-          "explanation":{"en":"Hands wider than shoulders, control depth.",
-            "fr":"Mains plus larges que les épaules, contrôle profondeur.", "es":"Manos más anchas, controla la profundidad.",
-            "zh":"手比肩更宽，控制下放深度。", "ja":"肩幅より広く、深さをコントロール。", "ru":"Широкий хват, глубина под контролем."}},
-        { "name":"Explosive clap push-ups", "duration":40, "reps":4, "pause":25,
-          "explanation":{"en":"Power push then clap mid-air. Land softly.",
-            "fr":"Poussée explosive puis clap. Réception douce.", "es":"Empuje explosivo y palmada en el aire.",
-            "zh":"爆发推起空中击掌，落地缓冲。", "ja":"爆発的に押して空中で拍手。静かに着地。", "ru":"Взрывной толчок и хлопок в воздухе."}}
-      ]
+"💪 pushups": {
+  "exercises": [
+    { 
+      "name": "Beginner: Standard Push-ups (25 reps)", 
+      "duration": 60, 
+      "reps": 4, 
+      "pause": 30,
+      "explanation": {
+        "en": "Do 25 push-ups per set. Full plank, chest to floor. If too hard: reduce to 15-20 reps and add 10 sec to pause time.",
+        "fr": "Faire 25 pompes par série. Planche complète, poitrine au sol. Si trop dur : réduire à 15-20 et ajouter 10 sec de pause.",
+        "es": "Hacer 25 flexiones por serie. Plancha completa, pecho al suelo. Si es muy duro: reducir a 15-20 y añadir 10 seg de pausa.",
+        "zh": "每组25个俯卧撑。标准姿势，胸触地。太难的话：减至15-20个，休息增加10秒。",
+        "ja": "各セット25回。フルプランク、胸を床へ。きつい場合：15-20回に減らし、休憩を10秒追加。",
+        "ru": "25 отжиманий за подход. Полная планка, грудь к полу. Если тяжело: снизить до 15-20 и добавить 10 сек паузы."
+      }
     },
+    { 
+      "name": "Intermediate: Wide-Diamond Combo (30 total)", 
+      "duration": 80, 
+      "reps": 4, 
+      "pause": 25,
+      "explanation": {
+        "en": "15 wide-grip + 15 diamond = 30 total per set, no rest between. Can't finish? Do 10+10 and add 15 sec pause.",
+        "fr": "15 prise large + 15 diamant = 30 total par série, sans pause. Trop dur ? Faire 10+10 et ajouter 15 sec de pause.",
+        "es": "15 agarre ancho + 15 diamante = 30 total por serie, sin pausa. ¿No puedes? Haz 10+10 y añade 15 seg de pausa.",
+        "zh": "15个宽距+15个菱形=每组30个，中间不休息。做不完？改为10+10，休息增加15秒。",
+        "ja": "ワイド15回+ダイヤモンド15回=合計30回、休憩なし。無理なら10+10にして休憩15秒追加。",
+        "ru": "15 широким + 15 ромбом = 30 за подход без паузы. Не можешь? Делай 10+10 и добавь 15 сек паузы."
+      }
+    },
+    { 
+      "name": "Heavy: Marine Corps Test (50+ reps)", 
+      "duration": 120, 
+      "reps": 3, 
+      "pause": 30,
+      "explanation": {
+        "en": "Go for max in 2 min! Target: 50+ minimum, 70+ good, 100+ elite. If under 50: do sets of 25 with 45 sec pause instead.",
+        "fr": "Max en 2 min ! Objectif : 50+ minimum, 70+ bien, 100+ élite. Si moins de 50 : faire séries de 25 avec 45 sec de pause.",
+        "es": "¡Máximo en 2 min! Meta: 50+ mínimo, 70+ bueno, 100+ élite. Si menos de 50: series de 25 con 45 seg de pausa.",
+        "zh": "2分钟内做最多！目标：至少50个，70个良好，100个精英。少于50个：改为每组25个，休息45秒。",
+        "ja": "2分間で最大限！目標：50回以上最低、70回以上良好、100回以上エリート。50未満なら：25回セットで45秒休憩。",
+        "ru": "Максимум за 2 мин! Цель: 50+ минимум, 70+ хорошо, 100+ элита. Если меньше 50: подходы по 25 с паузой 45 сек."
+      }
+    },
+    { 
+      "name": "Impossible: Navy SEAL Standard (75+ reps)", 
+      "duration": 120, 
+      "reps": 3, 
+      "pause": 20,
+      "explanation": {
+        "en": "2-min SEAL test. Do 75+ per set minimum! BUD/S goal: 150+ total. Can't hit 75? Drop to Marine level with 60 sec pause.",
+        "fr": "Test SEAL 2 min. Faire 75+ par série minimum ! Objectif BUD/S : 150+ total. Pas 75 ? Retour niveau Marine avec 60 sec pause.",
+        "es": "Test SEAL 2 min. ¡75+ por serie mínimo! Meta BUD/S: 150+ total. ¿No llegas a 75? Vuelve a nivel Marine con 60 seg pausa.",
+        "zh": "2分钟海豹测试。每组至少75个！BUD/S目标：总计150+。做不到75个？降至海军陆战队级别，休息60秒。",
+        "ja": "2分間SEALテスト。各セット75回以上必須！BUD/S目標：合計150回以上。75回無理なら海兵隊レベルで60秒休憩。",
+        "ru": "Тест спецназа 2 мин. Минимум 75 за подход! Цель BUD/S: 150+ всего. Не можешь 75? Вернись на уровень морпехов с паузой 60 сек."
+      }
+    }
+  ]
+},
     "💪 abs": {
       "exercises": [
         { "name":"Plank hold", "duration":90, "reps":3, "pause":20,
@@ -1966,6 +2006,7 @@
     }
   }
 }
+
 
 
 
