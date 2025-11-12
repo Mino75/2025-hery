@@ -835,7 +835,62 @@
             "zh":"左右扭转上身，脚跟微提。", "ja":"体幹を左右にひねる。", "ru":"Повороты корпуса из стороны в сторону."}}
       ]
     },
+"🏋️ weight_lift": {
+  "exercises": [
+    {
+      "name": "Full weight lifting session",
+      "duration": 3600,
+      "reps": 1,
+      "pause": 0,
+      "explanation": {
+        "en": "Complete weight lifting session including warm-up, multiple sets with various exercises, rest periods between sets, and cool-down stretching.",
+        "fr": "Séance complète de musculation incluant échauffement, plusieurs séries avec divers exercices, périodes de repos entre les séries, et étirements de récupération.",
+        "es": "Sesión completa de levantamiento de pesas con calentamiento, múltiples series con varios ejercicios, períodos de descanso entre series, y estiramientos finales.",
+        "zh": "完整的举重训练，包括热身、多组各种练习、组间休息以及放松拉伸。",
+        "ja": "ウォームアップ、複数セットの様々なエクササイズ、セット間の休憩、クールダウンストレッチを含む完全なウェイトリフティングセッション。",
+        "ru": "Полная тренировка с отягощениями: разминка, несколько подходов различных упражнений, отдых между подходами и заключительная растяжка."
+      }
+    }
+  ]
+},
 
+"💃 dance_exercise": {
+  "exercises": [
+    {
+      "name": "Full dance exercise session",
+      "duration": 2700,
+      "reps": 1,
+      "pause": 0,
+      "explanation": {
+        "en": "Complete dance workout session including warm-up, cardio dance routines, technique practice, choreography work, and cool-down stretching.",
+        "fr": "Séance complète de danse fitness incluant échauffement, routines cardio dansées, pratique technique, travail chorégraphique, et étirements de récupération.",
+        "es": "Sesión completa de ejercicio de baile con calentamiento, rutinas de baile cardio, práctica técnica, trabajo coreográfico, y estiramientos finales.",
+        "zh": "完整的舞蹈锻炼课程，包括热身、有氧舞蹈动作、技术练习、编舞训练以及放松拉伸。",
+        "ja": "ウォームアップ、有酸素ダンスルーティン、テクニック練習、振り付け練習、クールダウンストレッチを含む完全なダンスエクササイズセッション。",
+        "ru": "Полная танцевальная тренировка: разминка, кардио танцевальные комбинации, отработка техники, хореография и заключительная растяжка."
+      }
+    }
+  ]
+},
+
+"⛹️ basketball": {
+  "exercises": [
+    {
+      "name": "Full basketball session",
+      "duration": 5400,
+      "reps": 1,
+      "pause": 0,
+      "explanation": {
+        "en": "Complete basketball session including warm-up, skill drills, shooting practice, scrimmage or game play, and cool-down.",
+        "fr": "Séance complète de basketball incluant échauffement, exercices techniques, pratique des tirs, match d'entraînement ou jeu, et récupération.",
+        "es": "Sesión completa de baloncesto con calentamiento, ejercicios de habilidad, práctica de tiros, juego de práctica o partido, y enfriamiento.",
+        "zh": "完整的篮球训练，包括热身、技术训练、投篮练习、对抗赛或比赛以及放松。",
+        "ja": "ウォームアップ、スキルドリル、シュート練習、スクリメージまたはゲーム、クールダウンを含む完全なバスケットボールセッション。",
+        "ru": "Полная баскетбольная тренировка: разминка, отработка навыков, броски, тренировочная игра и заминка."
+      }
+    }
+  ]
+},
 "🏊🏽 swimming_pool": {
     "exercises": [
       {
@@ -909,6 +964,7 @@
     }
   }
 }
+
 
 
 
