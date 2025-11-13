@@ -323,7 +323,7 @@ function saveSession(seconds){
     const fullDay = seconds >= MIN_FULL_DAY;
     const now = Date.now();
     const tx = db.transaction("history","readwrite");
-    tx.objectStore("history").put({ id: now, date: now, duration: seconds, fullDay });
+    tx.objectStore("history").put({ id: now, date: now, duration: seconds, fullDay, sport: workout.currentSport });
     tx.oncomplete = () => resolve(fullDay);
   });
 }
@@ -614,12 +614,13 @@ function renderHistItem(it){
   const d = new Date(Number(it.date));
   const when = d.toLocaleString();
   const dur = formatMMSS(Number(it.duration||0));
-  const badge = it.fullDay ? `<span class="badge green">Full day</span>` : `<span class="badge gray">Partial</span>`;
+  const badge = it.fullDay ? `<span class="badge green">🥇Full day</span>` : `<span class="badge gray">Partial</span>`;
+ const sportInitial = it.sport ? ([...it.sport][0] || '').toUpperCase() : ''; // take the first emoji
   return `
     <div class="hist-item">
       <div class="hist-left">
         <strong>${when}</strong>
-        <span>Duration: ${dur}</span>
+        <span>Duration: ${dur} ${sportInitial ? ` • ${sportInitial}` : ''}</span>
       </div>
       ${badge}
     </div>
@@ -689,3 +690,4 @@ const TRAININGS_FALLBACK = {
     ]}
   }
 };
+
