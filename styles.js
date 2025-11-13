@@ -105,3 +105,9 @@ input,select{
 const styleTag = document.createElement("style");
 styleTag.textContent = css;
 document.head.appendChild(styleTag);
+
+// Reveal content after styles are loaded
+document.body.style.visibility = 'visible';
+document.body.style.opacity = '1';
+document.body.style.transition = 'opacity 0.2s ease-in';
+
