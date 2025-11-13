@@ -5,6 +5,10 @@
 /* ---------- CONFIG ---------- */
 const MIN_FULL_DAY = 60 * 60;     // Full-day threshold (seconds)
 const MAX_DAYS_PER_WEEK = 5;
+
+// NEW VARIABLE: Set to false to allow unlimited training (no weekly limit)
+const ENFORCE_WEEKLY_LIMIT = false;  // Set to true to enforce 5-day limit, false to allow unlimited
+
 const VOICE_LANG = { en:"en-US", fr:"fr-FR", es:"es-ES", zh:"zh-CN", ja:"ja-JP", ru:"ru-RU" };
 
 /* Speech/skip behavior */
@@ -293,10 +297,24 @@ async function getThisWeekHistory() {
 async function updateWeeklyChip() {
   const hist = await getThisWeekHistory();
   const fullDays = hist.filter(h => h.fullDay).length;
-  weeklyChipEl.textContent = `${fullDays} / ${MAX_DAYS_PER_WEEK} days`;
-  playBtn.disabled = fullDays >= MAX_DAYS_PER_WEEK || workout.running;
+  
+  // Display chip based on limit enforcement
+  if (ENFORCE_WEEKLY_LIMIT) {
+    weeklyChipEl.textContent = `${fullDays} / ${MAX_DAYS_PER_WEEK} days`;
+    // Only disable play button if limit is enforced AND reached
+    playBtn.disabled = fullDays >= MAX_DAYS_PER_WEEK || workout.running;
+  } else {
+    // When not enforcing, just show the count without limit
+    weeklyChipEl.textContent = `${fullDays} days this week`;
+    // Only disable play button if workout is running
+    playBtn.disabled = workout.running;
+  }
 }
 async function canTrainToday() {
+  // If not enforcing limit, always allow training
+  if (!ENFORCE_WEEKLY_LIMIT) return true;
+  
+  // Otherwise check against limit
   const hist = await getThisWeekHistory();
   return hist.filter(h => h.fullDay).length < MAX_DAYS_PER_WEEK;
 }
@@ -380,7 +398,13 @@ function scheduleIntroForCurrentExercise(pref){
 /* ---------- WORKOUT ---------- */
 async function startWorkout(){
   if (!trainings || !trainings.sports) { statusEl.textContent="Trainings not loaded."; return; }
-  if (!(await canTrainToday())) { statusEl.textContent="Weekly limit reached. Rest soldier!"; playBtn.disabled=true; return; }
+  
+  // Check training limit only if enforcing
+  if (!(await canTrainToday())) { 
+    statusEl.textContent="Weekly limit reached. Rest soldier!"; 
+    playBtn.disabled=true; 
+    return; 
+  }
 
   workout.currentSport = sportSel.value || Object.keys(trainings.sports)[0];
 
@@ -537,7 +561,13 @@ async function stopWorkout(){
     lastPerfEl.textContent = `Today: ${formatMMSS(realSecs)}`;
   }
 
-  statusEl.textContent = fullDay ? "Full day logged. Hydrate and recover." : "Session logged (under 60 min).";
+  // Update status message based on whether limits are enforced
+  if (ENFORCE_WEEKLY_LIMIT) {
+    statusEl.textContent = fullDay ? "Full day logged. Hydrate and recover." : "Session logged (under 60 min).";
+  } else {
+    // When not enforcing limits, just log the session without rest reminders
+    statusEl.textContent = fullDay ? "Full day logged!" : "Session logged!";
+  }
 
   // Freeze display at stop
   workout.sessionSecs = realSecs;
