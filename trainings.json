@@ -946,7 +946,7 @@
     ]
   },
    
-    " 🚴 indoor bike": {
+    "🚴 indoor bike": {
       "exercises": [
         { "name":"Endurance ride", "duration":1800, "reps":1, "pause":0,
           "explanation":{"en":"Steady cadence ~90 RPM, moderate resistance.",
@@ -964,6 +964,7 @@
     }
   }
 }
+
 
 
 
