@@ -103,435 +103,75 @@
   "sports": {
     "boxing 🥊 ": {
       "exercises": [
-  { "name": "Jab–Cross Combo", "duration": 90, "reps": 4, "pause": 20,
-    "explanation": {
-      "en": "Left jab then right cross. Guard high, pivot rear foot.",
-      "fr": "Direct gauche puis croisé droit. Garde haute, pivote le pied arrière.",
-      "es": "Jab izq seguido de cruzado der. Guarda alta, pivota pie trasero.",
-      "zh": "左刺拳接右直拳，保持防守，后脚转体。",
-      "ja": "左ジャブ→右クロス。ガード高く、後足でピボット。",
-      "ru": "Левый джеб – правый кросс. Защита высоко, разворот задней стопы."
-    } },
-
-  { "name": "Jab–Cross–Hook", "duration": 90, "reps": 4, "pause": 20,
-    "explanation": {
-      "en": "Jab, cross, then left hook. Rotate hips, chin tucked.",
-      "fr": "Direct gauche, croisé droit puis crochet gauche. Hanches, menton rentré.",
-      "es": "Jab, cruzado y gancho izq. Gira caderas, barbilla baja.",
-      "zh": "刺拳、直拳，再接左勾拳。转髋，下巴内收。",
-      "ja": "ジャブ→クロス→左フック。腰を回し、顎を引く。",
-      "ru": "Джеб, кросс, левый хук. Вращай бедра, подбородок вниз."
-    } },
-
-  { "name": "Hook–Uppercut Drill", "duration": 90, "reps": 4, "pause": 20,
-    "explanation": {
-      "en": "Left hook then right uppercut. Rotate core, keep guard.",
-      "fr": "Crochet gauche puis uppercut droit. Tourne le tronc, garde en place.",
-      "es": "Gancho izq y uppercut der. Rota el core, guarda arriba.",
-      "zh": "左勾拳接右上勾拳，转动核心，保持防守。",
-      "ja": "左フック→右アッパー。体幹を回し、ガード維持。",
-      "ru": "Левый хук – правый апперкот. Поворот корпуса, держи защиту."
-    } },
-
-  { "name": "Uppercut–Cross", "duration": 80, "reps": 4, "pause": 20,
-    "explanation": {
-      "en": "Right uppercut then left cross. Drive from legs, rotate shoulders.",
-      "fr": "Uppercut droit puis direct gauche. Impulsion des jambes, rotation des épaules.",
-      "es": "Uppercut der y luego cruzado izq. Empuje de piernas, hombros giran.",
-      "zh": "右上勾后接左直拳。腿发力，带动肩部。",
-      "ja": "右アッパー→左クロス。脚から力を伝え肩を回す。",
-      "ru": "Правый апперкот – левый кросс. Сила от ног, вращай плечи."
-    } },
-
-  { "name": "Double Jab–Cross", "duration": 80, "reps": 4, "pause": 20,
-    "explanation": {
-      "en": "Double left jab to set range, finish with right cross.",
-      "fr": "Double jab pour mesurer, termine par croisé droit.",
-      "es": "Doble jab para medir, cierra con cruzado derecho.",
-      "zh": "双刺拳找距离，接右直拳结束。",
-      "ja": "ダブルジャブで距離作り→右クロスで締める。",
-      "ru": "Двойной джеб для дистанции, затем правый кросс."
-    } },
-
-  { "name": "Cross–Hook–Cross", "duration": 90, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Right cross, left hook, right cross. Snap punches, reset guard.",
-      "fr": "Croisé droit, crochet gauche, croisé droit. Claquant, garde revient.",
-      "es": "Cruzado der, gancho izq, cruzado der. Golpes secos, guarda vuelve.",
-      "zh": "右直—左勾—右直。干脆收回成防守。",
-      "ja": "右クロス→左フック→右クロス。切れよく、ガード復帰。",
-      "ru": "Правый кросс, левый хук, правый кросс. Удары резкие, верни защиту."
-    } },
-
-  { "name": "Jab–Body Cross", "duration": 80, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Head jab, step in and cross to body. Change levels.",
-      "fr": "Jab tête, entre et croisé au corps. Change de niveau.",
-      "es": "Jab a la cabeza, entra y cruzado al cuerpo. Cambia niveles.",
-      "zh": "头部刺拳，前进后直击身体。上下变换。",
-      "ja": "頭へジャブ、踏み込み体へのクロス。レベル変化。",
-      "ru": "Джеб в голову, шаг и кросс по корпусу. Меняй уровни."
-    } },
-
-  { "name": "1–2–3–2–1 Ladder", "duration": 100, "reps": 3, "pause": 30,
-    "explanation": {
-      "en": "Jab–cross–hook–cross–jab. Flow smoothly, keep balance.",
-      "fr": "Direct–croisé–crochet–croisé–direct. Enchaîne fluide, reste équilibré.",
-      "es": "Jab–cruzado–gancho–cruzado–jab. Fluidez y equilibrio.",
-      "zh": "刺–直–勾–直–刺，连贯发力，重心稳定。",
-      "ja": "ジャブ→クロス→フック→クロス→ジャブ。滑らかに、バランス維持。",
-      "ru": "Джеб–кросс–хук–кросс–джеб. Плавно, держи баланс."
-    } },
-
-  { "name": "Slip Outside & Counter Cross", "duration": 80, "reps": 5, "pause": 20,
-    "explanation": {
-      "en": "Slip outside opponent’s jab and fire a right cross.",
-      "fr": "Esquive extérieure sur le jab, contre en croisé droit.",
-      "es": "Esquiva afuera del jab y contra con cruzado derecho.",
-      "zh": "向外闪躲对手刺拳，随即右直反击。",
-      "ja": "相手のジャブを外へスリップし右クロスでカウンター。",
-      "ru": "Слип наружу от джеба и контратака правым кроссом."
-    } },
-
-  { "name": "Slip Inside & Counter Hook", "duration": 80, "reps": 5, "pause": 20,
-    "explanation": {
-      "en": "Slip inside and answer with a left hook to head.",
-      "fr": "Esquive intérieure puis crochet gauche à la tête.",
-      "es": "Esquiva por dentro y responde con gancho izq a la cabeza.",
-      "zh": "向内闪躲后回击左勾拳打头。",
-      "ja": "内側へスリップ→左フックでカウンター。",
-      "ru": "Слип внутрь и ответ левым хуком в голову."
-    } },
-
-  { "name": "Parry & Jab", "duration": 70, "reps": 5, "pause": 20,
-    "explanation": {
-      "en": "Parry incoming jab with rear hand, jab back instantly.",
-      "fr": "Pare le jab de la main arrière, réplique direct gauche.",
-      "es": "Paréa el jab con mano trasera y devuelve con jab.",
-      "zh": "用后手格挡对手刺拳，立刻反刺拳。",
-      "ja": "後ろ手でジャブをパリーし即座にジャブで返す。",
-      "ru": "Отбей джеб задней рукой и сразу ответь своим джебом."
-    } },
-
-  { "name": "Shoulder Roll & Counter Right", "duration": 70, "reps": 5, "pause": 25,
-    "explanation": {
-      "en": "Roll shoulder to deflect cross, counter with right hand.",
-      "fr": "Roulement d’épaule pour dévier le croisé, contre main droite.",
-      "es": "Shoulder roll para desviar el cruzado y contra con derecha.",
-      "zh": "肩部滚动化解直拳，右手反击。",
-      "ja": "ショルダーロールでクロスをいなし右でカウンター。",
-      "ru": "Шолдер-ролл против кросса и контратака правой."
-    } },
-
-  { "name": "Duck & Body Hook", "duration": 70, "reps": 5, "pause": 25,
-    "explanation": {
-      "en": "Duck under hook and rip a left hook to the body.",
-      "fr": "Passe sous le crochet et crochet gauche au corps.",
-      "es": "Agáchate bajo el gancho y mete gancho izq al cuerpo.",
-      "zh": "低身躲勾拳，左勾击打身体。",
-      "ja": "相手のフックをくぐり体へ左フック。",
-      "ru": "Нырок под хук и левый хук по корпусу."
-    } },
-
-  { "name": "Step Back Counter Cross", "duration": 80, "reps": 5, "pause": 25,
-    "explanation": {
-      "en": "Pull back to make miss, step in with a hard cross.",
-      "fr": "Tire en arrière pour faire rater, rentre croisé puissant.",
-      "es": "Retrocede para que falle y entra con cruzado fuerte.",
-      "zh": "后拉诱使落空，前踏重直反击。",
-      "ja": "引いて空振りさせ、踏み込み強いクロス。",
-      "ru": "Шаг назад — соперник промах — вход правым кроссом."
-    } },
-
-  { "name": "Footwork Circles", "duration": 120, "reps": 3, "pause": 30,
-    "explanation": {
-      "en": "Circle left and right, vary speed. Stay on balls of feet.",
-      "fr": "Tourne à gauche/droite, varie la vitesse. Sur la pointe des pieds.",
-      "es": "Gira a ambos lados y varía ritmo. En metatarso.",
-      "zh": "左右绕圈，变速移动。脚尖发力。",
-      "ja": "左右に回り込み、速度変化。前足部で軽く。",
-      "ru": "Движение по кругу в обе стороны, меняй темп. На носках."
-    } },
-
-  { "name": "Pivot & Angle", "duration": 100, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Throw 1–2, pivot 90° to create angle, re-engage.",
-      "fr": "Envoie 1–2, pivote à 90° pour l’angle, réengage.",
-      "es": "Lanza 1–2, pivota 90° para ángulo y reingresa.",
-      "zh": "打1–2后转体90度造角，再进入。",
-      "ja": "1–2後に90°ピボットで角度作り、再アタック。",
-      "ru": "Комбо 1–2, поворот на 90° для угла, снова атака."
-    } },
-
-  { "name": "In–Out Entries with Feints", "duration": 90, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Feint, step in with jab, step out safely. Repeat fluidly.",
-      "fr": "Feinte, entre au jab, ressors en sécurité. Mouvement fluide.",
-      "es": "Finta, entra con jab y sal seguro. Repite fluido.",
-      "zh": "虚晃后刺拳进入，再安全退出。流畅重复。",
-      "ja": "フェイント→ジャブで入り→安全に離脱。滑らかに反復。",
-      "ru": "Финт, вход джебом и безопасный выход. Плавно повторяй."
-    } },
-
-  { "name": "Lateral Shuffle + Jab", "duration": 90, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Side-shuffle two steps, plant and jab. Keep stance.",
-      "fr": "Deux pas latéraux, pose et jab. Garde la posture.",
-      "es": "Dos pasos laterales, planta y jab. Mantén la guardia.",
-      "zh": "侧向小步两步，定点刺拳。姿态稳定。",
-      "ja": "横へ二歩シャッフル→止めてジャブ。構え維持。",
-      "ru": "Два боковых шага, стоп и джеб. Сохраняй стойку."
-    } },
-
-  { "name": "Cut the Ring Drill", "duration": 100, "reps": 4, "pause": 30,
-    "explanation": {
-      "en": "Angle off to trap opponent near ropes; step diagonally.",
-      "fr": "Coupe le ring pour coincer près des cordes; pas en diagonale.",
-      "es": "Corta el ring y acorrala en cuerdas; pasos diagonales.",
-      "zh": "切角拦截，把对手逼向绳边；斜向步伐。",
-      "ja": "リングカットでロープへ追い込む。斜めステップ。",
-      "ru": "Перекрой ринг и прижми к канатам; диагональные шаги."
-    } },
-
-  { "name": "Speed Bag Rhythm", "duration": 75, "reps": 4, "pause": 20,
-    "explanation": {
-      "en": "Light, fast rhythm on speed bag. Elbows parallel.",
-      "fr": "Rythme rapide et léger sur la poire. Coudes parallèles.",
-      "es": "Ritmo rápido y ligero en la pera. Codos paralelos.",
-      "zh": "轻快击打速度球，肘部平行。",
-      "ja": "スピードバッグを素早いリズムで。肘は平行。",
-      "ru": "Быстрый легкий ритм на груше. Локти параллельно."
-    } },
-
-  { "name": "Double-End Bag Timing", "duration": 90, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Aim for clean rhythm: jab, slip, jab. Watch rebound.",
-      "fr": "Rythme propre : jab, esquive, jab. Lis le rebond.",
-      "es": "Ritmo limpio: jab, esquiva, jab. Lee el rebote.",
-      "zh": "节奏：刺拳、闪躲、再刺拳。观察回弹。",
-      "ja": "リズム良く：ジャブ→スリップ→ジャブ。跳ね返りを見る。",
-      "ru": "Ритм: джеб, слип, джеб. Читай отскок груши."
-    } },
-
-  { "name": "Fast Punch Burnout", "duration": 40, "reps": 6, "pause": 30,
-    "explanation": {
-      "en": "Non-stop straight punches at max speed for 40 seconds.",
-      "fr": "Directs sans arrêt à vitesse max pendant 40 secondes.",
-      "es": "Directos sin parar a máxima velocidad por 40 s.",
-      "zh": "40秒不停歇高速直拳。",
-      "ja": "40秒間、全力でストレート連打。",
-      "ru": "40 сек максимальные прямые без остановки."
-    } },
-
-  { "name": "Hand-Speed Pyramid", "duration": 60, "reps": 5, "pause": 30,
-    "explanation": {
-      "en": "10 fast jabs, 10 crosses, 10 1–2s; then 8–8–8, etc.",
-      "fr": "10 jabs, 10 croisés, 10 1–2; puis 8–8–8, etc.",
-      "es": "10 jabs, 10 cruzados, 10 1–2; luego 8–8–8.",
-      "zh": "10刺、10直、10次1–2；再8–8–8。",
-      "ja": "ジャブ10、クロス10、1–2を10、その後8–8–8。",
-      "ru": "10 джебов, 10 кроссов, 10 1–2; затем 8–8–8."
-    } },
-
-  { "name": "Power Shots Heavy Bag", "duration": 30, "reps": 6, "pause": 40,
-    "explanation": {
-      "en": "Explosive power punches on heavy bag. Focus hip rotation.",
-      "fr": "Coups explosifs au sac lourd. Accent rotation des hanches.",
-      "es": "Golpes potentes al saco pesado. Enfoca rotación de cadera.",
-      "zh": "重沙袋爆发力击打，强调髋部转动。",
-      "ja": "サンドバッグで爆発的な強打。腰の回転重視。",
-      "ru": "Взрывные удары по тяжёлому мешку. Вращай бёдра."
-    } },
-
-  { "name": "Hook Power Sets", "duration": 35, "reps": 6, "pause": 40,
-    "explanation": {
-      "en": "10 hard left hooks, 10 hard right hooks. Reset and repeat.",
-      "fr": "10 crochets gauches puissants, 10 crochets droits. Repars.",
-      "es": "10 ganchos izq fuertes, 10 der fuertes. Repite.",
-      "zh": "左勾10下、右勾10下，强力输出，重复。",
-      "ja": "左フック10発、右フック10発を強打。繰り返す。",
-      "ru": "10 мощных левых хуков, 10 правых. Повторяй."
-    } },
-
-  { "name": "Uppercut Burst Series", "duration": 30, "reps": 6, "pause": 40,
-    "explanation": {
-      "en": "Rapid uppercuts for 15s, brief set, repeat. Keep legs loaded.",
-      "fr": "Uppercuts rapides 15 s, courte pause, répète. Jambes engagées.",
-      "es": "Uppercuts rápidos 15 s, breve pausa, repite. Piernas cargadas.",
-      "zh": "上勾拳快速15秒，短休后重复。腿部蓄力。",
-      "ja": "アッパーを15秒高速、短休憩で反復。脚に荷重。",
-      "ru": "Быстрые апперкоты 15 с, короткий отдых, повтор. Ноги заряжены."
-    } },
-
-  { "name": "Medicine Ball Rotational Throws", "duration": 60, "reps": 5, "pause": 45,
-    "explanation": {
-      "en": "Side tosses into wall, both sides. Explode from hips.",
-      "fr": "Lancers latéraux contre mur des deux côtés. Explose des hanches.",
-      "es": "Lanzamientos laterales a la pared en ambos lados. Explota caderas.",
-      "zh": "药球侧向掷墙，两侧交替。髋部爆发。",
-      "ja": "メディシンボールの回旋スロー。左右行う。腰から爆発。",
-      "ru": "Боковые броски медбола в стену, обе стороны. Взрыв от бёдер."
-    } },
-
-  { "name": "Shadowboxing Free", "duration": 180, "reps": 3, "pause": 60,
-    "explanation": {
-      "en": "Free shadowboxing. Mix attacks, defense, footwork fluidly.",
-      "fr": "Shadowboxing libre. Attaques, défenses et déplacements fluides.",
-      "es": "Sombra libre. Mezcla ataque, defensa y pies con fluidez.",
-      "zh": "自由影子拳，攻防与步法流畅结合。",
-      "ja": "自由シャドー。攻防とフットワークを滑らかに。",
-      "ru": "Свободный шадоу-боксинг. Смешивай атаки, защиты и ноги."
-    } },
-
-  { "name": "Sparring Visualization", "duration": 180, "reps": 3, "pause": 60,
-    "explanation": {
-      "en": "Imagine an opponent. Read cues, feint, counter, move.",
-      "fr": "Visualise un adversaire. Lis les signaux, feinte, contre, bouge.",
-      "es": "Imagina un rival. Lee señales, finta, contra y muévete.",
-      "zh": "想象对手：读节奏、做假动作、反击与移动。",
-      "ja": "相手を想定。サインを読み、フェイント、カウンター、移動。",
-      "ru": "Вообрази соперника: читай, финть, контрите и двигайся."
-    } },
-
-  { "name": "Body–Head Switch", "duration": 90, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Hook to body then hook to head. Change levels sharply.",
-      "fr": "Crochet au corps puis à la tête. Changement de niveau net.",
-      "es": "Gancho al cuerpo y luego a la cabeza. Cambia niveles.",
-      "zh": "先打身体再打头部勾拳，迅速换层次。",
-      "ja": "体→頭へフック切替。素早くレベル変更。",
-      "ru": "Хук по корпусу, затем в голову. Резко меняй уровень."
-    } },
-
-  { "name": "Jab–Cross to the Body", "duration": 80, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Lower level, jab–cross to body, exit with angle.",
-      "fr": "Baisse le niveau, jab–croisé au corps, sors en angle.",
-      "es": "Baja nivel, jab–cruzado al cuerpo y sal con ángulo.",
-      "zh": "降低重心，刺–直打身体，斜向撤出。",
-      "ja": "レベルを下げ体へ1–2、角度を作って離脱。",
-      "ru": "Снизь уровень, джеб–кросс по корпусу и выход под углом."
-    } },
-
-  { "name": "Feint to Draw, Counter 1–2", "duration": 90, "reps": 4, "pause": 30,
-    "explanation": {
-      "en": "Use a feint to draw jab, slip and answer 1–2.",
-      "fr": "Feinte pour provoquer le jab, esquive et réponds 1–2.",
-      "es": "Finta para provocar el jab, esquiva y responde 1–2.",
-      "zh": "用假动作诱发对手刺拳，闪躲后以1–2反击。",
-      "ja": "フェイントでジャブを誘い、スリップして1–2で返す。",
-      "ru": "Финтом вытяни джеб, слип и ответ 1–2."
-    } },
-
-  { "name": "Rear Uppercut to Body + Cross", "duration": 90, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Rear uppercut to body, rise with cross to head.",
-      "fr": "Uppercut arrière au corps, remonte croisé tête.",
-      "es": "Uppercut trasero al cuerpo y sube con cruzado a la cabeza.",
-      "zh": "后手上勾打身体，起身接头部直拳。",
-      "ja": "後ろ手アッパーで体→起き上がり頭へクロス。",
-      "ru": "Задний апперкот в корпус, затем кросс в голову."
-    } },
-
-  { "name": "High Guard Walk & Jab", "duration": 100, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Walk forward in high guard; jab off the step.",
-      "fr": "Avance en haute garde; jab sur le pas.",
-      "es": "Camina en guardia alta; jab al paso.",
-      "zh": "高防前压，踏步即刺拳。",
-      "ja": "ハイガードで前進。踏み込みでジャブ。",
-      "ru": "Иди вперёд в высокой защите; джеб на шаге."
-    } },
-
-  { "name": "Inside Fighting Drill", "duration": 90, "reps": 4, "pause": 30,
-    "explanation": {
-      "en": "Close range: short hooks and uppercuts; head on chest.",
-      "fr": "Courte distance : crochets et uppercuts courts; tête collée.",
-      "es": "Corta distancia: ganchos/uppercuts cortos; cabeza pegada.",
-      "zh": "贴身距离：短勾与上勾，头靠近胸口。",
-      "ja": "至近距離でショートフックとアッパー。頭を密着。",
-      "ru": "Ближний бой: короткие хуки и апперкоты; голова прижата."
-    } },
-
-  { "name": "Rope Slip Line", "duration": 120, "reps": 3, "pause": 30,
-    "explanation": {
-      "en": "Under a rope: slip left/right and counter on beats.",
-      "fr": "Sous une corde : esquives gauche/droite et contre au tempo.",
-      "es": "Bajo cuerda: esquiva a ambos lados y contragolpea al ritmo.",
-      "zh": "在绳下左右闪躲，按节奏反击。",
-      "ja": "ロープの下で左右にスリップし、拍でカウンター。",
-      "ru": "Под верёвкой: слипы влево/вправо и контратаки по ритму."
-    } },
-
-  { "name": "Southpaw Switch Drill", "duration": 90, "reps": 4, "pause": 30,
-    "explanation": {
-      "en": "Switch to southpaw for 10s, then orthodox. Keep balance.",
-      "fr": "Passe gaucher 10 s puis orthodoxe. Garde l’équilibre.",
-      "es": "Cambia a zurdo 10 s y vuelve a diestro. Equilibrio.",
-      "zh": "切换左势10秒再回正架，保持平衡。",
-      "ja": "サウスポー10秒→オーソドックスへ戻す。バランス維持。",
-      "ru": "Переход в левшу на 10 с, затем обратно. Держи баланс."
-    } },
-
-  { "name": "Clinch Break & Hit", "duration": 60, "reps": 5, "pause": 30,
-    "explanation": {
-      "en": "Frame to break clinch, step off and land short cross.",
-      "fr": "Cadre pour rompre le clinch, décalage et petit croisé.",
-      "es": "Enmarca para romper clinch, sal de lado y cruza corto.",
-      "zh": "架开抱缠，侧移后短直拳命中。",
-      "ja": "クリンチをフレームで外し、ずらしてショートクロス。",
-      "ru": "Разорви клинч фреймом, шаг в сторону и короткий кросс."
-    } },
-
-  { "name": "Crossover Step Angle", "duration": 90, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Crossover step outside lead and fire 2–3.",
-      "fr": "Pas croisé à l’extérieur du lead et tire 2–3.",
-      "es": "Paso cruzado por fuera del lead y lanza 2–3.",
-      "zh": "外侧交叉步，打出2–3连击。",
-      "ja": "リード外へクロスオーバーして2–3を放つ。",
-      "ru": "Кросс-овер за передней ногой и комбо 2–3."
-    } },
-
-  { "name": "Defense Chain: Slip–Duck–Slip", "duration": 70, "reps": 6, "pause": 25,
-    "explanation": {
-      "en": "Link slips and duck in one sequence; keep eyes forward.",
-      "fr": "Enchaîne esquive–duck–esquive; regard vers l’avant.",
-      "es": "Une esquiva–agache–esquiva; mirada al frente.",
-      "zh": "连贯完成闪躲–低身–闪躲，目视前方。",
-      "ja": "スリップ→ダック→スリップを連鎖。視線は前へ。",
-      "ru": "Цепочка: слип–нырок–слип. Смотри вперёд."
-    } },
-
-  { "name": "Counter Off the Jab", "duration": 80, "reps": 5, "pause": 25,
-    "explanation": {
-      "en": "Catch jab with lead hand, fire cross or hook immediately.",
-      "fr": "Attrape le jab de la main avant, enchaîne croisé ou crochet.",
-      "es": "Atrapa el jab con mano adelantada, cruza o gancho al instante.",
-      "zh": "前手接住对手刺拳，立刻直拳或勾拳反击。",
-      "ja": "前手でジャブをキャッチし即座にクロス/フック。",
-      "ru": "Поймай джеб передней рукой и сразу кросс/хук."
-    } },
-
-  { "name": "Feint Low, Hit High", "duration": 90, "reps": 4, "pause": 25,
-    "explanation": {
-      "en": "Feint to body, snap jab–cross to head. Sell the feint.",
-      "fr": "Feinte au corps, jab–croisé claquant à la tête. Vends la feinte.",
-      "es": "Finta al cuerpo, jab–cruzado a la cabeza. Vende la finta.",
-      "zh": "先对身体做假，随后头部1–2迅速命中。",
-      "ja": "体へフェイント→頭へジャブ・クロス。しっかり見せる。",
-      "ru": "Финт в корпус и быстрый джеб–кросс в голову. Продавай финт."
-    } },
-
-  { "name": "Corner Escape Drill", "duration": 100, "reps": 4, "pause": 30,
-    "explanation": {
-      "en": "From corner: block, pivot out, jab to exit lane.",
-      "fr": "Depuis le coin : bloc, pivot sortie, jab pour ouvrir.",
-      "es": "Desde la esquina: bloquea, pivota y sale con jab.",
-      "zh": "被逼角落：架挡、转体脱离，用刺拳开路。",
-      "ja": "コーナーでブロック→ピボットで脱出→ジャブで道作り。",
-      "ru": "В углу: блок, поворот для выхода, джеб на дорожку."
-    } }
+{
+        "name": "Double Jab and Cross",
+        "duration": 90,
+        "reps": 4,
+        "pause": 20,
+        "explanation": {
+          "en": "Double jab followed by a cross. Guard high, pivot rear foot.",
+          "fr": "Double jab suivi d'un croisé. Garde haute, pivote le pied arrière.",
+          "es": "Doble jab seguido de cruzado. Guarda alta, pivota pie trasero.",
+          "zh": "双刺拳接直拳，保持防守，后脚转体。",
+          "ja": "ダブルジャブ→クロス。ガード高く、後足でピボット。",
+          "ru": "Двойной джеб – кросс. Защита высоко, разворот задней стопы."
+        }
+      },
+      {
+        "name": "Double Jab and Uppercut",
+        "duration": 90,
+        "reps": 4,
+        "pause": 20,
+        "explanation": {
+          "en": "Double jab followed by an uppercut. Rotate hips, chin tucked.",
+          "fr": "Double jab suivi d'un uppercut. Hanches, menton rentré.",
+          "es": "Doble jab seguido de uppercut. Gira caderas, barbilla baja.",
+          "zh": "双刺拳接上勾拳。转髋，下巴内收。",
+          "ja": "ダブルジャブ→アッパー。腰を回し、顎を引く。",
+          "ru": "Двойной джеб – апперкот. Вращай бедра, подбородок вниз."
+        }
+      },
+      {
+        "name": "Continuous Direct Strike",
+        "duration": 80,
+        "reps": 4,
+        "pause": 20,
+        "explanation": {
+          "en": "Continuous direct strikes. Maintain rhythm and power.",
+          "fr": "Coups directs continus. Maintenir le rythme et la puissance.",
+          "es": "Golpes directos continuos. Mantén el ritmo y la potencia.",
+          "zh": "连续直拳。保持节奏和力量。",
+          "ja": "連続ストレート。リズムとパワーを保つ。",
+          "ru": "Непрерывные прямые удары. Держи ритм и силу."
+        }
+      },
+      {
+        "name": "Dodge and Strike",
+        "duration": 80,
+        "reps": 5,
+        "pause": 20,
+        "explanation": {
+          "en": "Dodge opponent's jab and counter with a cross. Stay light on feet.",
+          "fr": "Esquive le jab de l'adversaire et contre avec un croisé. Reste léger sur les pieds.",
+          "es": "Esquiva el jab del oponente y contra con cruzado. Mantén ligereza en los pies.",
+          "zh": "闪躲对手刺拳，反击直拳。脚步轻盈。",
+          "ja": "相手のジャブを避けクロスでカウンター。足軽く。",
+          "ru": "Слип от джеба и контратака кроссом. Легкость в ногах."
+        }
+      },
+      {
+        "name": "Body–Head Switch",
+        "duration": 90,
+        "reps": 4,
+        "pause": 25,
+        "explanation": {
+          "en": "Hook to body then hook to head. Change levels sharply.",
+          "fr": "Crochet au corps puis à la tête. Changement de niveau net.",
+          "es": "Gancho al cuerpo y luego a la cabeza. Cambia niveles.",
+          "zh": "先打身体再打头部勾拳，迅速换层次。",
+          "ja": "体→頭へフック切替。素早くレベル変更。",
+          "ru": "Хук по корпусу, затем в голову. Резко меняй уровень."
+        }
 ]
 
     },
@@ -945,7 +585,42 @@
       }
     ]
   },
-   
+
+  "🏋️ squat": {
+    "exercises": [
+      {
+        "name": "Standard 20-minute squat",
+        "duration": 1200,
+        "reps": 60,
+        "pause": 60,
+        "explanation": {
+          "en": "Perform 3 sets of 20 reps with 1 minute of rest between sets. After completing the sets, rest for 2 minutes. Repeat the cycle (3 sets of 20 reps with 1-minute rest) for the remaining time, aiming for 3-4 cycles within the 20 minutes.",
+          "fr": "Effectuez 3 séries de 20 répétitions avec 1 minute de repos entre les séries. Après avoir terminé les séries, reposez-vous pendant 2 minutes. Répétez le cycle (3 séries de 20 répétitions avec 1 minute de repos) pour le reste du temps, en visant 3-4 cycles en 20 minutes.",
+          "es": "Realiza 3 series de 20 repeticiones con 1 minuto de descanso entre series. Después de completar las series, descansa durante 2 minutos. Repite el ciclo (3 series de 20 repeticiones con 1 minuto de descanso) durante el tiempo restante, apuntando a 3-4 ciclos en 20 minutos.",
+          "zh": "进行3组20次重复，每组之间休息1分钟。完成组数后，休息2分钟。在剩余时间内重复循环（3组20次重复，每组之间休息1分钟），力求在20分钟内完成3-4个循环。",
+          "ja": "3セット20回を1分休憩で行う。セットを終えた後、2分休憩する。残りの時間で3-4サイクルを目指して、3セット20回を1分休憩で繰り返す。",
+          "ru": "Выполните 3 подхода по 20 повторений с 1 минутой отдыха между подходами. После завершения подходов отдохните 2 минуты. Повторите цикл (3 подхода по 20 повторений с 1 минутой отдыха) в оставшееся время, стремясь к 3-4 циклам за 20 минут."
+        }
+      },
+      {
+        "name": "Heavy 20 min squat",
+        "duration": 1200,
+        "reps": 100,
+        "pause": 60,
+        "explanation": {
+          "en": "Perform 100 squats in 20 minutes. Take breaks as needed, but aim to complete all 100 squats within the time frame.",
+          "fr": "Effectuez 100 squats en 20 minutes. Prenez des pauses si nécessaire, mais visez à compléter les 100 squats dans le délai imparti.",
+          "es": "Realiza 100 sentadillas en 20 minutos. Toma descansos según sea necesario, pero apunta a completar las 100 sentadillas dentro del tiempo.",
+          "zh": "在20分钟内完成100次深蹲。根据需要休息，但力求在规定时间内完成所有100次深蹲。",
+          "ja": "20分以内に100回スクワットを行う。必要に応じて休憩を取るが、100回のスクワットを時間内に完了することを目指す。",
+          "ru": "Выполните 100 приседаний за 20 минут. Делайте перерывы по мере необходимости, но старайтесь завершить все 100 приседаний в отведенное время."
+        }
+      }
+    ]
+  },
+
+
+    
     "🚴 indoor bike": {
       "exercises": [
         { "name":"Endurance ride", "duration":1800, "reps":1, "pause":0,
@@ -964,6 +639,7 @@
     }
   }
 }
+
 
 
 
