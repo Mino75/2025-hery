@@ -594,12 +594,12 @@
         "reps": 10,
         "pause": 60,
         "explanation": {
-          "en": "Perform  sets of 10 reps with 1 minute of rest between sets. After completing the sets, rest for 1 minute. Repeat the cycle  for the remaining time, aiming for 10 cycles within the 20 minutes.",
-          "fr": "Effectuez  séries de 10 répétitions avec 1 minute de repos entre les séries. Après avoir terminé les séries, reposez-vous pendant 1 minute. Répétez le cycle  pour le reste du temps, en visant 10 cycles en 20 minutes.",
-          "es": "Realiza  series de 10 repeticiones con 1 minuto de descanso entre series. Después de completar las series, descansa durante 1 minuto. Repite el ciclo  durante el tiempo restante, apuntando a 10 ciclos en 20 minutos.",
-          "zh": "进行组10次重复，每组之间休息1分钟。完成组数后，休息2分钟。在剩余时间内重复循环，力求在20分钟内完成10个循环。",
-          "ja": "10回を1分休憩で行う。セットを終えた後、2分休憩する。残りの時間で3-4サイクルを目指して、10セット20回を1分休憩で繰り返す。",
-          "ru": "Выполните подхода по 10 повторений с 1 минутой отдыха между подходами. После завершения подходов отдохните 1 минут. Повторите цикл  в оставшееся время, стремясь к 10 циклам за 20 минут."
+          "en": "Perform 10 sets of 20 reps with 1 minute of rest between sets. After completing the sets, rest for 1 minute. Repeat the cycle  for the remaining time, aiming for 10 cycles within the 20 minutes.",
+          "fr": "Effectuez 10 séries de 20 répétitions avec 1 minute de repos entre les séries. Après avoir terminé les séries, reposez-vous pendant 1 minute. Répétez le cycle  pour le reste du temps, en visant 10 cycles en 20 minutes.",
+          "es": "Realiza 10 series de 20 repeticiones con 1 minuto de descanso entre series. Después de completar las series, descansa durante 1 minuto. Repite el ciclo  durante el tiempo restante, apuntando a 10 ciclos en 20 minutos.",
+          "zh": "进行10组20次重复，每组之间休息1分钟。完成组数后，休息2分钟。在剩余时间内重复循环，力求在20分钟内完成10个循环。",
+          "ja": "10セット20回を1分休憩で行う。セットを終えた後、2分休憩する。残りの時間で3-4サイクルを目指して、10セット20回を1分休憩で繰り返す。",
+          "ru": "Выполните 10 подхода по 20 повторений с 1 минутой отдыха между подходами. После завершения подходов отдохните 1 минут. Повторите цикл  в оставшееся время, стремясь к 10 циклам за 20 минут."
         }
       },
       {
@@ -639,6 +639,7 @@
     }
   }
 }
+
 
 
 
