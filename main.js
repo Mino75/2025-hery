@@ -3,7 +3,7 @@
    ========================= */
 
 /* ---------- CONFIG ---------- */
-const MIN_FULL_DAY = 2*60 * 60;     // Full-day threshold (seconds)
+const MIN_FULL_DAY = 7200;     // Full-day threshold (seconds) 2h
 const MAX_DAYS_PER_WEEK = 6;
 
 // NEW VARIABLE: Set to false to allow unlimited training (no weekly limit)
@@ -690,5 +690,6 @@ const TRAININGS_FALLBACK = {
     ]}
   }
 };
+
 
 
