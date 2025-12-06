@@ -589,31 +589,31 @@
   "🏋️ squat": {
     "exercises": [
       {
-        "name": "Standard 20-minute squat",
-        "duration": 1200,
-        "reps": 60,
+        "name": "Standard 20-min 20 squat / set",
+        "duration": 60,
+        "reps": 10,
         "pause": 60,
         "explanation": {
-          "en": "Perform 3 sets of 20 reps with 1 minute of rest between sets. After completing the sets, rest for 2 minutes. Repeat the cycle (3 sets of 20 reps with 1-minute rest) for the remaining time, aiming for 3-4 cycles within the 20 minutes.",
-          "fr": "Effectuez 3 séries de 20 répétitions avec 1 minute de repos entre les séries. Après avoir terminé les séries, reposez-vous pendant 2 minutes. Répétez le cycle (3 séries de 20 répétitions avec 1 minute de repos) pour le reste du temps, en visant 3-4 cycles en 20 minutes.",
-          "es": "Realiza 3 series de 20 repeticiones con 1 minuto de descanso entre series. Después de completar las series, descansa durante 2 minutos. Repite el ciclo (3 series de 20 repeticiones con 1 minuto de descanso) durante el tiempo restante, apuntando a 3-4 ciclos en 20 minutos.",
-          "zh": "进行3组20次重复，每组之间休息1分钟。完成组数后，休息2分钟。在剩余时间内重复循环（3组20次重复，每组之间休息1分钟），力求在20分钟内完成3-4个循环。",
-          "ja": "3セット20回を1分休憩で行う。セットを終えた後、2分休憩する。残りの時間で3-4サイクルを目指して、3セット20回を1分休憩で繰り返す。",
-          "ru": "Выполните 3 подхода по 20 повторений с 1 минутой отдыха между подходами. После завершения подходов отдохните 2 минуты. Повторите цикл (3 подхода по 20 повторений с 1 минутой отдыха) в оставшееся время, стремясь к 3-4 циклам за 20 минут."
+          "en": "Perform  sets of 10 reps with 1 minute of rest between sets. After completing the sets, rest for 1 minute. Repeat the cycle  for the remaining time, aiming for 10 cycles within the 20 minutes.",
+          "fr": "Effectuez  séries de 10 répétitions avec 1 minute de repos entre les séries. Après avoir terminé les séries, reposez-vous pendant 1 minute. Répétez le cycle  pour le reste du temps, en visant 10 cycles en 20 minutes.",
+          "es": "Realiza  series de 10 repeticiones con 1 minuto de descanso entre series. Después de completar las series, descansa durante 1 minuto. Repite el ciclo  durante el tiempo restante, apuntando a 10 ciclos en 20 minutos.",
+          "zh": "进行组10次重复，每组之间休息1分钟。完成组数后，休息2分钟。在剩余时间内重复循环，力求在20分钟内完成10个循环。",
+          "ja": "10回を1分休憩で行う。セットを終えた後、2分休憩する。残りの時間で3-4サイクルを目指して、10セット20回を1分休憩で繰り返す。",
+          "ru": "Выполните подхода по 10 повторений с 1 минутой отдыха между подходами. После завершения подходов отдохните 1 минут. Повторите цикл  в оставшееся время, стремясь к 10 циклам за 20 минут."
         }
       },
       {
-        "name": "Heavy 20 min squat",
-        "duration": 1200,
-        "reps": 100,
-        "pause": 60,
+        "name": "Intense SEAL 20-min 20 squat / set",
+        "duration": 45,
+        "reps": 20,
+        "pause": 15,
         "explanation": {
-          "en": "Perform 100 squats in 20 minutes. Take breaks as needed, but aim to complete all 100 squats within the time frame.",
-          "fr": "Effectuez 100 squats en 20 minutes. Prenez des pauses si nécessaire, mais visez à compléter les 100 squats dans le délai imparti.",
-          "es": "Realiza 100 sentadillas en 20 minutos. Toma descansos según sea necesario, pero apunta a completar las 100 sentadillas dentro del tiempo.",
-          "zh": "在20分钟内完成100次深蹲。根据需要休息，但力求在规定时间内完成所有100次深蹲。",
-          "ja": "20分以内に100回スクワットを行う。必要に応じて休憩を取るが、100回のスクワットを時間内に完了することを目指す。",
-          "ru": "Выполните 100 приседаний за 20 минут. Делайте перерывы по мере необходимости, но старайтесь завершить все 100 приседаний в отведенное время."
+          "en": "Perform 400 squats in 20 minutes. Take breaks as needed, but aim to complete all 400 squats within the time frame.",
+          "fr": "Effectuez 400 squats en 20 minutes. Prenez des pauses si nécessaire, mais visez à compléter les 400 squats dans le délai imparti.",
+          "es": "Realiza 400 sentadillas en 20 minutos. Toma descansos según sea necesario, pero apunta a completar las 400 sentadillas dentro del tiempo.",
+          "zh": "在20分钟内完成400次深蹲。根据需要休息，但力求在规定时间内完成所有400次深蹲。",
+          "ja": "20分以内に400回スクワットを行う。必要に応じて休憩を取るが、400回のスクワットを時間内に完了することを目指す。",
+          "ru": "Выполните 400 приседаний за 20 минут. Делайте перерывы по мере необходимости, но старайтесь завершить все 400 приседаний в отведенное время."
         }
       }
     ]
@@ -639,6 +639,7 @@
     }
   }
 }
+
 
 
 
