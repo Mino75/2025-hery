@@ -244,6 +244,28 @@ function formatMMSS(totalSec){
   return `${m}:${s}`;
 }
 
+async function getTodayTotalSeconds() {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const endOfDay = startOfDay + 24*60*60*1000;
+
+  return new Promise((resolve) => {
+    const tx = db.transaction("history","readonly");
+    const req = tx.objectStore("history").getAll();
+    req.onsuccess = () => {
+      const rows = req.result || [];
+      const total = rows
+        .filter(r => r.date >= startOfDay && r.date < endOfDay)
+        .reduce((sum, r) => sum + Number(r.duration || 0), 0);
+      resolve(total);
+    };
+    req.onerror = () => resolve(0);
+  });
+}
+
+
+
+
 /* ---------- SPEECH ---------- */
 function pickVoice(lang) {
   const list = speechSynthesis.getVoices() || [];
@@ -318,15 +340,26 @@ async function canTrainToday() {
   const hist = await getThisWeekHistory();
   return hist.filter(h => h.fullDay).length < MAX_DAYS_PER_WEEK;
 }
-function saveSession(seconds){
+async function saveSession(seconds){
+  const now = Date.now();
+  const todayTotalBefore = await getTodayTotalSeconds();
+  const todayTotalAfter = todayTotalBefore + seconds;
+
+  const fullDay = todayTotalAfter >= (MIN_FULL_DAY - 1); // tolerance-safe
+
   return new Promise((resolve) => {
-    const fullDay = seconds >= MIN_FULL_DAY;
-    const now = Date.now();
     const tx = db.transaction("history","readwrite");
-    tx.objectStore("history").put({ id: now, date: now, duration: seconds, fullDay, sport: workout.currentSport });
+    tx.objectStore("history").put({
+      id: now,
+      date: now,
+      duration: seconds,
+      fullDay,
+      sport: workout.currentSport
+    });
     tx.oncomplete = () => resolve(fullDay);
   });
 }
+
 
 /* ---------- METRICS ---------- */
 function calcCalories(sport, weightKg, durationSec){
@@ -690,6 +723,7 @@ const TRAININGS_FALLBACK = {
     ]}
   }
 };
+
 
 
 
