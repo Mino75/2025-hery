@@ -243,7 +243,7 @@ function formatMMSS(totalSec){
   const s = (totalSec%60).toString().padStart(2,"0");
   return `${m}:${s}`;
 }
-
+//------------------------------------------------------------------------------
 async function getTodayTotalSeconds() {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -275,6 +275,7 @@ function pickVoice(lang) {
   const same = list.find(v => v.lang === bcp47);
   return same || list[0] || null;
 }
+//------------------------------------------------------------------------------
 function speakText(text, langPref="random"){
   const langs = Object.keys(VOICE_LANG);
   const chosen = langPref === "random" ? langs[Math.floor(Math.random()*langs.length)] : langPref;
@@ -283,6 +284,7 @@ function speakText(text, langPref="random"){
   const v = pickVoice(chosen); if (v) u.voice = v;
   speechSynthesis.speak(u);
 }
+//------------------------------------------------------------------------------
 function speakFromMap(map, langPref="random"){
   const langs = Object.keys(VOICE_LANG);
   const chosen = langPref === "random" ? langs[Math.floor(Math.random()*langs.length)] : langPref;
@@ -290,6 +292,7 @@ function speakFromMap(map, langPref="random"){
   speakText(text, chosen);
   return { lang: chosen, text };
 }
+//------------------------------------------------------------------------------
 function speakCommon(bucket, langPref="random"){
   const pool = {};
   for (const k of Object.keys(VOICE_LANG)) {
@@ -316,6 +319,7 @@ async function getThisWeekHistory() {
     req.onerror = () => resolve([]);
   });
 }
+//------------------------------------------------------------------------------
 async function updateWeeklyChip() {
   const hist = await getThisWeekHistory();
   const fullDays = hist.filter(h => h.fullDay).length;
@@ -332,6 +336,7 @@ async function updateWeeklyChip() {
     playBtn.disabled = workout.running;
   }
 }
+//------------------------------------------------------------------------------
 async function canTrainToday() {
   // If not enforcing limit, always allow training
   if (!ENFORCE_WEEKLY_LIMIT) return true;
@@ -340,6 +345,7 @@ async function canTrainToday() {
   const hist = await getThisWeekHistory();
   return hist.filter(h => h.fullDay).length < MAX_DAYS_PER_WEEK;
 }
+//------------------------------------------------------------------------------
 async function saveSession(seconds){
   const now = Date.now();
   const todayTotalBefore = await getTodayTotalSeconds();
@@ -468,7 +474,7 @@ async function startWorkout(){
   nextExercise();
   await requestScreenWakeLock();
 }
-
+//------------------------------------------------------------------------------
 function nextExercise(){
   if (!workout.running) return;
 
@@ -494,7 +500,7 @@ function nextExercise(){
   if (workout.tickId) clearInterval(workout.tickId);
   workout.tickId = setInterval(tick, 1000);
 }
-
+//------------------------------------------------------------------------------
 function tick(){
   if (!workout.running) return;
 
@@ -544,7 +550,7 @@ function backgroundTick() {
   subtimerEl.textContent = "Running in background…";
   updateMetrics();
 }
-
+//------------------------------------------------------------------------------
 function skipExercise(){
   if (!workout.running || !workout.ex) return;
 
@@ -559,7 +565,7 @@ function skipExercise(){
   updateMetrics();
   nextExercise(); // scheduleIntroForCurrentExercise() accounts for mute window
 }
-
+//------------------------------------------------------------------------------
 async function stopWorkout(){
   if (!workout.running) return;
   const realSecs = getElapsedSecs();
@@ -606,7 +612,7 @@ async function stopWorkout(){
   workout.sessionSecs = realSecs;
   renderElapsedIntoUI();
 }
-
+//------------------------------------------------------------------------------
 async function getHistoryAll(){
   return new Promise((resolve) => {
     const tx = db.transaction("history","readonly");
@@ -615,7 +621,7 @@ async function getHistoryAll(){
     req.onerror = () => resolve([]);
   });
 }
-
+//------------------------------------------------------------------------------
 async function updateHistoryRecord(id, patch){
   return new Promise((resolve) => {
     const tx = db.transaction("history","readwrite");
@@ -631,6 +637,30 @@ async function updateHistoryRecord(id, patch){
   });
 }
 
+
+//------------------------------------------------------------------------------
+async function recomputeFullDayForEndTs(endTs){
+  const d = new Date(Number(endTs));
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const end = start + 24*60*60*1000;
+
+  const all = await getHistoryAll();
+  const dayItems = all.filter(r => Number(r.date) >= start && Number(r.date) < end);
+  const dayTotal = dayItems.reduce((s,r)=> s + Number(r.duration||0), 0);
+  const fullDayFlag = dayTotal >= (MIN_FULL_DAY - 1);
+
+  await new Promise((resolve) => {
+    const tx = db.transaction("history","readwrite");
+    const store = tx.objectStore("history");
+    dayItems.forEach(r => store.put({ ...r, fullDay: fullDayFlag }));
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => resolve(true);
+  });
+}
+
+
+//------------------------------------------------------------------------------
+// edit history duration
 async function editHistoryDurationById(id){
   const all = await getHistoryAll();
   const it = all.find(x => String(x.id) === String(id));
@@ -649,29 +679,21 @@ async function editHistoryDurationById(id){
   const clamped = Math.max(15, Math.min(240, snapped));
   const newSec = clamped * 60;
 
-  const ok = await updateHistoryRecord(it.id, { duration: newSec });
-  if (!ok) return;
+   const oldEnd = Number(it.date);
+   const oldSec = Number(it.duration || 0);
+   
+   // recalculate en (count on end date)
+   const newEnd = oldEnd - ((oldSec - newSec) * 1000);
+   
+   const ok = await updateHistoryRecord(it.id, { duration: newSec, date: newEnd });
+   if (!ok) return;
 
-  // recalc fullDay via total de la journée (même logique que saveSession)
-  const d = new Date(Number(it.date));
-  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  const end = start + 24*60*60*1000;
+// recalcul fullDay on old and updated date (day can change)
+await recomputeFullDayForEndTs(oldEnd);
+await recomputeFullDayForEndTs(newEnd);
 
-  const afterAll = await getHistoryAll();
-  const dayItems = afterAll.filter(r => Number(r.date) >= start && Number(r.date) < end);
-  const dayTotal = dayItems.reduce((s,r)=> s + Number(r.duration||0), 0);
-  const fullDayFlag = dayTotal >= (MIN_FULL_DAY - 1);
-
-  await new Promise((resolve) => {
-    const tx = db.transaction("history","readwrite");
-    const store = tx.objectStore("history");
-    dayItems.forEach(r => store.put({ ...r, fullDay: fullDayFlag }));
-    tx.oncomplete = () => resolve(true);
-    tx.onerror = () => resolve(true);
-  });
-
-  await updateWeeklyChip();
-  await openHistory(); // refresh UI
+await updateWeeklyChip();
+await openHistory();
 }
 
 
@@ -803,6 +825,7 @@ const TRAININGS_FALLBACK = {
     ]}
   }
 };
+
 
 
 
