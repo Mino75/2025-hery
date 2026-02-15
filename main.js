@@ -607,6 +607,74 @@ async function stopWorkout(){
   renderElapsedIntoUI();
 }
 
+async function getHistoryAll(){
+  return new Promise((resolve) => {
+    const tx = db.transaction("history","readonly");
+    const req = tx.objectStore("history").getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => resolve([]);
+  });
+}
+
+async function updateHistoryRecord(id, patch){
+  return new Promise((resolve) => {
+    const tx = db.transaction("history","readwrite");
+    const store = tx.objectStore("history");
+    const g = store.get(id);
+    g.onsuccess = () => {
+      const row = g.result;
+      if (!row) return resolve(false);
+      store.put({ ...row, ...patch });
+    };
+    g.onerror = () => resolve(false);
+    tx.oncomplete = () => resolve(true);
+  });
+}
+
+async function editHistoryDurationById(id){
+  const all = await getHistoryAll();
+  const it = all.find(x => String(x.id) === String(id));
+  if (!it) return;
+
+  // minutes snap au 15 le plus proche, bornes 15..240
+  const currentMin = Math.max(15, Math.min(240, Math.round((Number(it.duration||0)/60)/15)*15 || 15));
+
+  const raw = prompt("Duration (minutes) — 15 to 240, step 15", String(currentMin));
+  if (raw == null) return;
+
+  const m = Number(raw);
+  if (!Number.isFinite(m)) return;
+
+  const snapped = Math.round(m/15)*15;
+  const clamped = Math.max(15, Math.min(240, snapped));
+  const newSec = clamped * 60;
+
+  const ok = await updateHistoryRecord(it.id, { duration: newSec });
+  if (!ok) return;
+
+  // recalc fullDay via total de la journée (même logique que saveSession)
+  const d = new Date(Number(it.date));
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const end = start + 24*60*60*1000;
+
+  const afterAll = await getHistoryAll();
+  const dayItems = afterAll.filter(r => Number(r.date) >= start && Number(r.date) < end);
+  const dayTotal = dayItems.reduce((s,r)=> s + Number(r.duration||0), 0);
+  const fullDayFlag = dayTotal >= (MIN_FULL_DAY - 1);
+
+  await new Promise((resolve) => {
+    const tx = db.transaction("history","readwrite");
+    const store = tx.objectStore("history");
+    dayItems.forEach(r => store.put({ ...r, fullDay: fullDayFlag }));
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => resolve(true);
+  });
+
+  await updateWeeklyChip();
+  await openHistory(); // refresh UI
+}
+
+
 /* ---------- HISTORY POPUP ---------- */
 async function openHistory(){
   const tx = db.transaction("history","readonly");
@@ -636,6 +704,14 @@ async function openHistory(){
 
       historyList.innerHTML = html;
 
+      historyList.querySelectorAll(".hist-item[data-id]").forEach(el => {
+        el.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          editHistoryDurationById(el.getAttribute("data-id"));
+        });
+      });
+
+       
       historyModal.classList.remove('hidden');
       historyModal.style.display = 'grid';
       historyModal.setAttribute('aria-hidden','false');
@@ -643,14 +719,17 @@ async function openHistory(){
     };
 
 }
+
+
 function renderHistItem(it){
   const d = new Date(Number(it.date));
   const when = d.toLocaleString();
   const dur = formatMMSS(Number(it.duration||0));
   const badge = it.fullDay ? `<span class="badge green">🥇Full day</span>` : `<span class="badge gray">Partial</span>`;
- const sportInitial = it.sport ? ([...it.sport][0] || '').toUpperCase() : ''; // take the first emoji
+  const sportInitial = it.sport ? ([...it.sport][0] || '').toUpperCase() : '';
+
   return `
-    <div class="hist-item">
+    <div class="hist-item" data-id="${it.id}" style="cursor:pointer">
       <div class="hist-left">
         <strong>${when}</strong>
         <span>Duration: ${dur} ${sportInitial ? ` • ${sportInitial}` : ''}</span>
@@ -659,6 +738,7 @@ function renderHistItem(it){
     </div>
   `;
 }
+
 function closeHistoryModal(){
   historyModal.classList.add('hidden');
   historyModal.style.display = 'none';
@@ -723,6 +803,7 @@ const TRAININGS_FALLBACK = {
     ]}
   }
 };
+
 
 
 
