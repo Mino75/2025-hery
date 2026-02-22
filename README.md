@@ -17,7 +17,7 @@
 
 ## 📖 About
 
-Hery is an advanced Progressive Web App (PWA) that serves as your  training coach. With multi-language voice coaching, comprehensive workout tracking, and sophisticated caching strategies, Hery provides an immersive training experience for various martial arts disciplines including Boxing, Judo, Wushu (Kung Fu), and general fitness routines.
+Hery (strength in Malagasy) is an advanced Progressive Web App (PWA) that serves as your  training coach. With multi-language voice coaching, comprehensive workout tracking, and sophisticated caching strategies, Hery provides an immersive training experience for various martial arts disciplines including Boxing, Judo, Wushu (Kung Fu), and general fitness routines.
 
 The application features intelligent voice coaching in 6 languages, robust offline functionality, and a sophisticated caching system designed for poor network conditions. Whether you're a beginner or experienced martial artist, Hery adapts to your training needs with personalized coaching and progress tracking.
 
@@ -302,4 +302,5 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ---
 
 **Ready to train? Get started with Hery and elevate your training journey!** 🥊🥋🐉
+
 
