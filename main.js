@@ -143,6 +143,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Robustness: handle background/foreground transitions
   document.addEventListener("visibilitychange", onVisibilityChange, { passive:true });
   window.addEventListener("pagehide", releaseScreenWakeLock, { passive:true });
+
+  // Listen for URL fragment changes so the app can be controlled , runtime URL control support
+  window.addEventListener("hashchange", async () => {
+    if (!workout.running) {
+      await applyLaunchParamsFromHash();
+    }
+  });
+   
+   
 });
 
 /* ---------- LOADERS ---------- */
@@ -281,7 +290,7 @@ function parseHashParams() {
 }
 
 // Missing startnow means immediate launch.
-// Only "yes" or "true" trigger auto-start explicitly.
+// also "yes" or "true" trigger auto-start explicitly.
 // "no", "false", or any invalid value mean no auto-start.
 function normalizeStartNow(value) {
   if (value == null || String(value).trim() === "") return true;
@@ -308,7 +317,10 @@ function normalizeSport(value) {
 }
 
 async function applyLaunchParamsFromHash() {
-  // Requires profile + trainings + populated sport select
+   // Never override an active or resumed workout
+  if (workout.running) return;
+   
+   // Requires profile + trainings + populated sport select
   if (!profile || !trainings || !trainings.sports) return;
 
   const params = parseHashParams();
@@ -481,6 +493,8 @@ async function handleSaveProfile(){
   toggleScreens(true);
   playBtn.disabled = false;
   updateWeeklyChip();
+  // Apply URL launch parameters now that profile exists.
+  await applyLaunchParamsFromHash();
 }
 
 /* ---------- QUEUE ---------- */
@@ -908,6 +922,7 @@ const TRAININGS_FALLBACK = {
     ]}
   }
 };
+
 
 
 
