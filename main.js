@@ -83,6 +83,7 @@ request.onsuccess = async (e) => {
   }
 
   await resumeIfRuntimeActive();
+  await applyLaunchParamsFromHash();
   updateWeeklyChip();
 };
 
@@ -264,7 +265,89 @@ async function getTodayTotalSeconds() {
 }
 
 
+/* ---------- URL HASH PRECONFIG ---------- */
+function parseHashParams() {
+  const raw = (window.location.hash || "").replace(/^#/, "").trim();
+  if (!raw) return {};
 
+  const params = {};
+  raw.split("&").forEach(pair => {
+    const [k, v = ""] = pair.split("=");
+    const key = decodeURIComponent((k || "").trim()).toLowerCase();
+    const value = decodeURIComponent((v || "").trim());
+    if (key) params[key] = value;
+  });
+  return params;
+}
+
+// Missing startnow means immediate launch.
+// Only "yes" or "true" trigger auto-start explicitly.
+// "no", "false", or any invalid value mean no auto-start.
+function normalizeStartNow(value) {
+  if (value == null || String(value).trim() === "") return true;
+  const v = String(value).trim().toLowerCase();
+  if (v === "yes" || v === "true") return true;
+  return false;
+}
+
+// Missing language => random
+// Invalid language => english
+function normalizeLanguage(value) {
+  const langs = Object.keys(VOICE_LANG);
+  if (value == null || String(value).trim() === "") return "random";
+
+  const v = String(value).trim().toLowerCase();
+  return langs.includes(v) ? v : "en";
+}
+
+// Sport is mandatory and must exist in trainings.sports
+function normalizeSport(value) {
+  if (!value) return null;
+  const v = String(value).trim().toLowerCase();
+  return trainings?.sports?.[v] ? v : null;
+}
+
+async function applyLaunchParamsFromHash() {
+  // Requires profile + trainings + populated sport select
+  if (!profile || !trainings || !trainings.sports) return;
+
+  const params = parseHashParams();
+  if (!Object.keys(params).length) return;
+
+  const requestedSportRaw = params.sport;
+  const requestedSport = normalizeSport(requestedSportRaw);
+  const requestedLang = normalizeLanguage(params.language);
+  const autoStart = normalizeStartNow(params.startnow);
+
+  // Apply coach language rule:
+  // missing => random, invalid => en
+  langModeSel.value = requestedLang;
+
+  // Sport is required
+  if (!requestedSportRaw) {
+    statusEl.textContent = "Launch URL invalid: sport parameter is required.";
+    return;
+  }
+
+  // Sport must be recognized
+  if (!requestedSport) {
+    statusEl.textContent = `Launch URL invalid: unknown sport "${requestedSportRaw}".`;
+    return;
+  }
+
+  // Preselect sport and language
+  sportSel.value = requestedSport;
+  workout.currentSport = requestedSport;
+
+  statusEl.textContent = autoStart
+    ? `Auto-launch configured: ${capitalize(requestedSport)} • coach ${requestedLang === "random" ? "random" : requestedLang}`
+    : `Preselected: ${capitalize(requestedSport)} • coach ${requestedLang === "random" ? "random" : requestedLang}`;
+
+  // Start immediately when startnow is missing, yes, or true
+  if (autoStart && !workout.running) {
+    await startWorkout();
+  }
+}
 
 /* ---------- SPEECH ---------- */
 function pickVoice(lang) {
@@ -825,6 +908,7 @@ const TRAININGS_FALLBACK = {
     ]}
   }
 };
+
 
 
 
