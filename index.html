@@ -3,20 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <title>Heri tech</title>
-<style>
-  /* Critical inline styles to prevent FOUC */
-  body { visibility: hidden; opacity: 0; }
-</style>
-  
-<script defer src="https://kizuna.kahiether.com/main.js?website-url=https://yoursite.com&personalinfostored=no&enablemdquizz=yes&enablejssandbox=yes&enableprivacy=yes"></script>
-<script defer src="https://analytics.kahiether.com/script.js" data-website-id="543f781e-bcac-4b1c-aeb9-5198c7a6e3b9"></script>
-<link rel="manifest" href="manifest.json" />
+
+  <style>
+    /* Critical inline styles to prevent FOUC */
+    body { visibility: hidden; opacity: 0; }
+  </style>
+
+  <script defer src="https://kizuna.kahiether.com/main.js?website-url=https://yoursite.com&personalinfostored=no&enablemdquizz=yes&enablejssandbox=yes&enableprivacy=yes"></script>
+  <script defer src="https://analytics.kahiether.com/script.js" data-website-id="543f781e-bcac-4b1c-aeb9-5198c7a6e3b9"></script>
+
+  <link rel="manifest" href="manifest.json" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <script defer src="styles.js"></script>
   <script defer src="main.js"></script>
 </head>
+
 <body>
-  <!-- Onboarding (first-run) -->
+
+  <!-- ---------- ONBOARDING ---------- -->
   <section id="screen-onboarding" class="screen">
     <header class="topbar">
       <h1 class="brand">Heritech</h1>
@@ -50,18 +55,21 @@
     </div>
   </section>
 
-  <!-- Main (training) -->
+  <!-- ---------- MAIN ---------- -->
   <section id="screen-main" class="screen hidden">
     <header class="topbar">
       <h1 class="brand">Herytech</h1>
+
       <div class="actions">
         <button id="historyBtn" class="chip" aria-label="History">History</button>
+        <button id="travelsBtn" class="chip" aria-label="Travels">Travels</button>
         <div class="weekly-chip" id="weeklyChip">0 / 5 days</div>
       </div>
     </header>
 
     <div class="card">
       <div class="row between center">
+
         <div class="select-wrap">
           <label for="sport" class="tiny-label">Sport</label>
           <select id="sport"></select>
@@ -69,6 +77,7 @@
 
         <div class="select-wrap">
           <label for="langMode" class="tiny-label">Coach voice</label>
+
           <select id="langMode">
             <option value="random">Random Languages</option>
             <option value="en">English</option>
@@ -79,6 +88,7 @@
             <option value="ru">Русский</option>
           </select>
         </div>
+
       </div>
 
       <div class="timer-wrap">
@@ -86,7 +96,6 @@
         <div id="subtimer" class="subtimer">—</div>
       </div>
 
-      <!-- Exercise title + explanation (in selected/random language) -->
       <div class="explain">
         <div id="exTitle" class="ex-title">—</div>
         <div id="exExplain" class="ex-text">—</div>
@@ -95,26 +104,25 @@
       <div id="status" class="status">Pick a sport and press play.</div>
 
       <div class="controls">
+
         <button id="playBtn" class="fab" aria-label="Start">
-          <!-- Play -->
           <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
             <path d="M8 5v14l11-7z"></path>
           </svg>
         </button>
 
         <button id="skipBtn" class="fab tertiary" aria-label="Skip" disabled>
-          <!-- Next/Skip -->
           <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
             <path d="M7 6l8 6-8 6V6zm9 0h2v12h-2z"></path>
           </svg>
         </button>
 
         <button id="stopBtn" class="fab secondary" aria-label="Stop" disabled>
-          <!-- Stop -->
           <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
             <path d="M6 6h12v12H6z"></path>
           </svg>
         </button>
+
       </div>
     </div>
 
@@ -123,6 +131,7 @@
         <h3 class="card-title small">Calories / Distance / Weight</h3>
         <div id="calories" class="metric">—</div>
       </div>
+
       <div class="card grow">
         <h3 class="card-title small">Last vs Today</h3>
         <div id="lastPerf" class="metric">—</div>
@@ -130,31 +139,105 @@
     </div>
 
     <footer class="foot">
-      <small>Max 6 full training days/week by default • 2 hours Full day by default </small>
+      <small>Max 6 full training days/week by default • 2 hours Full day by default</small>
     </footer>
   </section>
 
-  <!-- History popup (modal) — FORCE HIDDEN AT START -->
-  <div id="historyModal"
-       class="modal hidden"
-       aria-modal="true"
-       aria-hidden="true"
-       role="dialog"
-       style="display:none">
+  <!-- ---------- HISTORY MODAL ---------- -->
+  <div
+    id="historyModal"
+    class="modal hidden"
+    aria-modal="true"
+    aria-hidden="true"
+    role="dialog"
+    style="display:none"
+  >
     <div class="modal-card">
       <div class="modal-head">
         <h3 class="modal-title">Training History</h3>
+
         <button id="closeHistory" class="icon-btn" aria-label="Close">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
             <path d="M6 6l12 12M6 18L18 6"/>
           </svg>
         </button>
       </div>
+
       <div id="historyList" class="modal-body"></div>
     </div>
+
     <div id="modalBackdrop" class="backdrop"></div>
   </div>
+
+  <!-- ---------- TRAVELS MODAL ---------- -->
+  <div
+    id="travelsModal"
+    class="modal hidden"
+    aria-modal="true"
+    aria-hidden="true"
+    role="dialog"
+    style="display:none"
+  >
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 class="modal-title">Travels</h3>
+
+        <button id="closeTravels" class="icon-btn" aria-label="Close travels">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M6 6l12 12M6 18L18 6"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="travelsList" class="modal-body"></div>
+    </div>
+
+    <div id="travelsBackdrop" class="backdrop"></div>
+  </div>
+
+  <!-- ---------- TRAVEL VIEWER MODAL ---------- -->
+  <div
+    id="travelViewerModal"
+    class="modal hidden"
+    aria-modal="true"
+    aria-hidden="true"
+    role="dialog"
+    style="display:none"
+  >
+    <div
+      class="modal-card"
+      style="
+        width:min(96vw,1100px);
+        height:90vh;
+        max-height:90vh;
+        display:flex;
+        flex-direction:column;
+      "
+    >
+      <div class="modal-head">
+        <h3 id="travelViewerTitle" class="modal-title">Travel</h3>
+
+        <button id="closeTravelViewer" class="icon-btn" aria-label="Close travel">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path d="M6 6l12 12M6 18L18 6"/>
+          </svg>
+        </button>
+      </div>
+
+      <div
+        id="travelViewerContainer"
+        class="modal-body"
+        style="
+          flex:1;
+          min-height:0;
+          overflow:hidden;
+          padding:0;
+        "
+      ></div>
+    </div>
+
+    <div class="backdrop"></div>
+  </div>
+
 </body>
 </html>
-
-
