@@ -1,6 +1,6 @@
 /* =========================
    HERYTECH – Mobile-first
-   Robust resume + Nali travel tracking
+   Resume + per-session Nali travel
    ========================= */
 
 /* ---------- CONFIG ---------- */
@@ -9,8 +9,8 @@ const MAX_DAYS_PER_WEEK = 6;
 const ENFORCE_WEEKLY_LIMIT = false;
 
 const VOICE_LANG = {
-  en: "en-US", fr: "fr-FR", es: "es-ES",
-  zh: "zh-CN", ja: "ja-JP", ru: "ru-RU"
+  en: "en-US", fr: "fr-FR", es: "es-ES", zh: "zh-CN",
+  ja: "ja-JP", ru: "ru-RU", mg: "mg-MG"
 };
 
 const SKIP_SILENCE_MS = 900;
@@ -24,8 +24,8 @@ const TRAVEL_COMMAND_TIMEOUT_MS = 15000;
 
 /* ---------- GLOBAL STATE ---------- */
 let db, profile = null, trainings = null, voicesReady = false;
-let wakeLock = null;
 let skipMuteUntil = 0, introTimer = null, exerciseRunId = 0;
+let wakeLock = null;
 
 let workout = {
   running: false,
@@ -44,7 +44,7 @@ let workout = {
   tickId: null
 };
 
-/* Nali travel state */
+/* ---------- TRAVEL STATE ---------- */
 let travelTrackerFrame = null;
 let travelViewerFrame = null;
 let activeTravelName = null;
@@ -69,9 +69,11 @@ const subtimerEl = $("#subtimer");
 const statusEl = $("#status");
 const exTitleEl = $("#exTitle");
 const exExplainEl = $("#exExplain");
+
 const playBtn = $("#playBtn");
 const skipBtn = $("#skipBtn");
 const stopBtn = $("#stopBtn");
+
 const caloriesEl = $("#calories");
 const lastPerfEl = $("#lastPerf");
 const weeklyChipEl = $("#weeklyChip");
@@ -82,22 +84,12 @@ const closeHistory = $("#closeHistory");
 const historyList = $("#historyList");
 const modalBackdrop = $("#modalBackdrop");
 
-const travelsBtn = $("#travelsBtn");
-const travelsModal = $("#travelsModal");
-const closeTravels = $("#closeTravels");
-const travelsList = $("#travelsList");
-const travelsBackdrop = $("#travelsBackdrop");
-
 const travelViewerModal = $("#travelViewerModal");
 const travelViewerTitle = $("#travelViewerTitle");
 const travelViewerContainer = $("#travelViewerContainer");
 const closeTravelViewer = $("#closeTravelViewer");
 
 /* ---------- INDEXEDDB ---------- */
-/*
-  Version stays 3.
-  travelName is only an additional property inside runtime/current.
-*/
 const request = indexedDB.open("HerytechDB", 3);
 
 request.onupgradeneeded = (e) => {
@@ -147,17 +139,19 @@ request.onerror = () => console.error("IndexedDB open failed");
 
 /* ---------- INIT ---------- */
 document.addEventListener("DOMContentLoaded", () => {
-  [historyModal, travelsModal, travelViewerModal].forEach((modal) => {
+  [historyModal, travelViewerModal].forEach((modal) => {
     modal.classList.add("hidden");
     modal.style.display = "none";
     modal.setAttribute("aria-hidden", "true");
   });
 
   function initVoices() { voicesReady = true; }
+
   window.speechSynthesis.onvoiceschanged = initVoices;
   if (speechSynthesis.getVoices().length) initVoices();
 
   obSave.addEventListener("click", handleSaveProfile);
+
   playBtn.addEventListener("click", startWorkout);
   stopBtn.addEventListener("click", stopWorkout);
   skipBtn.addEventListener("click", skipExercise);
@@ -166,9 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
   closeHistory.addEventListener("click", closeHistoryModal);
   modalBackdrop.addEventListener("click", closeHistoryModal);
 
-  travelsBtn.addEventListener("click", openTravelsModal);
-  closeTravels.addEventListener("click", closeTravelsModal);
-  travelsBackdrop.addEventListener("click", closeTravelsModal);
   closeTravelViewer.addEventListener("click", closeTravelViewerModal);
 
   document.addEventListener("visibilitychange", onVisibilityChange, { passive: true });
@@ -184,6 +175,7 @@ async function loadProfile() {
   return new Promise((resolve) => {
     const tx = db.transaction("profile", "readonly");
     const req = tx.objectStore("profile").get("user");
+
     req.onsuccess = () => resolve(req.result?.data || null);
     req.onerror = () => resolve(null);
   });
@@ -200,7 +192,9 @@ async function saveProfile(data) {
 async function loadTrainings() {
   try {
     const r = await fetch("trainings.json", { cache: "no-store" });
+
     if (!r.ok) throw new Error("HTTP " + r.status);
+
     return await r.json();
   } catch (err) {
     console.warn("Failed to fetch trainings.json, using fallback.", err);
@@ -208,11 +202,12 @@ async function loadTrainings() {
   }
 }
 
-/* ---------- RUNTIME PERSISTENCE ---------- */
+/* ---------- RUNTIME ---------- */
 async function readRuntime() {
   return new Promise((resolve) => {
     const tx = db.transaction("runtime", "readonly");
     const req = tx.objectStore("runtime").get("current");
+
     req.onsuccess = () => resolve(req.result || null);
     req.onerror = () => resolve(null);
   });
@@ -221,7 +216,12 @@ async function readRuntime() {
 async function writeRuntime(payload) {
   return new Promise((resolve) => {
     const tx = db.transaction("runtime", "readwrite");
-    tx.objectStore("runtime").put({ id: "current", ...payload });
+
+    tx.objectStore("runtime").put({
+      id: "current",
+      ...payload
+    });
+
     tx.oncomplete = () => resolve(true);
   });
 }
@@ -229,23 +229,28 @@ async function writeRuntime(payload) {
 async function clearRuntime() {
   return new Promise((resolve) => {
     const tx = db.transaction("runtime", "readwrite");
+
     tx.objectStore("runtime").delete("current");
+
     tx.oncomplete = () => resolve(true);
   });
 }
 
-/* ---------- RESUME ---------- */
+/* ---------- RESUME ACTIVE SESSION ---------- */
 async function resumeIfRuntimeActive() {
   const rt = await readRuntime();
+
   if (!rt?.running || !rt.startedAt) return;
 
   workout.running = true;
   workout.startedAt = Number(rt.startedAt);
-  workout.currentSport = rt.sport || Object.keys(trainings?.sports || { bike: 1 })[0];
+  workout.currentSport =
+    rt.sport ||
+    Object.keys(trainings?.sports || { bike: 1 })[0];
 
-  /* Restore and lock exercise type + language */
   sportSel.value = workout.currentSport;
   langModeSel.value = rt.langPref || "random";
+
   setWorkoutSelectorsLocked(true);
 
   playBtn.disabled = true;
@@ -256,9 +261,13 @@ async function resumeIfRuntimeActive() {
   exExplainEl.textContent = "Resumed after reload.";
   statusEl.textContent = "Session resumed.";
 
-  activeTravelName = rt.travelName || buildTravelName(workout.startedAt, workout.currentSport);
+  activeTravelName =
+    rt.travelName ||
+    buildTravelName(
+      workout.startedAt,
+      workout.currentSport
+    );
 
-  /* Compatibility with runtime records created before travelName existed */
   if (!rt.travelName) {
     await writeRuntime({
       running: true,
@@ -270,26 +279,35 @@ async function resumeIfRuntimeActive() {
   }
 
   if (workout.tickId) clearInterval(workout.tickId);
+
   workout.tickId = setInterval(backgroundTick, 1000);
 
   renderElapsedIntoUI();
   updateMetrics();
+
   await requestScreenWakeLock();
 
   stopBtn.disabled = false;
 
-  /* Recreate Nali tracker. Nali can also restore its currentTravel internally. */
   beginTravelTracking(activeTravelName);
 }
 
 /* ---------- UTILS ---------- */
 function getElapsedSecs() {
   if (!workout.startedAt) return 0;
-  return Math.max(0, Math.floor((Date.now() - workout.startedAt) / 1000));
+
+  return Math.max(
+    0,
+    Math.floor((Date.now() - workout.startedAt) / 1000)
+  );
 }
 
 function renderElapsedIntoUI() {
-  const secs = workout.running ? getElapsedSecs() : workout.sessionSecs;
+  const secs =
+    workout.running
+      ? getElapsedSecs()
+      : workout.sessionSecs;
+
   timerEl.textContent = formatMMSS(secs);
 }
 
@@ -299,13 +317,25 @@ function toggleScreens(hasProfile) {
 }
 
 function capitalize(s) {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+  return s
+    ? s.charAt(0).toUpperCase() + s.slice(1)
+    : "";
 }
 
 function formatMMSS(totalSec) {
-  totalSec = Math.max(0, Math.floor(Number(totalSec) || 0));
-  const m = Math.floor(totalSec / 60).toString().padStart(2, "0");
-  const s = (totalSec % 60).toString().padStart(2, "0");
+  totalSec = Math.max(
+    0,
+    Math.floor(Number(totalSec) || 0)
+  );
+
+  const m = Math.floor(totalSec / 60)
+    .toString()
+    .padStart(2, "0");
+
+  const s = (totalSec % 60)
+    .toString()
+    .padStart(2, "0");
+
   return `${m}:${s}`;
 }
 
@@ -316,8 +346,17 @@ function setWorkoutSelectorsLocked(locked) {
 
 async function getTodayTotalSeconds() {
   const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const endOfDay = startOfDay + 24 * 60 * 60 * 1000;
+
+  const startOfDay =
+    new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    ).getTime();
+
+  const endOfDay =
+    startOfDay +
+    24 * 60 * 60 * 1000;
 
   return new Promise((resolve) => {
     const tx = db.transaction("history", "readonly");
@@ -325,8 +364,16 @@ async function getTodayTotalSeconds() {
 
     req.onsuccess = () => {
       const total = (req.result || [])
-        .filter((r) => r.date >= startOfDay && r.date < endOfDay)
-        .reduce((sum, r) => sum + Number(r.duration || 0), 0);
+        .filter(
+          (r) =>
+            Number(r.date) >= startOfDay &&
+            Number(r.date) < endOfDay
+        )
+        .reduce(
+          (sum, r) =>
+            sum + Number(r.duration || 0),
+          0
+        );
 
       resolve(total);
     };
@@ -335,17 +382,27 @@ async function getTodayTotalSeconds() {
   });
 }
 
-/* ---------- URL HASH PRECONFIG ---------- */
+/* ---------- HASH PRECONFIG ---------- */
 function parseHashParams() {
-  const raw = (window.location.hash || "").replace(/^#/, "").trim();
+  const raw =
+    (window.location.hash || "")
+      .replace(/^#/, "")
+      .trim();
+
   if (!raw) return {};
 
   const params = {};
 
   raw.split("&").forEach((pair) => {
     const [k, v = ""] = pair.split("=");
-    const key = decodeURIComponent((k || "").trim()).toLowerCase();
-    const value = decodeURIComponent((v || "").trim());
+
+    const key =
+      decodeURIComponent((k || "").trim())
+        .toLowerCase();
+
+    const value =
+      decodeURIComponent((v || "").trim());
+
     if (key) params[key] = value;
   });
 
@@ -353,29 +410,61 @@ function parseHashParams() {
 }
 
 function normalizeStartNow(value) {
-  if (value == null || String(value).trim() === "") return true;
-  const v = String(value).trim().toLowerCase();
+  if (
+    value == null ||
+    String(value).trim() === ""
+  ) {
+    return true;
+  }
+
+  const v =
+    String(value)
+      .trim()
+      .toLowerCase();
+
   return v === "yes" || v === "true";
 }
 
 function normalizeLanguage(value) {
   const langs = Object.keys(VOICE_LANG);
-  if (value == null || String(value).trim() === "") return "random";
 
-  const v = String(value).trim().toLowerCase();
+  if (
+    value == null ||
+    String(value).trim() === ""
+  ) {
+    return "random";
+  }
+
+  const v =
+    String(value)
+      .trim()
+      .toLowerCase();
+
   return langs.includes(v) ? v : "en";
 }
 
 function normalizeSport(value) {
   if (!value) return null;
-  const v = String(value).trim().toLowerCase();
+
+  const v =
+    String(value)
+      .trim()
+      .toLowerCase();
+
   return trainings?.sports?.[v] ? v : null;
 }
 
 async function applyLaunchParamsFromHash() {
-  if (workout.running || !profile || !trainings?.sports) return;
+  if (
+    workout.running ||
+    !profile ||
+    !trainings?.sports
+  ) {
+    return;
+  }
 
   const params = parseHashParams();
+
   if (!Object.keys(params).length) return;
 
   const requestedSportRaw = params.sport;
@@ -386,75 +475,154 @@ async function applyLaunchParamsFromHash() {
   langModeSel.value = requestedLang;
 
   if (!requestedSportRaw) {
-    statusEl.textContent = "Launch URL invalid: sport parameter is required.";
+    statusEl.textContent =
+      "Launch URL invalid: sport parameter is required.";
+
     return;
   }
 
   if (!requestedSport) {
-    statusEl.textContent = `Launch URL invalid: unknown sport "${requestedSportRaw}".`;
+    statusEl.textContent =
+      `Launch URL invalid: unknown sport "${requestedSportRaw}".`;
+
     return;
   }
 
   sportSel.value = requestedSport;
   workout.currentSport = requestedSport;
 
-  const coach = requestedLang === "random" ? "random" : requestedLang;
-  statusEl.textContent = autoStart
-    ? `Auto-launch configured: ${capitalize(requestedSport)} • coach ${coach}`
-    : `Preselected: ${capitalize(requestedSport)} • coach ${coach}`;
+  const coach =
+    requestedLang === "random"
+      ? "random"
+      : requestedLang;
 
-  if (autoStart && !workout.running) await startWorkout();
+  statusEl.textContent =
+    autoStart
+      ? `Auto-launch configured: ${capitalize(requestedSport)} • coach ${coach}`
+      : `Preselected: ${capitalize(requestedSport)} • coach ${coach}`;
+
+  if (
+    autoStart &&
+    !workout.running
+  ) {
+    await startWorkout();
+  }
 }
 
 /* ---------- SPEECH ---------- */
 function pickVoice(lang) {
-  const list = speechSynthesis.getVoices() || [];
-  const bcp47 = VOICE_LANG[lang] || "en-US";
+  const list =
+    speechSynthesis.getVoices() ||
+    [];
+
+  const bcp47 =
+    VOICE_LANG[lang] ||
+    "en-US";
 
   const female = list.filter(
-    (v) => v.lang === bcp47 && /female|woman|google.*female/i.test(v.name)
+    (v) =>
+      v.lang === bcp47 &&
+      /female|woman|google.*female/i.test(v.name)
   );
 
   if (female.length) return female[0];
-  return list.find((v) => v.lang === bcp47) || list[0] || null;
+
+  return (
+    list.find((v) => v.lang === bcp47) ||
+    list[0] ||
+    null
+  );
 }
 
-function speakText(text, langPref = "random") {
-  const langs = Object.keys(VOICE_LANG);
-  const chosen = langPref === "random"
-    ? langs[Math.floor(Math.random() * langs.length)]
-    : langPref;
+function speakText(
+  text,
+  langPref = "random"
+) {
+  const langs =
+    Object.keys(VOICE_LANG);
 
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = VOICE_LANG[chosen] || "en-US";
+  const chosen =
+    langPref === "random"
+      ? langs[
+          Math.floor(
+            Math.random() *
+            langs.length
+          )
+        ]
+      : langPref;
 
-  const voice = pickVoice(chosen);
+  const u =
+    new SpeechSynthesisUtterance(text);
+
+  u.lang =
+    VOICE_LANG[chosen] ||
+    "en-US";
+
+  const voice =
+    pickVoice(chosen);
+
   if (voice) u.voice = voice;
 
   speechSynthesis.speak(u);
 }
 
-function speakFromMap(map, langPref = "random") {
-  const langs = Object.keys(VOICE_LANG);
-  const chosen = langPref === "random"
-    ? langs[Math.floor(Math.random() * langs.length)]
-    : langPref;
+function speakFromMap(
+  map,
+  langPref = "random"
+) {
+  const langs =
+    Object.keys(VOICE_LANG);
 
-  const text = map[chosen] || map.en || Object.values(map)[0];
+  const chosen =
+    langPref === "random"
+      ? langs[
+          Math.floor(
+            Math.random() *
+            langs.length
+          )
+        ]
+      : langPref;
+
+  const text =
+    map[chosen] ||
+    map.en ||
+    Object.values(map)[0];
+
   speakText(text, chosen);
 
-  return { lang: chosen, text };
+  return {
+    lang: chosen,
+    text
+  };
 }
 
-function speakCommon(bucket, langPref = "random") {
+function speakCommon(
+  bucket,
+  langPref = "random"
+) {
   const pool = {};
 
-  Object.keys(VOICE_LANG).forEach((lang) => {
-    const arr = trainings.commonPhrases[bucket][lang] || [];
-    pool[lang] = arr.length ? arr[Math.floor(Math.random() * arr.length)] : null;
-  });
+  Object.keys(VOICE_LANG)
+    .forEach((lang) => {
+      const arr =
+        trainings.commonPhrases[bucket][lang] ||
+        [];
 
-  return speakFromMap(pool, langPref);
+      pool[lang] =
+        arr.length
+          ? arr[
+              Math.floor(
+                Math.random() *
+                arr.length
+              )
+            ]
+          : null;
+    });
+
+  return speakFromMap(
+    pool,
+    langPref
+  );
 }
 
 function canSpeak() {
@@ -463,14 +631,30 @@ function canSpeak() {
 
 /* ---------- HISTORY / RULES ---------- */
 async function getThisWeekHistory() {
-  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const weekAgo =
+    Date.now() -
+    7 * 24 * 60 * 60 * 1000;
 
   return new Promise((resolve) => {
-    const tx = db.transaction("history", "readonly");
-    const req = tx.objectStore("history").getAll();
+    const tx =
+      db.transaction(
+        "history",
+        "readonly"
+      );
+
+    const req =
+      tx.objectStore("history")
+        .getAll();
 
     req.onsuccess = () => {
-      resolve((req.result || []).filter((r) => Number(r.date) > weekAgo));
+      resolve(
+        (req.result || [])
+          .filter(
+            (r) =>
+              Number(r.date) >
+              weekAgo
+          )
+      );
     };
 
     req.onerror = () => resolve([]);
@@ -478,47 +662,82 @@ async function getThisWeekHistory() {
 }
 
 async function updateWeeklyChip() {
-  const hist = await getThisWeekHistory();
-  const fullDays = hist.filter((h) => h.fullDay).length;
+  const hist =
+    await getThisWeekHistory();
+
+  const fullDays =
+    hist.filter((h) => h.fullDay).length;
 
   if (ENFORCE_WEEKLY_LIMIT) {
-    weeklyChipEl.textContent = `${fullDays} / ${MAX_DAYS_PER_WEEK} days`;
-    playBtn.disabled = fullDays >= MAX_DAYS_PER_WEEK || workout.running;
+    weeklyChipEl.textContent =
+      `${fullDays} / ${MAX_DAYS_PER_WEEK} days`;
+
+    playBtn.disabled =
+      fullDays >= MAX_DAYS_PER_WEEK ||
+      workout.running;
   } else {
-    weeklyChipEl.textContent = `${fullDays} days this week`;
-    playBtn.disabled = workout.running;
+    weeklyChipEl.textContent =
+      `${fullDays} days this week`;
+
+    playBtn.disabled =
+      workout.running;
   }
 }
 
 async function canTrainToday() {
   if (!ENFORCE_WEEKLY_LIMIT) return true;
 
-  const hist = await getThisWeekHistory();
-  return hist.filter((h) => h.fullDay).length < MAX_DAYS_PER_WEEK;
+  const hist =
+    await getThisWeekHistory();
+
+  return (
+    hist.filter((h) => h.fullDay).length <
+    MAX_DAYS_PER_WEEK
+  );
 }
 
-async function saveSession(seconds) {
+async function saveSession(
+  seconds,
+  travelName = null
+) {
   const now = Date.now();
-  const todayTotalBefore = await getTodayTotalSeconds();
-  const fullDay = todayTotalBefore + seconds >= MIN_FULL_DAY - 1;
+
+  const todayTotalBefore =
+    await getTodayTotalSeconds();
+
+  const fullDay =
+    todayTotalBefore +
+      seconds >=
+    MIN_FULL_DAY - 1;
 
   return new Promise((resolve) => {
-    const tx = db.transaction("history", "readwrite");
+    const tx =
+      db.transaction(
+        "history",
+        "readwrite"
+      );
 
-    tx.objectStore("history").put({
-      id: now,
-      date: now,
-      duration: seconds,
-      fullDay,
-      sport: workout.currentSport
-    });
+    tx.objectStore("history")
+      .put({
+        id: now,
+        date: now,
+        duration: seconds,
+        fullDay,
+        sport: workout.currentSport,
+        travelName: travelName || null
+      });
 
-    tx.oncomplete = () => resolve(fullDay);
+    tx.oncomplete = () =>
+      resolve(fullDay);
   });
 }
 
 /* ---------- METRICS ---------- */
-function calcCalories(sport, weightKg, durationSec) {
+function calcCalories(
+  sport,
+  weightKg,
+  durationSec
+) {
   const MET = {
     boxing: 9,
     judo: 8,
@@ -528,25 +747,68 @@ function calcCalories(sport, weightKg, durationSec) {
     abs: 4
   }[sport] || 6;
 
-  return Math.round((MET * 3.5 * weightKg / 200) * (durationSec / 60));
+  return Math.round(
+    (
+      MET *
+      3.5 *
+      weightKg /
+      200
+    ) *
+    (
+      durationSec /
+      60
+    )
+  );
 }
 
-function estimateDistance(sport, durationSec) {
+function estimateDistance(
+  sport,
+  durationSec
+) {
   if (sport !== "bike") return null;
-  return +(22 * (durationSec / 3600)).toFixed(2);
+
+  return +(
+    22 *
+    (
+      durationSec /
+      3600
+    )
+  ).toFixed(2);
 }
 
 function updateMetrics() {
-  const sport = workout.currentSport ||
+  const sport =
+    workout.currentSport ||
     sportSel.value ||
-    Object.keys(trainings?.sports || { bike: 1 })[0];
+    Object.keys(
+      trainings?.sports ||
+      { bike: 1 }
+    )[0];
 
-  const elapsed = workout.running ? getElapsedSecs() : workout.sessionSecs;
-  const cals = calcCalories(sport, profile?.weight || 70, elapsed);
-  const km = estimateDistance(sport, elapsed);
+  const elapsed =
+    workout.running
+      ? getElapsedSecs()
+      : workout.sessionSecs;
 
-  let msg = `Calories ≈ ${cals}`;
-  if (km != null) msg += ` • Distance ≈ ${km} km`;
+  const cals =
+    calcCalories(
+      sport,
+      profile?.weight || 70,
+      elapsed
+    );
+
+  const km =
+    estimateDistance(
+      sport,
+      elapsed
+    );
+
+  let msg =
+    `Calories ≈ ${cals}`;
+
+  if (km != null) {
+    msg += ` • Distance ≈ ${km} km`;
+  }
 
   caloriesEl.textContent = msg;
 }
@@ -554,57 +816,122 @@ function updateMetrics() {
 /* ---------- ONBOARDING ---------- */
 async function handleSaveProfile() {
   const gender = obGender.value;
-  const weight = parseFloat(obWeight.value || "0");
-  const height = parseFloat(obHeight.value || "0");
+
+  const weight =
+    parseFloat(
+      obWeight.value ||
+      "0"
+    );
+
+  const height =
+    parseFloat(
+      obHeight.value ||
+      "0"
+    );
 
   if (!weight || !height) {
-    speakText("Please fill weight and height.", "en");
+    speakText(
+      "Please fill weight and height.",
+      "en"
+    );
+
     return;
   }
 
-  profile = { gender, weight, height };
+  profile = {
+    gender,
+    weight,
+    height
+  };
 
   await saveProfile(profile);
+
   toggleScreens(true);
+
   playBtn.disabled = false;
+
   await updateWeeklyChip();
   await applyLaunchParamsFromHash();
 }
 
 /* ---------- QUEUE ---------- */
 function buildQueueForSport(sportKey) {
-  const list = trainings.sports[sportKey].exercises.slice();
+  const list =
+    trainings.sports[
+      sportKey
+    ].exercises.slice();
 
-  for (let i = list.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [list[i], list[j]] = [list[j], list[i]];
+  for (
+    let i = list.length - 1;
+    i > 0;
+    i--
+  ) {
+    const j =
+      Math.floor(
+        Math.random() *
+        (i + 1)
+      );
+
+    [
+      list[i],
+      list[j]
+    ] = [
+      list[j],
+      list[i]
+    ];
   }
 
   return list;
 }
 
-/* ---------- INTRO SCHEDULER ---------- */
+/* ---------- INTRO ---------- */
 function scheduleIntroForCurrentExercise(pref) {
   if (introTimer) {
     clearTimeout(introTimer);
     introTimer = null;
   }
 
-  const myRunId = ++exerciseRunId;
-  const delay = Math.max(INTRO_DEBOUNCE_MS, skipMuteUntil - Date.now());
+  const myRunId =
+    ++exerciseRunId;
 
-  introTimer = setTimeout(() => {
-    if (!workout.running || myRunId !== exerciseRunId) return;
+  const delay =
+    Math.max(
+      INTRO_DEBOUNCE_MS,
+      skipMuteUntil -
+      Date.now()
+    );
 
-    if (Date.now() < skipMuteUntil) {
-      scheduleIntroForCurrentExercise(pref);
-      return;
-    }
+  introTimer =
+    setTimeout(() => {
+      if (
+        !workout.running ||
+        myRunId !== exerciseRunId
+      ) {
+        return;
+      }
 
-    const { lang } = speakFromMap(workout.ex.explanation, pref);
-    workout.displayLang = lang;
-    speakCommon("start", pref);
-  }, Math.max(0, delay));
+      if (
+        Date.now() <
+        skipMuteUntil
+      ) {
+        scheduleIntroForCurrentExercise(pref);
+        return;
+      }
+
+      const { lang } =
+        speakFromMap(
+          workout.ex.explanation,
+          pref
+        );
+
+      workout.displayLang = lang;
+
+      speakCommon(
+        "start",
+        pref
+      );
+
+    }, Math.max(0, delay));
 }
 
 /* ============================================================
@@ -612,205 +939,364 @@ function scheduleIntroForCurrentExercise(pref) {
    ============================================================ */
 
 function makeTravelRequestId() {
-  return `hery-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return (
+    `hery-${Date.now()}-` +
+    Math.random()
+      .toString(36)
+      .slice(2)
+  );
 }
 
-function buildTravelName(startedAt, sport) {
-  const d = new Date(Number(startedAt));
+function buildTravelName(
+  startedAt,
+  sport
+) {
+  const d =
+    new Date(
+      Number(startedAt)
+    );
 
   const datePart = [
     d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, "0"),
-    String(d.getDate()).padStart(2, "0")
+    String(
+      d.getMonth() + 1
+    ).padStart(2, "0"),
+    String(
+      d.getDate()
+    ).padStart(2, "0")
   ].join("-");
 
   const timePart = [
-    String(d.getHours()).padStart(2, "0"),
-    String(d.getMinutes()).padStart(2, "0"),
-    String(d.getSeconds()).padStart(2, "0")
+    String(
+      d.getHours()
+    ).padStart(2, "0"),
+    String(
+      d.getMinutes()
+    ).padStart(2, "0"),
+    String(
+      d.getSeconds()
+    ).padStart(2, "0")
   ].join("-");
 
-  return `Herytech ${sport || "training"} ${datePart} ${timePart}`;
+  return (
+    `Herytech ${sport || "training"} ` +
+    `${datePart} ${timePart}`
+  );
 }
 
-/*
-  Hidden but rendered iframe.
-  display:none is avoided because the iframe performs geolocation.
-*/
 function createHiddenTravelIframe() {
-  if (travelTrackerFrame?.isConnected) return travelTrackerFrame;
+  if (
+    travelTrackerFrame?.isConnected
+  ) {
+    return travelTrackerFrame;
+  }
 
-  const frame = document.createElement("iframe");
+  const frame =
+    document.createElement("iframe");
+
   frame.src = TRAVEL_URL;
   frame.title = "Herytech travel tracker";
   frame.allow = "geolocation";
-  frame.setAttribute("aria-hidden", "true");
+  frame.setAttribute(
+    "aria-hidden",
+    "true"
+  );
 
-  Object.assign(frame.style, {
-    position: "fixed",
-    width: "1px",
-    height: "1px",
-    left: "-10000px",
-    top: "-10000px",
-    border: "0",
-    opacity: "0",
-    pointerEvents: "none"
-  });
+  Object.assign(
+    frame.style,
+    {
+      position: "fixed",
+      width: "1px",
+      height: "1px",
+      left: "-10000px",
+      top: "-10000px",
+      border: "0",
+      opacity: "0",
+      pointerEvents: "none"
+    }
+  );
 
-  frame.addEventListener("load", () => {
-    frame.dataset.loaded = "1";
-  });
+  frame.addEventListener(
+    "load",
+    () => {
+      frame.dataset.loaded = "1";
+    }
+  );
 
   document.body.appendChild(frame);
+
   travelTrackerFrame = frame;
 
   return frame;
 }
 
-function rejectTravelRequestsForFrame(frame, reason = "Travel iframe closed.") {
-  for (const [requestId, pending] of travelRequests.entries()) {
-    if (pending.frame !== frame) continue;
+function rejectTravelRequestsForFrame(
+  frame,
+  reason = "Travel iframe closed."
+) {
+  for (
+    const [
+      requestId,
+      pending
+    ] of
+    travelRequests.entries()
+  ) {
+    if (
+      pending.frame !== frame
+    ) {
+      continue;
+    }
 
-    clearTimeout(pending.timeout);
-    travelRequests.delete(requestId);
-    pending.reject(new Error(reason));
+    clearTimeout(
+      pending.timeout
+    );
+
+    travelRequests.delete(
+      requestId
+    );
+
+    pending.reject(
+      new Error(reason)
+    );
   }
 }
 
 function destroyHiddenTravelIframe() {
   if (!travelTrackerFrame) return;
 
-  const frame = travelTrackerFrame;
+  const frame =
+    travelTrackerFrame;
+
   travelTrackerFrame = null;
 
   rejectTravelRequestsForFrame(frame);
 
-  try { frame.remove(); } catch {}
+  try {
+    frame.remove();
+  } catch {}
 }
 
 function waitForIframeLoad(frame) {
-  return new Promise((resolve, reject) => {
-    if (!frame) {
-      reject(new Error("Travel iframe unavailable."));
-      return;
+  return new Promise(
+    (resolve, reject) => {
+      if (!frame) {
+        reject(
+          new Error(
+            "Travel iframe unavailable."
+          )
+        );
+
+        return;
+      }
+
+      if (
+        frame.dataset.loaded ===
+        "1"
+      ) {
+        resolve();
+        return;
+      }
+
+      let finished = false;
+
+      const timeout =
+        setTimeout(() => {
+          if (finished) return;
+
+          finished = true;
+
+          reject(
+            new Error(
+              "Travel iframe load timeout."
+            )
+          );
+
+        }, TRAVEL_COMMAND_TIMEOUT_MS);
+
+      frame.addEventListener(
+        "load",
+        () => {
+          if (finished) return;
+
+          finished = true;
+
+          clearTimeout(timeout);
+
+          frame.dataset.loaded = "1";
+
+          resolve();
+
+        },
+        { once: true }
+      );
     }
-
-    if (frame.dataset.loaded === "1") {
-      resolve();
-      return;
-    }
-
-    let finished = false;
-
-    const timeout = setTimeout(() => {
-      if (finished) return;
-      finished = true;
-      reject(new Error("Travel iframe load timeout."));
-    }, TRAVEL_COMMAND_TIMEOUT_MS);
-
-    frame.addEventListener("load", () => {
-      if (finished) return;
-
-      finished = true;
-      clearTimeout(timeout);
-      frame.dataset.loaded = "1";
-      resolve();
-    }, { once: true });
-  });
+  );
 }
 
-async function sendTravelCommand(frame, command, params = {}) {
+async function sendTravelCommand(
+  frame,
+  command,
+  params = {}
+) {
   if (!frame?.contentWindow) {
-    throw new Error("Travel iframe is not available.");
+    throw new Error(
+      "Travel iframe is not available."
+    );
   }
 
   await waitForIframeLoad(frame);
 
-  return new Promise((resolve, reject) => {
-    const requestId = makeTravelRequestId();
+  return new Promise(
+    (resolve, reject) => {
+      const requestId =
+        makeTravelRequestId();
 
-    const timeout = setTimeout(() => {
-      travelRequests.delete(requestId);
-      reject(new Error(`Travel command timeout: ${command}`));
-    }, TRAVEL_COMMAND_TIMEOUT_MS);
+      const timeout =
+        setTimeout(() => {
+          travelRequests.delete(
+            requestId
+          );
 
-    travelRequests.set(requestId, {
-      resolve,
-      reject,
-      timeout,
-      frame
-    });
+          reject(
+            new Error(
+              `Travel command timeout: ${command}`
+            )
+          );
 
-    frame.contentWindow.postMessage({
-      type: "travel-command",
-      requestId,
-      command,
-      params
-    }, TRAVEL_ORIGIN);
-  });
+        }, TRAVEL_COMMAND_TIMEOUT_MS);
+
+      travelRequests.set(
+        requestId,
+        {
+          resolve,
+          reject,
+          timeout,
+          frame
+        }
+      );
+
+      frame.contentWindow.postMessage(
+        {
+          type: "travel-command",
+          requestId,
+          command,
+          params
+        },
+        TRAVEL_ORIGIN
+      );
+    }
+  );
 }
 
-/* Only accept responses from the exact Nali origin and our iframe windows. */
-window.addEventListener("message", (event) => {
-  if (event.origin !== TRAVEL_ORIGIN) return;
+window.addEventListener(
+  "message",
+  (event) => {
+    if (
+      event.origin !==
+      TRAVEL_ORIGIN
+    ) {
+      return;
+    }
 
-  const trackerWindow = travelTrackerFrame?.contentWindow;
-  const viewerWindow = travelViewerFrame?.contentWindow;
+    const trackerWindow =
+      travelTrackerFrame?.contentWindow;
 
-  if (event.source !== trackerWindow && event.source !== viewerWindow) return;
+    const viewerWindow =
+      travelViewerFrame?.contentWindow;
 
-  const data = event.data;
-  if (!data || data.type !== "travel-response" || !data.requestId) return;
+    if (
+      event.source !== trackerWindow &&
+      event.source !== viewerWindow
+    ) {
+      return;
+    }
 
-  const pending = travelRequests.get(data.requestId);
-  if (!pending) return;
+    const data = event.data;
 
-  clearTimeout(pending.timeout);
-  travelRequests.delete(data.requestId);
+    if (
+      !data ||
+      data.type !== "travel-response" ||
+      !data.requestId
+    ) {
+      return;
+    }
 
-  if (data.ok) {
-    pending.resolve(data.result);
-    return;
+    const pending =
+      travelRequests.get(
+        data.requestId
+      );
+
+    if (!pending) return;
+
+    clearTimeout(
+      pending.timeout
+    );
+
+    travelRequests.delete(
+      data.requestId
+    );
+
+    if (data.ok) {
+      pending.resolve(
+        data.result
+      );
+
+      return;
+    }
+
+    pending.reject(
+      new Error(
+        data.error?.message ||
+        data.error ||
+        `Travel command failed: ${data.command || "unknown"}`
+      )
+    );
   }
-
-  const message = data.error?.message ||
-    data.error ||
-    `Travel command failed: ${data.command || "unknown"}`;
-
-  pending.reject(new Error(message));
-});
+);
 
 async function startTravelTracking(travelName) {
   if (!travelName) return;
 
   activeTravelName = travelName;
-  const frame = createHiddenTravelIframe();
+
+  const frame =
+    createHiddenTravelIframe();
 
   try {
-    await sendTravelCommand(frame, "startTravel", {
-      name: travelName,
-      frequencyMs: TRAVEL_FREQUENCY_MS
-    });
+    await sendTravelCommand(
+      frame,
+      "startTravel",
+      {
+        name: travelName,
+        frequencyMs:
+          TRAVEL_FREQUENCY_MS
+      }
+    );
+
   } catch (err) {
-    /*
-      After reload, Nali may already have restored currentTravel.
-      An "already active" response therefore does not stop Herytech.
-    */
-    console.info("Travel start/resume:", err?.message || err);
+    console.info(
+      "Travel start/resume:",
+      err?.message || err
+    );
   }
 }
 
 function beginTravelTracking(travelName) {
-  travelStartPromise = startTravelTracking(travelName);
+  travelStartPromise =
+    startTravelTracking(
+      travelName
+    );
+
   return travelStartPromise;
 }
 
-async function endTravelTracking(travelName = activeTravelName) {
-  /*
-    Avoid endTravel overtaking startTravel if Stop is pressed immediately.
-  */
+async function endTravelTracking(
+  travelName = activeTravelName
+) {
   if (travelStartPromise) {
-    try { await travelStartPromise; } catch {}
+    try {
+      await travelStartPromise;
+    } catch {}
   }
 
   travelStartPromise = null;
@@ -821,16 +1307,81 @@ async function endTravelTracking(travelName = activeTravelName) {
   }
 
   try {
-    if (travelTrackerFrame?.contentWindow) {
-      await sendTravelCommand(travelTrackerFrame, "endTravel", {
-        name: travelName
-      });
+    if (
+      travelTrackerFrame?.contentWindow
+    ) {
+      await sendTravelCommand(
+        travelTrackerFrame,
+        "endTravel",
+        {
+          name: travelName
+        }
+      );
     }
+
   } catch (err) {
-    console.warn("Travel end failed:", err);
+    console.warn(
+      "Travel end failed:",
+      err
+    );
+
   } finally {
     activeTravelName = null;
     destroyHiddenTravelIframe();
+  }
+}
+
+async function getAvailableTravelNames() {
+  const existingTracker =
+    !!travelTrackerFrame?.isConnected;
+
+  const frame =
+    createHiddenTravelIframe();
+
+  try {
+    const result =
+      await sendTravelCommand(
+        frame,
+        "listTravels",
+        {}
+      );
+
+    const travels =
+      Array.isArray(result)
+        ? result
+        : Array.isArray(
+            result?.travels
+          )
+          ? result.travels
+          : [];
+
+    return new Set(
+      travels
+        .map(
+          (travel) =>
+            String(
+              travel?.name ||
+              ""
+            )
+        )
+        .filter(Boolean)
+    );
+
+  } catch (err) {
+    console.warn(
+      "Unable to retrieve travel availability:",
+      err
+    );
+
+    return new Set();
+
+  } finally {
+    if (
+      !workout.running &&
+      !existingTracker
+    ) {
+      destroyHiddenTravelIframe();
+    }
   }
 }
 
@@ -840,23 +1391,43 @@ async function endTravelTracking(travelName = activeTravelName) {
 
 async function startWorkout() {
   if (!trainings?.sports) {
-    statusEl.textContent = "Trainings not loaded.";
+    statusEl.textContent =
+      "Trainings not loaded.";
+
     return;
   }
 
   if (workout.running) return;
 
-  if (!(await canTrainToday())) {
-    statusEl.textContent = "Weekly limit reached. Rest soldier!";
+  if (
+    !(await canTrainToday())
+  ) {
+    statusEl.textContent =
+      "Weekly limit reached. Rest soldier!";
+
     playBtn.disabled = true;
+
     return;
   }
 
-  workout.currentSport = sportSel.value || Object.keys(trainings.sports)[0];
+  workout.currentSport =
+    sportSel.value ||
+    Object.keys(
+      trainings.sports
+    )[0];
 
-  if (!workout.queue.length || workout.currentSport !== workout.queueSport) {
-    workout.queue = buildQueueForSport(workout.currentSport);
-    workout.queueSport = workout.currentSport;
+  if (
+    !workout.queue.length ||
+    workout.currentSport !==
+      workout.queueSport
+  ) {
+    workout.queue =
+      buildQueueForSport(
+        workout.currentSport
+      );
+
+    workout.queueSport =
+      workout.currentSport;
   }
 
   workout.startedAt = Date.now();
@@ -864,13 +1435,13 @@ async function startWorkout() {
   workout.globalSec = 0;
   workout.running = true;
 
-  /* Sport and language cannot be changed while running. */
   setWorkoutSelectorsLocked(true);
 
-  activeTravelName = buildTravelName(
-    workout.startedAt,
-    workout.currentSport
-  );
+  activeTravelName =
+    buildTravelName(
+      workout.startedAt,
+      workout.currentSport
+    );
 
   playBtn.disabled = true;
   stopBtn.disabled = false;
@@ -880,16 +1451,19 @@ async function startWorkout() {
     running: true,
     startedAt: workout.startedAt,
     sport: workout.currentSport,
-    langPref: langModeSel.value || "random",
-    travelName: activeTravelName
+    langPref:
+      langModeSel.value ||
+      "random",
+    travelName:
+      activeTravelName
   });
 
-  /*
-    Start Nali without blocking workout coaching on GPS/network startup.
-  */
-  beginTravelTracking(activeTravelName);
+  beginTravelTracking(
+    activeTravelName
+  );
 
   nextExercise();
+
   await requestScreenWakeLock();
 }
 
@@ -897,26 +1471,46 @@ function nextExercise() {
   if (!workout.running) return;
 
   if (!workout.queue.length) {
-    workout.queue = buildQueueForSport(workout.currentSport);
+    workout.queue =
+      buildQueueForSport(
+        workout.currentSport
+      );
   }
 
-  workout.ex = workout.queue.pop();
+  workout.ex =
+    workout.queue.pop();
+
   workout.rep = 1;
   workout.repTime = 0;
   workout.pauseTime = 0;
   workout.inPause = false;
 
-  const pref = langModeSel.value || "random";
-  const langs = Object.keys(VOICE_LANG);
-  const chosen = pref === "random"
-    ? langs[Math.floor(Math.random() * langs.length)]
-    : pref;
+  const pref =
+    langModeSel.value ||
+    "random";
+
+  const langs =
+    Object.keys(VOICE_LANG);
+
+  const chosen =
+    pref === "random"
+      ? langs[
+          Math.floor(
+            Math.random() *
+            langs.length
+          )
+        ]
+      : pref;
 
   workout.displayLang = chosen;
 
-  exTitleEl.textContent = workout.ex.name;
+  exTitleEl.textContent =
+    workout.ex.name;
+
   exExplainEl.textContent =
-    workout.ex.explanation[workout.displayLang] ||
+    workout.ex.explanation[
+      workout.displayLang
+    ] ||
     workout.ex.explanation.en ||
     "—";
 
@@ -925,8 +1519,17 @@ function nextExercise() {
 
   scheduleIntroForCurrentExercise(pref);
 
-  if (workout.tickId) clearInterval(workout.tickId);
-  workout.tickId = setInterval(tick, 1000);
+  if (workout.tickId) {
+    clearInterval(
+      workout.tickId
+    );
+  }
+
+  workout.tickId =
+    setInterval(
+      tick,
+      1000
+    );
 }
 
 function tick() {
@@ -940,12 +1543,18 @@ function tick() {
     subtimerEl.textContent =
       `Pause ${workout.pauseTime}/${workout.ex.pause || 0}s`;
 
-    if (workout.pauseTime >= (workout.ex.pause || 0)) {
+    if (
+      workout.pauseTime >=
+      (workout.ex.pause || 0)
+    ) {
       workout.inPause = false;
       workout.repTime = 0;
 
       if (canSpeak()) {
-        speakCommon("start", langModeSel.value);
+        speakCommon(
+          "start",
+          langModeSel.value
+        );
       }
     }
 
@@ -956,19 +1565,38 @@ function tick() {
       `Rep ${workout.rep}/${workout.ex.reps} • ${workout.repTime}/${workout.ex.duration}s`;
 
     if (
-      workout.repTime === Math.floor(workout.ex.duration / 2) &&
+      workout.repTime ===
+        Math.floor(
+          workout.ex.duration / 2
+        ) &&
       canSpeak()
     ) {
-      speakCommon("encourage", langModeSel.value);
+      speakCommon(
+        "encourage",
+        langModeSel.value
+      );
     }
 
-    if (workout.repTime >= workout.ex.duration) {
-      if (canSpeak()) speakCommon("stop", langModeSel.value);
+    if (
+      workout.repTime >=
+      workout.ex.duration
+    ) {
+      if (canSpeak()) {
+        speakCommon(
+          "stop",
+          langModeSel.value
+        );
+      }
 
-      if (workout.rep < workout.ex.reps) {
+      if (
+        workout.rep <
+        workout.ex.reps
+      ) {
         workout.rep++;
-        workout.inPause = !!workout.ex.pause;
+        workout.inPause =
+          !!workout.ex.pause;
         workout.pauseTime = 0;
+
       } else {
         updateMetrics();
         nextExercise();
@@ -976,46 +1604,73 @@ function tick() {
     }
   }
 
-  const elapsed = getElapsedSecs();
+  const elapsed =
+    getElapsedSecs();
 
-  if (elapsed === 1800 && canSpeak()) {
-    speakText("Thirty minutes. Ping.", "en");
+  if (
+    elapsed === 1800 &&
+    canSpeak()
+  ) {
+    speakText(
+      "Thirty minutes. Ping.",
+      "en"
+    );
   }
 
-  if (elapsed === 5400 && canSpeak()) {
-    speakText("One hour thirty. Ping.", "en");
+  if (
+    elapsed === 5400 &&
+    canSpeak()
+  ) {
+    speakText(
+      "One hour thirty. Ping.",
+      "en"
+    );
   }
 
-  if (elapsed === 7200 && canSpeak()) {
-    speakText("Two hours reached. Warning.", "en");
+  if (
+    elapsed === 7200 &&
+    canSpeak()
+  ) {
+    speakText(
+      "Two hours reached. Warning.",
+      "en"
+    );
   }
 
   updateMetrics();
 }
 
-/*
-  Resume keeps total elapsed time exact even though the individual
-  exercise queue is not persisted.
-*/
 function backgroundTick() {
   if (!workout.running) return;
 
   renderElapsedIntoUI();
-  subtimerEl.textContent = "Running in background…";
+
+  subtimerEl.textContent =
+    "Running in background…";
+
   updateMetrics();
 }
 
 function skipExercise() {
-  if (!workout.running || !workout.ex) return;
+  if (
+    !workout.running ||
+    !workout.ex
+  ) {
+    return;
+  }
 
-  try { speechSynthesis.cancel(); } catch {}
+  try {
+    speechSynthesis.cancel();
+  } catch {}
 
   if (introTimer) {
     clearTimeout(introTimer);
     introTimer = null;
   }
 
-  skipMuteUntil = Date.now() + SKIP_SILENCE_MS;
+  skipMuteUntil =
+    Date.now() +
+    SKIP_SILENCE_MS;
 
   updateMetrics();
   nextExercise();
@@ -1024,16 +1679,27 @@ function skipExercise() {
 async function stopWorkout() {
   if (!workout.running) return;
 
-  const realSecs = getElapsedSecs();
-  const travelToEnd = activeTravelName;
+  const realSecs =
+    getElapsedSecs();
+
+  const travelForHistory =
+    activeTravelName;
 
   workout.running = false;
+
   setWorkoutSelectorsLocked(false);
 
-  if (workout.tickId) clearInterval(workout.tickId);
+  if (workout.tickId) {
+    clearInterval(
+      workout.tickId
+    );
+  }
+
   workout.tickId = null;
 
-  try { speechSynthesis.cancel(); } catch {}
+  try {
+    speechSynthesis.cancel();
+  } catch {}
 
   if (introTimer) {
     clearTimeout(introTimer);
@@ -1044,145 +1710,305 @@ async function stopWorkout() {
   playBtn.disabled = false;
   skipBtn.disabled = true;
 
-  /*
-    End travel first so Nali can attempt its final GPS sample.
-    The iframe is removed by endTravelTracking().
-  */
-  await endTravelTracking(travelToEnd);
+  await endTravelTracking(
+    travelForHistory
+  );
 
   await clearRuntime();
   await releaseScreenWakeLock();
 
-  const fullDay = await saveSession(realSecs);
+  const fullDay =
+    await saveSession(
+      realSecs,
+      travelForHistory
+    );
+
   await updateWeeklyChip();
 
-  const hist = await getThisWeekHistory();
-  hist.sort((a, b) => Number(a.date) - Number(b.date));
+  const hist =
+    await getThisWeekHistory();
+
+  hist.sort(
+    (a, b) =>
+      Number(a.date) -
+      Number(b.date)
+  );
 
   if (hist.length >= 2) {
-    const prev = hist[hist.length - 2];
-    const diff = realSecs - Number(prev.duration || 0);
-    const sign = diff >= 0 ? "+" : "–";
+    const prev =
+      hist[
+        hist.length - 2
+      ];
+
+    const diff =
+      realSecs -
+      Number(
+        prev.duration ||
+        0
+      );
+
+    const sign =
+      diff >= 0
+        ? "+"
+        : "–";
 
     lastPerfEl.textContent =
       `Last: ${formatMMSS(Number(prev.duration || 0))} • ` +
       `Today: ${formatMMSS(realSecs)} (${sign}${formatMMSS(Math.abs(diff))})`;
+
   } else {
-    lastPerfEl.textContent = `Today: ${formatMMSS(realSecs)}`;
+    lastPerfEl.textContent =
+      `Today: ${formatMMSS(realSecs)}`;
   }
 
   if (ENFORCE_WEEKLY_LIMIT) {
-    statusEl.textContent = fullDay
-      ? "Full day logged. Hydrate and recover."
-      : "Session logged (under 60 min).";
+    statusEl.textContent =
+      fullDay
+        ? "Full day logged. Hydrate and recover."
+        : "Session logged (under 60 min).";
+
   } else {
-    statusEl.textContent = fullDay
-      ? "Full day logged!"
-      : "Session logged!";
+    statusEl.textContent =
+      fullDay
+        ? "Full day logged!"
+        : "Session logged!";
   }
 
-  workout.sessionSecs = realSecs;
+  workout.sessionSecs =
+    realSecs;
+
   renderElapsedIntoUI();
 }
 
 /* ---------- HISTORY STORAGE ---------- */
 async function getHistoryAll() {
   return new Promise((resolve) => {
-    const tx = db.transaction("history", "readonly");
-    const req = tx.objectStore("history").getAll();
-    req.onsuccess = () => resolve(req.result || []);
-    req.onerror = () => resolve([]);
+    const tx =
+      db.transaction(
+        "history",
+        "readonly"
+      );
+
+    const req =
+      tx.objectStore("history")
+        .getAll();
+
+    req.onsuccess = () =>
+      resolve(
+        req.result || []
+      );
+
+    req.onerror = () =>
+      resolve([]);
   });
 }
 
-async function updateHistoryRecord(id, patch) {
+async function updateHistoryRecord(
+  id,
+  patch
+) {
   return new Promise((resolve) => {
-    const tx = db.transaction("history", "readwrite");
-    const store = tx.objectStore("history");
-    const g = store.get(id);
+    const tx =
+      db.transaction(
+        "history",
+        "readwrite"
+      );
+
+    const store =
+      tx.objectStore(
+        "history"
+      );
+
+    const g =
+      store.get(id);
 
     g.onsuccess = () => {
-      const row = g.result;
+      const row =
+        g.result;
 
       if (!row) {
         resolve(false);
         return;
       }
 
-      store.put({ ...row, ...patch });
+      store.put({
+        ...row,
+        ...patch
+      });
     };
 
-    g.onerror = () => resolve(false);
-    tx.oncomplete = () => resolve(true);
+    g.onerror = () =>
+      resolve(false);
+
+    tx.oncomplete = () =>
+      resolve(true);
   });
 }
 
 async function recomputeFullDayForEndTs(endTs) {
-  const d = new Date(Number(endTs));
-  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  const end = start + 24 * 60 * 60 * 1000;
+  const d =
+    new Date(
+      Number(endTs)
+    );
 
-  const all = await getHistoryAll();
-  const dayItems = all.filter(
-    (r) => Number(r.date) >= start && Number(r.date) < end
-  );
+  const start =
+    new Date(
+      d.getFullYear(),
+      d.getMonth(),
+      d.getDate()
+    ).getTime();
 
-  const dayTotal = dayItems.reduce(
-    (sum, r) => sum + Number(r.duration || 0),
-    0
-  );
+  const end =
+    start +
+    24 * 60 * 60 * 1000;
 
-  const fullDayFlag = dayTotal >= MIN_FULL_DAY - 1;
+  const all =
+    await getHistoryAll();
+
+  const dayItems =
+    all.filter(
+      (r) =>
+        Number(r.date) >= start &&
+        Number(r.date) < end
+    );
+
+  const dayTotal =
+    dayItems.reduce(
+      (sum, r) =>
+        sum +
+        Number(
+          r.duration ||
+          0
+        ),
+      0
+    );
+
+  const fullDayFlag =
+    dayTotal >=
+    MIN_FULL_DAY - 1;
 
   await new Promise((resolve) => {
-    const tx = db.transaction("history", "readwrite");
-    const store = tx.objectStore("history");
+    const tx =
+      db.transaction(
+        "history",
+        "readwrite"
+      );
+
+    const store =
+      tx.objectStore(
+        "history"
+      );
 
     dayItems.forEach((r) => {
-      store.put({ ...r, fullDay: fullDayFlag });
+      store.put({
+        ...r,
+        fullDay:
+          fullDayFlag
+      });
     });
 
-    tx.oncomplete = () => resolve(true);
-    tx.onerror = () => resolve(true);
+    tx.oncomplete = () =>
+      resolve(true);
+
+    tx.onerror = () =>
+      resolve(true);
   });
 }
 
-/* ---------- EDIT HISTORY DURATION ---------- */
+/* ---------- EDIT HISTORY ---------- */
 async function editHistoryDurationById(id) {
-  const all = await getHistoryAll();
-  const it = all.find((x) => String(x.id) === String(id));
+  const all =
+    await getHistoryAll();
+
+  const it =
+    all.find(
+      (x) =>
+        String(x.id) ===
+        String(id)
+    );
+
   if (!it) return;
 
-  const currentMin = Math.max(
-    15,
-    Math.min(
-      240,
-      Math.round((Number(it.duration || 0) / 60) / 15) * 15 || 15
-    )
-  );
+  const currentMin =
+    Math.max(
+      15,
+      Math.min(
+        240,
+        Math.round(
+          (
+            Number(
+              it.duration ||
+              0
+            ) /
+            60
+          ) /
+          15
+        ) *
+        15 ||
+        15
+      )
+    );
 
-  const raw = prompt(
-    "Duration (minutes) — 15 to 240, step 15",
-    String(currentMin)
-  );
+  const raw =
+    prompt(
+      "Duration (minutes) — 15 to 240, step 15",
+      String(currentMin)
+    );
 
   if (raw == null) return;
 
-  const m = Number(raw);
+  const m =
+    Number(raw);
+
   if (!Number.isFinite(m)) return;
 
-  const snapped = Math.round(m / 15) * 15;
-  const clamped = Math.max(15, Math.min(240, snapped));
-  const newSec = clamped * 60;
+  const snapped =
+    Math.round(
+      m / 15
+    ) *
+    15;
 
-  const oldEnd = Number(it.date);
-  const oldSec = Number(it.duration || 0);
-  const newEnd = oldEnd - ((oldSec - newSec) * 1000);
+  const clamped =
+    Math.max(
+      15,
+      Math.min(
+        240,
+        snapped
+      )
+    );
 
-  const ok = await updateHistoryRecord(it.id, {
-    duration: newSec,
-    date: newEnd
-  });
+  const newSec =
+    clamped * 60;
+
+  const oldEnd =
+    Number(it.date);
+
+  const oldSec =
+    Number(
+      it.duration ||
+      0
+    );
+
+  const newEnd =
+    oldEnd -
+    (
+      (
+        oldSec -
+        newSec
+      ) *
+      1000
+    );
+
+  const ok =
+    await updateHistoryRecord(
+      it.id,
+      {
+        duration:
+          newSec,
+        date:
+          newEnd
+      }
+    );
 
   if (!ok) return;
 
@@ -1194,72 +2020,215 @@ async function editHistoryDurationById(id) {
 
 /* ---------- HISTORY POPUP ---------- */
 async function openHistory() {
-  const tx = db.transaction("history", "readonly");
-  const req = tx.objectStore("history").getAll();
+  historyModal.classList.remove("hidden");
+  historyModal.style.display = "grid";
 
-  req.onsuccess = () => {
-    const items = (req.result || [])
-      .sort((a, b) => Number(b.date) - Number(a.date));
+  historyModal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
 
-    if (!items.length) {
-      historyList.innerHTML =
-        `<div class="hist-item"><div>No sessions yet.</div></div>`;
-    } else {
-      let html = "";
-      let lastDay = null;
+  document.body.classList.add(
+    "modal-open"
+  );
 
-      for (const it of items) {
-        const d = new Date(Number(it.date));
-        const dayKey = d.toLocaleDateString(undefined, {
+  historyList.innerHTML =
+    `<div class="hist-item"><div>Loading history…</div></div>`;
+
+  const [
+    items,
+    availableTravels
+  ] = await Promise.all([
+    getHistoryAll(),
+    getAvailableTravelNames()
+  ]);
+
+  items.sort(
+    (a, b) =>
+      Number(b.date) -
+      Number(a.date)
+  );
+
+  if (!items.length) {
+    historyList.innerHTML =
+      `<div class="hist-item"><div>No sessions yet.</div></div>`;
+
+    return;
+  }
+
+  let html = "";
+  let lastDay = null;
+
+  for (const it of items) {
+    const d =
+      new Date(
+        Number(it.date)
+      );
+
+    const dayKey =
+      d.toLocaleDateString(
+        undefined,
+        {
           year: "numeric",
           month: "short",
           day: "numeric"
-        });
-
-        if (dayKey !== lastDay) {
-          html += `<div class="hist-day-sep"><strong>${dayKey}</strong></div>`;
-          lastDay = dayKey;
         }
+      );
 
-        html += renderHistItem(it);
-      }
+    if (dayKey !== lastDay) {
+      html +=
+        `<div class="hist-day-sep"><strong>${escapeHtml(dayKey)}</strong></div>`;
 
-      historyList.innerHTML = html;
-
-      historyList.querySelectorAll(".hist-item[data-id]").forEach((el) => {
-        el.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          editHistoryDurationById(el.getAttribute("data-id"));
-        });
-      });
+      lastDay = dayKey;
     }
 
-    historyModal.classList.remove("hidden");
-    historyModal.style.display = "grid";
-    historyModal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
-  };
+    const travelAvailable =
+      !!it.travelName &&
+      availableTravels.has(
+        String(it.travelName)
+      );
+
+    html +=
+      renderHistItem(
+        it,
+        travelAvailable
+      );
+  }
+
+  historyList.innerHTML = html;
+
+  historyList
+    .querySelectorAll(
+      ".hist-item[data-id]"
+    )
+    .forEach((el) => {
+      el.addEventListener(
+        "click",
+        (ev) => {
+          if (
+            ev.target.closest(
+              ".travel-view-btn"
+            )
+          ) {
+            return;
+          }
+
+          ev.stopPropagation();
+
+          editHistoryDurationById(
+            el.getAttribute(
+              "data-id"
+            )
+          );
+        }
+      );
+    });
+
+  historyList
+    .querySelectorAll(
+      ".travel-view-btn:not([disabled])"
+    )
+    .forEach((button) => {
+      button.addEventListener(
+        "click",
+        (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+
+          const travelName =
+            button.getAttribute(
+              "data-travel-name"
+            );
+
+          if (travelName) {
+            openTravelViewer(
+              travelName
+            );
+          }
+        }
+      );
+    });
 }
 
-function renderHistItem(it) {
-  const d = new Date(Number(it.date));
-  const when = d.toLocaleString();
-  const dur = formatMMSS(Number(it.duration || 0));
+function renderHistItem(
+  it,
+  travelAvailable
+) {
+  const d =
+    new Date(
+      Number(it.date)
+    );
 
-  const badge = it.fullDay
-    ? `<span class="badge green">🥇Full day</span>`
-    : `<span class="badge gray">Partial</span>`;
+  const when =
+    d.toLocaleString();
 
-  const sportInitial = it.sport
-    ? ([...it.sport][0] || "").toUpperCase()
-    : "";
+  const dur =
+    formatMMSS(
+      Number(
+        it.duration ||
+        0
+      )
+    );
+
+  const badge =
+    it.fullDay
+      ? `<span class="badge green">🥇Full day</span>`
+      : `<span class="badge gray">Partial</span>`;
+
+  const sportInitial =
+    it.sport
+      ? (
+          [
+            ...it.sport
+          ][0] ||
+          ""
+        ).toUpperCase()
+      : "";
+
+  const travelName =
+    String(
+      it.travelName ||
+      ""
+    );
+
+  const travelButton =
+    travelAvailable
+      ? `
+        <button
+          type="button"
+          class="chip travel-view-btn"
+          data-travel-name="${escapeHtmlAttribute(travelName)}"
+          aria-label="View travel">
+          View travel
+        </button>
+      `
+      : `
+        <button
+          type="button"
+          class="chip travel-view-btn"
+          aria-label="Travel unavailable"
+          disabled>
+          View travel
+        </button>
+      `;
 
   return `
-    <div class="hist-item" data-id="${it.id}" style="cursor:pointer">
+    <div
+      class="hist-item"
+      data-id="${escapeHtmlAttribute(String(it.id))}"
+      style="cursor:pointer"
+    >
       <div class="hist-left">
-        <strong>${when}</strong>
-        <span>Duration: ${dur}${sportInitial ? ` • ${sportInitial}` : ""}</span>
+        <strong>${escapeHtml(when)}</strong>
+
+        <span>
+          Duration: ${escapeHtml(dur)}
+          ${sportInitial ? ` • ${escapeHtml(sportInitial)}` : ""}
+        </span>
+
+        ${travelButton}
       </div>
+
       ${badge}
     </div>
   `;
@@ -1268,197 +2237,84 @@ function renderHistItem(it) {
 function closeHistoryModal() {
   historyModal.classList.add("hidden");
   historyModal.style.display = "none";
-  historyModal.setAttribute("aria-hidden", "true");
+
+  historyModal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
 
   if (!isAnyModalOpen()) {
-    document.body.classList.remove("modal-open");
+    document.body.classList.remove(
+      "modal-open"
+    );
   }
 }
 
-/* ============================================================
-   TRAVEL LIST
-   ============================================================ */
-
-async function openTravelsModal() {
-  travelsList.innerHTML =
-    `<div class="hist-item"><div>Loading travels…</div></div>`;
-
-  travelsModal.classList.remove("hidden");
-  travelsModal.style.display = "grid";
-  travelsModal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modal-open");
-
-  /*
-    Nali owns its travel IndexedDB.
-    Herytech retrieves the list through postMessage.
-  */
-  const frame = createHiddenTravelIframe();
-
-  try {
-    const result = await sendTravelCommand(frame, "listTravels", {});
-
-    const travels = Array.isArray(result)
-      ? result
-      : Array.isArray(result?.travels)
-        ? result.travels
-        : [];
-
-    renderTravelList(travels);
-
-  } catch (err) {
-    console.error("Unable to load travels:", err);
-
-    travelsList.innerHTML =
-      `<div class="hist-item"><div>Unable to load travels.</div></div>`;
-
-    if (!workout.running) destroyHiddenTravelIframe();
-  }
-}
-
-function renderTravelList(travels) {
-  if (!travels.length) {
-    travelsList.innerHTML =
-      `<div class="hist-item"><div>No travels yet.</div></div>`;
-    return;
-  }
-
-  const sorted = travels.slice().sort((a, b) => {
-    const da = Number(a.startTimestamp) || Number(a.date) || 0;
-    const db = Number(b.startTimestamp) || Number(b.date) || 0;
-    return db - da;
-  });
-
-  travelsList.innerHTML = sorted.map((travel) => {
-    const originalName = String(travel.name || "");
-    const displayName = escapeHtml(originalName || "Unnamed travel");
-
-    const rawDate =
-      Number(travel.startTimestamp) ||
-      Number(travel.date) ||
-      0;
-
-    const when = rawDate
-      ? new Date(rawDate).toLocaleString()
-      : "";
-
-    const durationMs = Number(travel.durationMs) || 0;
-    const durationText = durationMs > 0
-      ? formatTravelDuration(durationMs)
-      : "";
-
-    return `
-      <div class="hist-item">
-        <div class="hist-left">
-          <strong>${displayName}</strong>
-          <span>
-            ${escapeHtml(when)}
-            ${durationText ? ` • ${escapeHtml(durationText)}` : ""}
-          </span>
-        </div>
-
-        <button
-          type="button"
-          class="chip travel-open-btn"
-          data-travel-name="${escapeHtmlAttribute(originalName)}"
-          aria-label="Open travel">
-          Open
-        </button>
-      </div>
-    `;
-  }).join("");
-
-  travelsList.querySelectorAll(".travel-open-btn").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-
-      const name = button.getAttribute("data-travel-name");
-      if (name) openTravelViewer(name);
-    });
-  });
-}
-
-function formatTravelDuration(durationMs) {
-  const totalSec = Math.max(0, Math.floor(Number(durationMs) / 1000));
-  const hours = Math.floor(totalSec / 3600);
-  const minutes = Math.floor((totalSec % 3600) / 60);
-  const seconds = totalSec % 60;
-
-  if (hours) return `${hours}h ${minutes}m`;
-  if (minutes) return `${minutes}m ${seconds}s`;
-  return `${seconds}s`;
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  })[char]);
-}
-
-function escapeHtmlAttribute(value) {
-  return escapeHtml(value);
-}
-
-function closeTravelsModal() {
-  travelsModal.classList.add("hidden");
-  travelsModal.style.display = "none";
-  travelsModal.setAttribute("aria-hidden", "true");
-
-  /*
-    During a workout the hidden iframe is GPS tracking and must remain alive.
-  */
-  if (!workout.running && !isTravelViewerOpen()) {
-    destroyHiddenTravelIframe();
-  }
-
-  if (!isAnyModalOpen()) {
-    document.body.classList.remove("modal-open");
-  }
-}
-
-/* ============================================================
-   TRAVEL VIEWER
-   ============================================================ */
-
+/* ---------- TRAVEL VIEWER ---------- */
 async function openTravelViewer(name) {
   if (!name) return;
 
   destroyTravelViewerFrame();
 
   travelViewerTitle.textContent = name;
+
   travelViewerModal.classList.remove("hidden");
   travelViewerModal.style.display = "grid";
-  travelViewerModal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modal-open");
 
-  const frame = document.createElement("iframe");
+  travelViewerModal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  document.body.classList.add(
+    "modal-open"
+  );
+
+  const frame =
+    document.createElement("iframe");
+
   frame.src = TRAVEL_URL;
   frame.title = `Travel: ${name}`;
   frame.allow = "geolocation";
 
-  Object.assign(frame.style, {
-    display: "block",
-    width: "100%",
-    height: "100%",
-    minHeight: "65vh",
-    border: "0"
-  });
+  Object.assign(
+    frame.style,
+    {
+      display: "block",
+      width: "100%",
+      height: "100%",
+      minHeight: "65vh",
+      border: "0"
+    }
+  );
 
-  frame.addEventListener("load", () => {
-    frame.dataset.loaded = "1";
-  });
+  frame.addEventListener(
+    "load",
+    () => {
+      frame.dataset.loaded = "1";
+    }
+  );
 
   travelViewerContainer.innerHTML = "";
-  travelViewerContainer.appendChild(frame);
+
+  travelViewerContainer.appendChild(
+    frame
+  );
+
   travelViewerFrame = frame;
 
   try {
-    await sendTravelCommand(frame, "openTravel", { name });
+    await sendTravelCommand(
+      frame,
+      "openTravel",
+      { name }
+    );
+
   } catch (err) {
-    console.error("Unable to open travel:", err);
+    console.error(
+      "Unable to open travel:",
+      err
+    );
   }
 }
 
@@ -1468,12 +2324,16 @@ function destroyTravelViewerFrame() {
     return;
   }
 
-  const frame = travelViewerFrame;
+  const frame =
+    travelViewerFrame;
+
   travelViewerFrame = null;
 
   rejectTravelRequestsForFrame(frame);
 
-  try { frame.remove(); } catch {}
+  try {
+    frame.remove();
+  } catch {}
 
   travelViewerContainer.innerHTML = "";
 }
@@ -1481,45 +2341,78 @@ function destroyTravelViewerFrame() {
 function closeTravelViewerModal() {
   travelViewerModal.classList.add("hidden");
   travelViewerModal.style.display = "none";
-  travelViewerModal.setAttribute("aria-hidden", "true");
+
+  travelViewerModal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
 
   destroyTravelViewerFrame();
 
   if (!isAnyModalOpen()) {
-    document.body.classList.remove("modal-open");
+    document.body.classList.remove(
+      "modal-open"
+    );
   }
-}
-
-function isTravelViewerOpen() {
-  return travelViewerModal?.style.display !== "none";
 }
 
 function isAnyModalOpen() {
   return (
     historyModal?.style.display !== "none" ||
-    travelsModal?.style.display !== "none" ||
     travelViewerModal?.style.display !== "none"
   );
 }
 
-/* ---------- VISIBILITY & WAKE LOCK ---------- */
+/* ---------- HTML ESCAPING ---------- */
+function escapeHtml(value) {
+  return String(value)
+    .replace(
+      /[&<>"']/g,
+      (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]
+    );
+}
+
+function escapeHtmlAttribute(value) {
+  return escapeHtml(value);
+}
+
+/* ---------- WAKE LOCK ---------- */
 async function requestScreenWakeLock() {
   try {
     if ("wakeLock" in navigator) {
-      wakeLock = await navigator.wakeLock.request("screen");
-      wakeLock.addEventListener?.("release", () => {});
+      wakeLock =
+        await navigator
+          .wakeLock
+          .request("screen");
+
+      wakeLock.addEventListener?.(
+        "release",
+        () => {}
+      );
     }
   } catch {}
 }
 
 async function releaseScreenWakeLock() {
-  try { await wakeLock?.release(); } catch {}
+  try {
+    await wakeLock?.release();
+  } catch {}
+
   wakeLock = null;
 }
 
 async function onVisibilityChange() {
   if (document.hidden) {
-    try { speechSynthesis.cancel(); } catch {}
+    try {
+      speechSynthesis.cancel();
+    } catch {}
+
     return;
   }
 
@@ -1527,10 +2420,17 @@ async function onVisibilityChange() {
 
   renderElapsedIntoUI();
   updateMetrics();
+
   await requestScreenWakeLock();
 
-  if (!introTimer && workout.ex) {
-    scheduleIntroForCurrentExercise(langModeSel.value || "random");
+  if (
+    !introTimer &&
+    workout.ex
+  ) {
+    scheduleIntroForCurrentExercise(
+      langModeSel.value ||
+      "random"
+    );
   }
 }
 
@@ -1543,7 +2443,8 @@ const TRAININGS_FALLBACK = {
       es: ["¡Empieza!", "¡Vamos!"],
       zh: ["开始!", "出发!"],
       ja: ["開始!", "行こう!"],
-      ru: ["Начинай!", "Вперед!"]
+      ru: ["Начинай!", "Вперед!"],
+      mg: ["Atombohy!", "Andao!"]
     },
 
     encourage: {
@@ -1552,7 +2453,8 @@ const TRAININGS_FALLBACK = {
       es: ["¡Sigue!", "¡Fuerza!"],
       zh: ["坚持!", "加油!"],
       ja: ["続けて!", "頑張れ!"],
-      ru: ["Продолжай!", "Держись!"]
+      ru: ["Продолжай!", "Держись!"],
+      mg: ["Tohizo!", "Mahereza!"]
     },
 
     stop: {
@@ -1561,7 +2463,8 @@ const TRAININGS_FALLBACK = {
       es: ["¡Para!", "¡Descansa!"],
       zh: ["停!", "休息!"],
       ja: ["止め!", "休め!"],
-      ru: ["Стоп!", "Отдых!"]
+      ru: ["Стоп!", "Отдых!"],
+      mg: ["Ajanony!", "Mialà sasatra!"]
     }
   },
 
@@ -1578,7 +2481,8 @@ const TRAININGS_FALLBACK = {
           es: "Jab izq y cruzado der. Guarda alta.",
           zh: "左刺拳接右直拳，保持防守，后脚转体。",
           ja: "左ジャブ→右クロス。ガード高く、後足でピボット。",
-          ru: "Левый джеб – правый кросс. Держи защиту, разворот стопы."
+          ru: "Левый джеб – правый кросс. Держи защиту, разворот стопы.",
+          mg: "Jab havia avy eo cross havanana. Tazomy ambony ny fiarovana ary ahodino ny tongotra aoriana."
         }
       }]
     },
@@ -1595,7 +2499,8 @@ const TRAININGS_FALLBACK = {
           es: "Entradas: kuzushi y tsukuri. Manga–solapa.",
           zh: "先崩再入身；抓袖抓领。",
           ja: "崩してから作りへ。袖・襟取り。",
-          ru: "Кузуси, затем цукури. Рукав-отворот."
+          ru: "Кузуси, затем цукури. Рукав-отворот.",
+          mg: "Avereno ny fidirana: kuzushi avy eo tsukuri. Tazomy ny tanany sy ny vozon'akanjo."
         }
       }]
     },
@@ -1612,7 +2517,8 @@ const TRAININGS_FALLBACK = {
           es: "Postura baja, rodillas hacia fuera.",
           zh: "马步下沉，膝外撑，背直。",
           ja: "馬歩を低く、膝を外へ。",
-          ru: "Ма бу низко, колени наружу."
+          ru: "Ма бу низко, колени наружу.",
+          mg: "Mijanòna ambany, avoahy ny lohalika ary tazomy mahitsy ny lamosina."
         }
       }]
     },
@@ -1629,7 +2535,8 @@ const TRAININGS_FALLBACK = {
           es: "Cuerpo alineado, extensión completa.",
           zh: "身体成一直线，完全伸直。",
           ja: "体を一直線に、肘を伸ばす。",
-          ru: "Корпус прямой, полная фиксация."
+          ru: "Корпус прямой, полная фиксация.",
+          mg: "Tazomy mahitsy ny vatana, ampanakaiky ny tany ny tratra ary ahitsio tanteraka ny sandry."
         }
       }]
     },
@@ -1646,7 +2553,8 @@ const TRAININGS_FALLBACK = {
           es: "Codos bajo hombros, core firme.",
           zh: "肘在肩下，核心收紧，背平直。",
           ja: "肘は肩の真下、体幹を締める。",
-          ru: "Локти под плечами, корпус в тонусе."
+          ru: "Локти под плечами, корпус в тонусе.",
+          mg: "Ataovy eo ambanin'ny soroka ny kiho, henjana ny kibo ary mahitsy ny lamosina."
         }
       }]
     },
@@ -1663,7 +2571,8 @@ const TRAININGS_FALLBACK = {
           es: "Cadencia estable ~90 RPM.",
           zh: "踏频约90，中等阻力稳骑。",
           ja: "約90RPMで安定、適度な負荷。",
-          ru: "Каденс ~90, среднее сопротивление."
+          ru: "Каденс ~90, среднее сопротивление.",
+          mg: "Tazomy ho eo amin'ny 90 RPM ny fihodinana ary ampiasao fanoherana antonony."
         }
       }]
     }
