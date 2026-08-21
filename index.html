@@ -5,7 +5,6 @@
   <title>Heri tech</title>
 
   <style>
-    /* Critical inline styles to prevent FOUC */
     body { visibility: hidden; opacity: 0; }
   </style>
 
@@ -34,6 +33,7 @@
       <div class="form">
         <label class="field">
           <span>Gender</span>
+
           <select id="ob-gender">
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -42,15 +42,33 @@
 
         <label class="field">
           <span>Weight (kg)</span>
-          <input id="ob-weight" type="number" inputmode="decimal" min="30" max="250" placeholder="70" />
+
+          <input
+            id="ob-weight"
+            type="number"
+            inputmode="decimal"
+            min="30"
+            max="250"
+            placeholder="70"
+          />
         </label>
 
         <label class="field">
           <span>Height (cm)</span>
-          <input id="ob-height" type="number" inputmode="numeric" min="120" max="230" placeholder="175" />
+
+          <input
+            id="ob-height"
+            type="number"
+            inputmode="numeric"
+            min="120"
+            max="230"
+            placeholder="175"
+          />
         </label>
 
-        <button id="ob-save" class="btn primary">Save & Continue</button>
+        <button id="ob-save" class="btn primary">
+          Save & Continue
+        </button>
       </div>
     </div>
   </section>
@@ -61,9 +79,20 @@
       <h1 class="brand">Herytech</h1>
 
       <div class="actions">
-        <button id="historyBtn" class="chip" aria-label="History">History</button>
-        <button id="travelsBtn" class="chip" aria-label="Travels">Travels</button>
-        <div class="weekly-chip" id="weeklyChip">0 / 5 days</div>
+        <button
+          id="historyBtn"
+          class="chip"
+          aria-label="History"
+        >
+          History
+        </button>
+
+        <div
+          class="weekly-chip"
+          id="weeklyChip"
+        >
+          0 / 5 days
+        </div>
       </div>
     </header>
 
@@ -71,12 +100,23 @@
       <div class="row between center">
 
         <div class="select-wrap">
-          <label for="sport" class="tiny-label">Sport</label>
+          <label
+            for="sport"
+            class="tiny-label"
+          >
+            Sport
+          </label>
+
           <select id="sport"></select>
         </div>
 
         <div class="select-wrap">
-          <label for="langMode" class="tiny-label">Coach voice</label>
+          <label
+            for="langMode"
+            class="tiny-label"
+          >
+            Coach voice
+          </label>
 
           <select id="langMode">
             <option value="random">Random Languages</option>
@@ -86,39 +126,96 @@
             <option value="zh">中文</option>
             <option value="ja">日本語</option>
             <option value="ru">Русский</option>
+            <option value="mg">Malagasy</option>
           </select>
         </div>
 
       </div>
 
       <div class="timer-wrap">
-        <div id="timer" class="timer">00:00</div>
-        <div id="subtimer" class="subtimer">—</div>
+        <div
+          id="timer"
+          class="timer"
+        >
+          00:00
+        </div>
+
+        <div
+          id="subtimer"
+          class="subtimer"
+        >
+          —
+        </div>
       </div>
 
       <div class="explain">
-        <div id="exTitle" class="ex-title">—</div>
-        <div id="exExplain" class="ex-text">—</div>
+        <div
+          id="exTitle"
+          class="ex-title"
+        >
+          —
+        </div>
+
+        <div
+          id="exExplain"
+          class="ex-text"
+        >
+          —
+        </div>
       </div>
 
-      <div id="status" class="status">Pick a sport and press play.</div>
+      <div
+        id="status"
+        class="status"
+      >
+        Pick a sport and press play.
+      </div>
 
       <div class="controls">
 
-        <button id="playBtn" class="fab" aria-label="Start">
-          <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+        <button
+          id="playBtn"
+          class="fab"
+          aria-label="Start"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="28"
+            height="28"
+            aria-hidden="true"
+          >
             <path d="M8 5v14l11-7z"></path>
           </svg>
         </button>
 
-        <button id="skipBtn" class="fab tertiary" aria-label="Skip" disabled>
-          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+        <button
+          id="skipBtn"
+          class="fab tertiary"
+          aria-label="Skip"
+          disabled
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="26"
+            height="26"
+            aria-hidden="true"
+          >
             <path d="M7 6l8 6-8 6V6zm9 0h2v12h-2z"></path>
           </svg>
         </button>
 
-        <button id="stopBtn" class="fab secondary" aria-label="Stop" disabled>
-          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+        <button
+          id="stopBtn"
+          class="fab secondary"
+          aria-label="Stop"
+          disabled
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            aria-hidden="true"
+          >
             <path d="M6 6h12v12H6z"></path>
           </svg>
         </button>
@@ -128,22 +225,41 @@
 
     <div class="row gap">
       <div class="card grow">
-        <h3 class="card-title small">Calories / Distance / Weight</h3>
-        <div id="calories" class="metric">—</div>
+        <h3 class="card-title small">
+          Calories / Distance / Weight
+        </h3>
+
+        <div
+          id="calories"
+          class="metric"
+        >
+          —
+        </div>
       </div>
 
       <div class="card grow">
-        <h3 class="card-title small">Last vs Today</h3>
-        <div id="lastPerf" class="metric">—</div>
+        <h3 class="card-title small">
+          Last vs Today
+        </h3>
+
+        <div
+          id="lastPerf"
+          class="metric"
+        >
+          —
+        </div>
       </div>
     </div>
 
     <footer class="foot">
-      <small>Max 6 full training days/week by default • 2 hours Full day by default</small>
+      <small>
+        Max 6 full training days/week by default •
+        2 hours Full day by default
+      </small>
     </footer>
   </section>
 
-  <!-- ---------- HISTORY MODAL ---------- -->
+  <!-- ---------- HISTORY ---------- -->
   <div
     id="historyModal"
     class="modal hidden"
@@ -154,48 +270,39 @@
   >
     <div class="modal-card">
       <div class="modal-head">
-        <h3 class="modal-title">Training History</h3>
+        <h3 class="modal-title">
+          Training History
+        </h3>
 
-        <button id="closeHistory" class="icon-btn" aria-label="Close">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <button
+          id="closeHistory"
+          class="icon-btn"
+          aria-label="Close"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            aria-hidden="true"
+          >
             <path d="M6 6l12 12M6 18L18 6"/>
           </svg>
         </button>
       </div>
 
-      <div id="historyList" class="modal-body"></div>
+      <div
+        id="historyList"
+        class="modal-body"
+      ></div>
     </div>
 
-    <div id="modalBackdrop" class="backdrop"></div>
+    <div
+      id="modalBackdrop"
+      class="backdrop"
+    ></div>
   </div>
 
-  <!-- ---------- TRAVELS MODAL ---------- -->
-  <div
-    id="travelsModal"
-    class="modal hidden"
-    aria-modal="true"
-    aria-hidden="true"
-    role="dialog"
-    style="display:none"
-  >
-    <div class="modal-card">
-      <div class="modal-head">
-        <h3 class="modal-title">Travels</h3>
-
-        <button id="closeTravels" class="icon-btn" aria-label="Close travels">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-            <path d="M6 6l12 12M6 18L18 6"/>
-          </svg>
-        </button>
-      </div>
-
-      <div id="travelsList" class="modal-body"></div>
-    </div>
-
-    <div id="travelsBackdrop" class="backdrop"></div>
-  </div>
-
-  <!-- ---------- TRAVEL VIEWER MODAL ---------- -->
+  <!-- ---------- TRAVEL VIEWER ---------- -->
   <div
     id="travelViewerModal"
     class="modal hidden"
@@ -215,10 +322,24 @@
       "
     >
       <div class="modal-head">
-        <h3 id="travelViewerTitle" class="modal-title">Travel</h3>
+        <h3
+          id="travelViewerTitle"
+          class="modal-title"
+        >
+          Travel
+        </h3>
 
-        <button id="closeTravelViewer" class="icon-btn" aria-label="Close travel">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <button
+          id="closeTravelViewer"
+          class="icon-btn"
+          aria-label="Close travel"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            aria-hidden="true"
+          >
             <path d="M6 6l12 12M6 18L18 6"/>
           </svg>
         </button>
