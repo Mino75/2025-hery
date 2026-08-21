@@ -1,96 +1,59 @@
-/* ========================= 
-   HERYTECH – Mobile-first (robust + silent-skip with auto-reschedule)
+/* =========================
+   HERYTECH – Mobile-first
+   Robust resume + Nali travel tracking
    ========================= */
 
 /* ---------- CONFIG ---------- */
-const MIN_FULL_DAY = 3600;     // Full-day threshold (seconds) 1h
+const MIN_FULL_DAY = 3600;
 const MAX_DAYS_PER_WEEK = 6;
+const ENFORCE_WEEKLY_LIMIT = false;
 
-// NEW VARIABLE: Set to false to allow unlimited training (no weekly limit)
-const ENFORCE_WEEKLY_LIMIT = false;  // Set to true to enforce 5-day limit, false to allow unlimited
+const VOICE_LANG = {
+  en: "en-US", fr: "fr-FR", es: "es-ES",
+  zh: "zh-CN", ja: "ja-JP", ru: "ru-RU"
+};
 
-const VOICE_LANG = { en:"en-US", fr:"fr-FR", es:"es-ES", zh:"zh-CN", ja:"ja-JP", ru:"ru-RU" };
+const SKIP_SILENCE_MS = 900;
+const INTRO_DEBOUNCE_MS = 650;
 
-/* Speech/skip behavior */
-const SKIP_SILENCE_MS = 900;      // mute window after each skip (extends with each skip)
-const INTRO_DEBOUNCE_MS = 650;    // delay before speaking intro of the current exercise
+/* ---------- NALI CONFIG ---------- */
+const TRAVEL_URL = "https://nali.kahiether.com/";
+const TRAVEL_ORIGIN = "https://nali.kahiether.com";
+const TRAVEL_FREQUENCY_MS = 60000;
+const TRAVEL_COMMAND_TIMEOUT_MS = 15000;
 
 /* ---------- GLOBAL STATE ---------- */
 let db, profile = null, trainings = null, voicesReady = false;
+let wakeLock = null;
+let skipMuteUntil = 0, introTimer = null, exerciseRunId = 0;
 
-// Workout state (robust + resumable)
 let workout = {
   running: false,
-  startedAt: null,        // ms timestamp — single source of truth for elapsed time
-  sessionSecs: 0,         // display copy (frozen at stop)
+  startedAt: null,
+  sessionSecs: 0,
   globalSec: 0,
-
   currentSport: null,
   queue: [],
   queueSport: null,
-
-  ex: null, rep: 0, repTime: 0, inPause: false, pauseTime: 0,
+  ex: null,
+  rep: 0,
+  repTime: 0,
+  inPause: false,
+  pauseTime: 0,
   displayLang: "en",
   tickId: null
 };
 
-// Skip/intro control
-let skipMuteUntil = 0;     // until when TTS is muted
-let introTimer = null;     // pending intro timer
-let exerciseRunId = 0;     // increments on each nextExercise()
-
-// Wake Lock (best-effort)
-let wakeLock = null;
-
-/* ---------- INDEXEDDB ---------- */
-/* Version bump to 3 — only adds the "runtime" store (history/profile remain unchanged) */
-const request = indexedDB.open("HerytechDB", 3);
-
-request.onupgradeneeded = (e) => {
-  db = e.target.result;
-
-  if (!db.objectStoreNames.contains("history")) {
-    db.createObjectStore("history", { keyPath:"id" });
-  }
-  if (!db.objectStoreNames.contains("profile")) {
-    db.createObjectStore("profile", { keyPath:"id" });
-  }
-  // New store for resilience (one record: id:"current")
-  if (!db.objectStoreNames.contains("runtime")) {
-    db.createObjectStore("runtime", { keyPath:"id" });
-  }
-};
-
-request.onsuccess = async (e) => {
-  db = e.target.result;
-
-  // Close DB cleanly if a future versionchange happens
-  db.onversionchange = () => {
-    try { db.close(); } catch {}
-    console.warn("DB version change; closed.");
-  };
-
-  profile = await loadProfile();
-  toggleScreens(!!profile);
-
-  trainings = await loadTrainings();
-  if (trainings && trainings.sports) {
-    Object.keys(trainings.sports).forEach((k) => {
-      const opt = document.createElement("option");
-      opt.value = k; opt.textContent = capitalize(k);
-      sportSel.appendChild(opt);
-    });
-  }
-
-  await resumeIfRuntimeActive();
-  await applyLaunchParamsFromHash();
-  updateWeeklyChip();
-};
-
-request.onerror = () => console.error("IndexedDB open failed");
+/* Nali travel state */
+let travelTrackerFrame = null;
+let travelViewerFrame = null;
+let activeTravelName = null;
+let travelStartPromise = null;
+const travelRequests = new Map();
 
 /* ---------- DOM ---------- */
 const $ = (sel) => document.querySelector(sel);
+
 const screenOnboarding = $("#screen-onboarding");
 const screenMain = $("#screen-main");
 
@@ -119,18 +82,81 @@ const closeHistory = $("#closeHistory");
 const historyList = $("#historyList");
 const modalBackdrop = $("#modalBackdrop");
 
-/* ---------- INIT ---------- */
-document.addEventListener("DOMContentLoaded", async () => {
-  // Ensure modal is hidden before first paint (you already fixed blur/z-index)
-  historyModal.classList.add('hidden');
-  historyModal.style.display = 'none';
+const travelsBtn = $("#travelsBtn");
+const travelsModal = $("#travelsModal");
+const closeTravels = $("#closeTravels");
+const travelsList = $("#travelsList");
+const travelsBackdrop = $("#travelsBackdrop");
 
-  // Voices
-  function initVoices(){ voicesReady = true; }
+const travelViewerModal = $("#travelViewerModal");
+const travelViewerTitle = $("#travelViewerTitle");
+const travelViewerContainer = $("#travelViewerContainer");
+const closeTravelViewer = $("#closeTravelViewer");
+
+/* ---------- INDEXEDDB ---------- */
+/*
+  Version stays 3.
+  travelName is only an additional property inside runtime/current.
+*/
+const request = indexedDB.open("HerytechDB", 3);
+
+request.onupgradeneeded = (e) => {
+  db = e.target.result;
+
+  if (!db.objectStoreNames.contains("history")) {
+    db.createObjectStore("history", { keyPath: "id" });
+  }
+
+  if (!db.objectStoreNames.contains("profile")) {
+    db.createObjectStore("profile", { keyPath: "id" });
+  }
+
+  if (!db.objectStoreNames.contains("runtime")) {
+    db.createObjectStore("runtime", { keyPath: "id" });
+  }
+};
+
+request.onsuccess = async (e) => {
+  db = e.target.result;
+
+  db.onversionchange = () => {
+    try { db.close(); } catch {}
+    console.warn("DB version change; closed.");
+  };
+
+  profile = await loadProfile();
+  toggleScreens(!!profile);
+
+  trainings = await loadTrainings();
+
+  if (trainings?.sports) {
+    Object.keys(trainings.sports).forEach((key) => {
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = capitalize(key);
+      sportSel.appendChild(opt);
+    });
+  }
+
+  await resumeIfRuntimeActive();
+  await applyLaunchParamsFromHash();
+  await updateWeeklyChip();
+};
+
+request.onerror = () => console.error("IndexedDB open failed");
+
+/* ---------- INIT ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  [historyModal, travelsModal, travelViewerModal].forEach((modal) => {
+    modal.classList.add("hidden");
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+  });
+
+  function initVoices() { voicesReady = true; }
   window.speechSynthesis.onvoiceschanged = initVoices;
   if (speechSynthesis.getVoices().length) initVoices();
 
-  // Wire UI
   obSave.addEventListener("click", handleSaveProfile);
   playBtn.addEventListener("click", startWorkout);
   stopBtn.addEventListener("click", stopWorkout);
@@ -140,18 +166,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   closeHistory.addEventListener("click", closeHistoryModal);
   modalBackdrop.addEventListener("click", closeHistoryModal);
 
-  // Robustness: handle background/foreground transitions
-  document.addEventListener("visibilitychange", onVisibilityChange, { passive:true });
-  window.addEventListener("pagehide", releaseScreenWakeLock, { passive:true });
+  travelsBtn.addEventListener("click", openTravelsModal);
+  closeTravels.addEventListener("click", closeTravelsModal);
+  travelsBackdrop.addEventListener("click", closeTravelsModal);
+  closeTravelViewer.addEventListener("click", closeTravelViewerModal);
 
-  // Listen for URL fragment changes so the app can be controlled , runtime URL control support
+  document.addEventListener("visibilitychange", onVisibilityChange, { passive: true });
+  window.addEventListener("pagehide", releaseScreenWakeLock, { passive: true });
+
   window.addEventListener("hashchange", async () => {
-    if (!workout.running) {
-      await applyLaunchParamsFromHash();
-    }
+    if (!workout.running) await applyLaunchParamsFromHash();
   });
-   
-   
 });
 
 /* ---------- LOADERS ---------- */
@@ -163,17 +188,19 @@ async function loadProfile() {
     req.onerror = () => resolve(null);
   });
 }
+
 async function saveProfile(data) {
   return new Promise((resolve) => {
     const tx = db.transaction("profile", "readwrite");
-    tx.objectStore("profile").put({ id:"user", data });
+    tx.objectStore("profile").put({ id: "user", data });
     tx.oncomplete = () => resolve(true);
   });
 }
+
 async function loadTrainings() {
   try {
-    const r = await fetch("trainings.json", { cache:"no-store" });
-    if (!r.ok) throw new Error("HTTP "+r.status);
+    const r = await fetch("trainings.json", { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
     return await r.json();
   } catch (err) {
     console.warn("Failed to fetch trainings.json, using fallback.", err);
@@ -190,6 +217,7 @@ async function readRuntime() {
     req.onerror = () => resolve(null);
   });
 }
+
 async function writeRuntime(payload) {
   return new Promise((resolve) => {
     const tx = db.transaction("runtime", "readwrite");
@@ -197,6 +225,7 @@ async function writeRuntime(payload) {
     tx.oncomplete = () => resolve(true);
   });
 }
+
 async function clearRuntime() {
   return new Promise((resolve) => {
     const tx = db.transaction("runtime", "readwrite");
@@ -204,34 +233,53 @@ async function clearRuntime() {
     tx.oncomplete = () => resolve(true);
   });
 }
+
+/* ---------- RESUME ---------- */
 async function resumeIfRuntimeActive() {
   const rt = await readRuntime();
-  if (!rt || !rt.running || !rt.startedAt) return;
+  if (!rt?.running || !rt.startedAt) return;
 
-  // Minimal resume: show active session, accurate elapsed time, metrics
   workout.running = true;
-  workout.startedAt = rt.startedAt;
-  workout.currentSport = rt.sport || Object.keys(trainings?.sports || { bike:1 })[0];
+  workout.startedAt = Number(rt.startedAt);
+  workout.currentSport = rt.sport || Object.keys(trainings?.sports || { bike: 1 })[0];
+
+  /* Restore and lock exercise type + language */
+  sportSel.value = workout.currentSport;
+  langModeSel.value = rt.langPref || "random";
+  setWorkoutSelectorsLocked(true);
 
   playBtn.disabled = true;
-  stopBtn.disabled = true;   // disabled until UI settles (enable below)
+  stopBtn.disabled = true;
   skipBtn.disabled = true;
 
   exTitleEl.textContent = "Active session";
-  exExplainEl.textContent = "Resumed after background.";
+  exExplainEl.textContent = "Resumed after reload.";
   statusEl.textContent = "Session resumed.";
 
-  langModeSel.value = rt.langPref || "random";
+  activeTravelName = rt.travelName || buildTravelName(workout.startedAt, workout.currentSport);
+
+  /* Compatibility with runtime records created before travelName existed */
+  if (!rt.travelName) {
+    await writeRuntime({
+      running: true,
+      startedAt: workout.startedAt,
+      sport: workout.currentSport,
+      langPref: langModeSel.value || "random",
+      travelName: activeTravelName
+    });
+  }
 
   if (workout.tickId) clearInterval(workout.tickId);
   workout.tickId = setInterval(backgroundTick, 1000);
 
-  await requestScreenWakeLock();
-
-  // Update UI immediately; then enable Stop
   renderElapsedIntoUI();
   updateMetrics();
+  await requestScreenWakeLock();
+
   stopBtn.disabled = false;
+
+  /* Recreate Nali tracker. Nali can also restore its currentTravel internally. */
+  beginTravelTracking(activeTravelName);
 }
 
 /* ---------- UTILS ---------- */
@@ -239,40 +287,53 @@ function getElapsedSecs() {
   if (!workout.startedAt) return 0;
   return Math.max(0, Math.floor((Date.now() - workout.startedAt) / 1000));
 }
+
 function renderElapsedIntoUI() {
-  const secs = getElapsedSecs();
+  const secs = workout.running ? getElapsedSecs() : workout.sessionSecs;
   timerEl.textContent = formatMMSS(secs);
 }
-function toggleScreens(hasProfile){
+
+function toggleScreens(hasProfile) {
   screenOnboarding.classList.toggle("hidden", !!hasProfile);
   screenMain.classList.toggle("hidden", !hasProfile);
 }
-function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
-function formatMMSS(totalSec){
-  const m = Math.floor(totalSec/60).toString().padStart(2,"0");
-  const s = (totalSec%60).toString().padStart(2,"0");
+
+function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+}
+
+function formatMMSS(totalSec) {
+  totalSec = Math.max(0, Math.floor(Number(totalSec) || 0));
+  const m = Math.floor(totalSec / 60).toString().padStart(2, "0");
+  const s = (totalSec % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 }
-//------------------------------------------------------------------------------
+
+function setWorkoutSelectorsLocked(locked) {
+  sportSel.disabled = !!locked;
+  langModeSel.disabled = !!locked;
+}
+
 async function getTodayTotalSeconds() {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const endOfDay = startOfDay + 24*60*60*1000;
+  const endOfDay = startOfDay + 24 * 60 * 60 * 1000;
 
   return new Promise((resolve) => {
-    const tx = db.transaction("history","readonly");
+    const tx = db.transaction("history", "readonly");
     const req = tx.objectStore("history").getAll();
+
     req.onsuccess = () => {
-      const rows = req.result || [];
-      const total = rows
-        .filter(r => r.date >= startOfDay && r.date < endOfDay)
+      const total = (req.result || [])
+        .filter((r) => r.date >= startOfDay && r.date < endOfDay)
         .reduce((sum, r) => sum + Number(r.duration || 0), 0);
+
       resolve(total);
     };
+
     req.onerror = () => resolve(0);
   });
 }
-
 
 /* ---------- URL HASH PRECONFIG ---------- */
 function parseHashParams() {
@@ -280,27 +341,23 @@ function parseHashParams() {
   if (!raw) return {};
 
   const params = {};
-  raw.split("&").forEach(pair => {
+
+  raw.split("&").forEach((pair) => {
     const [k, v = ""] = pair.split("=");
     const key = decodeURIComponent((k || "").trim()).toLowerCase();
     const value = decodeURIComponent((v || "").trim());
     if (key) params[key] = value;
   });
+
   return params;
 }
 
-// Missing startnow means immediate launch.
-// also "yes" or "true" trigger auto-start explicitly.
-// "no", "false", or any invalid value mean no auto-start.
 function normalizeStartNow(value) {
   if (value == null || String(value).trim() === "") return true;
   const v = String(value).trim().toLowerCase();
-  if (v === "yes" || v === "true") return true;
-  return false;
+  return v === "yes" || v === "true";
 }
 
-// Missing language => random
-// Invalid language => english
 function normalizeLanguage(value) {
   const langs = Object.keys(VOICE_LANG);
   if (value == null || String(value).trim() === "") return "random";
@@ -309,7 +366,6 @@ function normalizeLanguage(value) {
   return langs.includes(v) ? v : "en";
 }
 
-// Sport is mandatory and must exist in trainings.sports
 function normalizeSport(value) {
   if (!value) return null;
   const v = String(value).trim().toLowerCase();
@@ -317,11 +373,7 @@ function normalizeSport(value) {
 }
 
 async function applyLaunchParamsFromHash() {
-   // Never override an active or resumed workout
-  if (workout.running) return;
-   
-   // Requires profile + trainings + populated sport select
-  if (!profile || !trainings || !trainings.sports) return;
+  if (workout.running || !profile || !trainings?.sports) return;
 
   const params = parseHashParams();
   if (!Object.keys(params).length) return;
@@ -331,125 +383,128 @@ async function applyLaunchParamsFromHash() {
   const requestedLang = normalizeLanguage(params.language);
   const autoStart = normalizeStartNow(params.startnow);
 
-  // Apply coach language rule:
-  // missing => random, invalid => en
   langModeSel.value = requestedLang;
 
-  // Sport is required
   if (!requestedSportRaw) {
     statusEl.textContent = "Launch URL invalid: sport parameter is required.";
     return;
   }
 
-  // Sport must be recognized
   if (!requestedSport) {
     statusEl.textContent = `Launch URL invalid: unknown sport "${requestedSportRaw}".`;
     return;
   }
 
-  // Preselect sport and language
   sportSel.value = requestedSport;
   workout.currentSport = requestedSport;
 
+  const coach = requestedLang === "random" ? "random" : requestedLang;
   statusEl.textContent = autoStart
-    ? `Auto-launch configured: ${capitalize(requestedSport)} • coach ${requestedLang === "random" ? "random" : requestedLang}`
-    : `Preselected: ${capitalize(requestedSport)} • coach ${requestedLang === "random" ? "random" : requestedLang}`;
+    ? `Auto-launch configured: ${capitalize(requestedSport)} • coach ${coach}`
+    : `Preselected: ${capitalize(requestedSport)} • coach ${coach}`;
 
-  // Start immediately when startnow is missing, yes, or true
-  if (autoStart && !workout.running) {
-    await startWorkout();
-  }
+  if (autoStart && !workout.running) await startWorkout();
 }
 
 /* ---------- SPEECH ---------- */
 function pickVoice(lang) {
   const list = speechSynthesis.getVoices() || [];
   const bcp47 = VOICE_LANG[lang] || "en-US";
-  const female = list.filter(v => v.lang === bcp47 && /female|woman|google.*female/i.test(v.name));
+
+  const female = list.filter(
+    (v) => v.lang === bcp47 && /female|woman|google.*female/i.test(v.name)
+  );
+
   if (female.length) return female[0];
-  const same = list.find(v => v.lang === bcp47);
-  return same || list[0] || null;
+  return list.find((v) => v.lang === bcp47) || list[0] || null;
 }
-//------------------------------------------------------------------------------
-function speakText(text, langPref="random"){
+
+function speakText(text, langPref = "random") {
   const langs = Object.keys(VOICE_LANG);
-  const chosen = langPref === "random" ? langs[Math.floor(Math.random()*langs.length)] : langPref;
+  const chosen = langPref === "random"
+    ? langs[Math.floor(Math.random() * langs.length)]
+    : langPref;
+
   const u = new SpeechSynthesisUtterance(text);
   u.lang = VOICE_LANG[chosen] || "en-US";
-  const v = pickVoice(chosen); if (v) u.voice = v;
+
+  const voice = pickVoice(chosen);
+  if (voice) u.voice = voice;
+
   speechSynthesis.speak(u);
 }
-//------------------------------------------------------------------------------
-function speakFromMap(map, langPref="random"){
+
+function speakFromMap(map, langPref = "random") {
   const langs = Object.keys(VOICE_LANG);
-  const chosen = langPref === "random" ? langs[Math.floor(Math.random()*langs.length)] : langPref;
-  const text = map[chosen] || map["en"] || Object.values(map)[0];
+  const chosen = langPref === "random"
+    ? langs[Math.floor(Math.random() * langs.length)]
+    : langPref;
+
+  const text = map[chosen] || map.en || Object.values(map)[0];
   speakText(text, chosen);
+
   return { lang: chosen, text };
 }
-//------------------------------------------------------------------------------
-function speakCommon(bucket, langPref="random"){
+
+function speakCommon(bucket, langPref = "random") {
   const pool = {};
-  for (const k of Object.keys(VOICE_LANG)) {
-    const arr = trainings.commonPhrases[bucket][k] || [];
-    pool[k] = arr.length ? arr[Math.floor(Math.random()*arr.length)] : null;
-  }
+
+  Object.keys(VOICE_LANG).forEach((lang) => {
+    const arr = trainings.commonPhrases[bucket][lang] || [];
+    pool[lang] = arr.length ? arr[Math.floor(Math.random() * arr.length)] : null;
+  });
+
   return speakFromMap(pool, langPref);
 }
+
 function canSpeak() {
   return Date.now() >= skipMuteUntil;
 }
 
 /* ---------- HISTORY / RULES ---------- */
 async function getThisWeekHistory() {
-  const now = Date.now();
-  const weekAgo = now - 7*24*60*60*1000;
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
   return new Promise((resolve) => {
-    const tx = db.transaction("history","readonly");
+    const tx = db.transaction("history", "readonly");
     const req = tx.objectStore("history").getAll();
+
     req.onsuccess = () => {
-      const rows = (req.result||[]);
-      resolve(rows.filter(r => Number(r.date) > weekAgo));
+      resolve((req.result || []).filter((r) => Number(r.date) > weekAgo));
     };
+
     req.onerror = () => resolve([]);
   });
 }
-//------------------------------------------------------------------------------
+
 async function updateWeeklyChip() {
   const hist = await getThisWeekHistory();
-  const fullDays = hist.filter(h => h.fullDay).length;
-  
-  // Display chip based on limit enforcement
+  const fullDays = hist.filter((h) => h.fullDay).length;
+
   if (ENFORCE_WEEKLY_LIMIT) {
     weeklyChipEl.textContent = `${fullDays} / ${MAX_DAYS_PER_WEEK} days`;
-    // Only disable play button if limit is enforced AND reached
     playBtn.disabled = fullDays >= MAX_DAYS_PER_WEEK || workout.running;
   } else {
-    // When not enforcing, just show the count without limit
     weeklyChipEl.textContent = `${fullDays} days this week`;
-    // Only disable play button if workout is running
     playBtn.disabled = workout.running;
   }
 }
-//------------------------------------------------------------------------------
+
 async function canTrainToday() {
-  // If not enforcing limit, always allow training
   if (!ENFORCE_WEEKLY_LIMIT) return true;
-  
-  // Otherwise check against limit
+
   const hist = await getThisWeekHistory();
-  return hist.filter(h => h.fullDay).length < MAX_DAYS_PER_WEEK;
+  return hist.filter((h) => h.fullDay).length < MAX_DAYS_PER_WEEK;
 }
-//------------------------------------------------------------------------------
-async function saveSession(seconds){
+
+async function saveSession(seconds) {
   const now = Date.now();
   const todayTotalBefore = await getTodayTotalSeconds();
-  const todayTotalAfter = todayTotalBefore + seconds;
-
-  const fullDay = todayTotalAfter >= (MIN_FULL_DAY - 1); // tolerance-safe
+  const fullDay = todayTotalBefore + seconds >= MIN_FULL_DAY - 1;
 
   return new Promise((resolve) => {
-    const tx = db.transaction("history","readwrite");
+    const tx = db.transaction("history", "readwrite");
+
     tx.objectStore("history").put({
       id: now,
       date: now,
@@ -457,173 +512,463 @@ async function saveSession(seconds){
       fullDay,
       sport: workout.currentSport
     });
+
     tx.oncomplete = () => resolve(fullDay);
   });
 }
 
-
 /* ---------- METRICS ---------- */
-function calcCalories(sport, weightKg, durationSec){
-  const MET = { boxing:9, judo:8, wushu:7.5, bike:7, pushups:5, abs:4 }[sport] || 6;
-  return Math.round((MET * 3.5 * weightKg / 200) * (durationSec/60));
+function calcCalories(sport, weightKg, durationSec) {
+  const MET = {
+    boxing: 9,
+    judo: 8,
+    wushu: 7.5,
+    bike: 7,
+    pushups: 5,
+    abs: 4
+  }[sport] || 6;
+
+  return Math.round((MET * 3.5 * weightKg / 200) * (durationSec / 60));
 }
-function estimateDistance(sport, durationSec){
+
+function estimateDistance(sport, durationSec) {
   if (sport !== "bike") return null;
-  const kmph = 22;
-  return +(kmph * (durationSec/3600)).toFixed(2);
+  return +(22 * (durationSec / 3600)).toFixed(2);
 }
-function updateMetrics(){
-  const sport = workout.currentSport || sportSel.value || Object.keys(trainings?.sports || { bike:1 })[0];
+
+function updateMetrics() {
+  const sport = workout.currentSport ||
+    sportSel.value ||
+    Object.keys(trainings?.sports || { bike: 1 })[0];
+
   const elapsed = workout.running ? getElapsedSecs() : workout.sessionSecs;
-  const cals = calcCalories(sport, profile?.weight||70, elapsed);
+  const cals = calcCalories(sport, profile?.weight || 70, elapsed);
   const km = estimateDistance(sport, elapsed);
+
   let msg = `Calories ≈ ${cals}`;
-  if (km!=null) msg += ` • Distance ≈ ${km} km`;
+  if (km != null) msg += ` • Distance ≈ ${km} km`;
+
   caloriesEl.textContent = msg;
 }
 
 /* ---------- ONBOARDING ---------- */
-async function handleSaveProfile(){
+async function handleSaveProfile() {
   const gender = obGender.value;
-  const weight = parseFloat(obWeight.value||"0");
-  const height = parseFloat(obHeight.value||"0");
-  if (!weight || !height) { speakText("Please fill weight and height.","en"); return; }
+  const weight = parseFloat(obWeight.value || "0");
+  const height = parseFloat(obHeight.value || "0");
+
+  if (!weight || !height) {
+    speakText("Please fill weight and height.", "en");
+    return;
+  }
+
   profile = { gender, weight, height };
+
   await saveProfile(profile);
   toggleScreens(true);
   playBtn.disabled = false;
-  updateWeeklyChip();
-  // Apply URL launch parameters now that profile exists.
+  await updateWeeklyChip();
   await applyLaunchParamsFromHash();
 }
 
 /* ---------- QUEUE ---------- */
-function buildQueueForSport(sportKey){
+function buildQueueForSport(sportKey) {
   const list = trainings.sports[sportKey].exercises.slice();
-  for (let i=list.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [list[i],list[j]]=[list[j],list[i]];
+
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
   }
+
   return list;
 }
 
-/* ---------- INTRO SCHEDULER (debounced + mute-aware) ---------- */
-// Schedules the intro voice for the current exercise, respecting the skip-mute window.
-// If it fires while still muted (rare race), it auto-reschedules.
-function scheduleIntroForCurrentExercise(pref){
-  if (introTimer) { clearTimeout(introTimer); introTimer = null; }
-  const myRunId = ++exerciseRunId;
+/* ---------- INTRO SCHEDULER ---------- */
+function scheduleIntroForCurrentExercise(pref) {
+  if (introTimer) {
+    clearTimeout(introTimer);
+    introTimer = null;
+  }
 
-  const now = Date.now();
-  const delay = Math.max(INTRO_DEBOUNCE_MS, skipMuteUntil - now);
+  const myRunId = ++exerciseRunId;
+  const delay = Math.max(INTRO_DEBOUNCE_MS, skipMuteUntil - Date.now());
 
   introTimer = setTimeout(() => {
-    if (!workout.running) return;
-    if (myRunId !== exerciseRunId) return;        // user moved to another exercise
-    if (Date.now() < skipMuteUntil) {             // still muted? reschedule
+    if (!workout.running || myRunId !== exerciseRunId) return;
+
+    if (Date.now() < skipMuteUntil) {
       scheduleIntroForCurrentExercise(pref);
       return;
     }
-    // Speak explanation + "start" cue now
+
     const { lang } = speakFromMap(workout.ex.explanation, pref);
     workout.displayLang = lang;
     speakCommon("start", pref);
   }, Math.max(0, delay));
 }
 
-/* ---------- WORKOUT ---------- */
-async function startWorkout(){
-  if (!trainings || !trainings.sports) { statusEl.textContent="Trainings not loaded."; return; }
-  
-  // Check training limit only if enforcing
-  if (!(await canTrainToday())) { 
-    statusEl.textContent="Weekly limit reached. Rest soldier!"; 
-    playBtn.disabled=true; 
-    return; 
+/* ============================================================
+   NALI TRAVEL BRIDGE
+   ============================================================ */
+
+function makeTravelRequestId() {
+  return `hery-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function buildTravelName(startedAt, sport) {
+  const d = new Date(Number(startedAt));
+
+  const datePart = [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0")
+  ].join("-");
+
+  const timePart = [
+    String(d.getHours()).padStart(2, "0"),
+    String(d.getMinutes()).padStart(2, "0"),
+    String(d.getSeconds()).padStart(2, "0")
+  ].join("-");
+
+  return `Herytech ${sport || "training"} ${datePart} ${timePart}`;
+}
+
+/*
+  Hidden but rendered iframe.
+  display:none is avoided because the iframe performs geolocation.
+*/
+function createHiddenTravelIframe() {
+  if (travelTrackerFrame?.isConnected) return travelTrackerFrame;
+
+  const frame = document.createElement("iframe");
+  frame.src = TRAVEL_URL;
+  frame.title = "Herytech travel tracker";
+  frame.allow = "geolocation";
+  frame.setAttribute("aria-hidden", "true");
+
+  Object.assign(frame.style, {
+    position: "fixed",
+    width: "1px",
+    height: "1px",
+    left: "-10000px",
+    top: "-10000px",
+    border: "0",
+    opacity: "0",
+    pointerEvents: "none"
+  });
+
+  frame.addEventListener("load", () => {
+    frame.dataset.loaded = "1";
+  });
+
+  document.body.appendChild(frame);
+  travelTrackerFrame = frame;
+
+  return frame;
+}
+
+function rejectTravelRequestsForFrame(frame, reason = "Travel iframe closed.") {
+  for (const [requestId, pending] of travelRequests.entries()) {
+    if (pending.frame !== frame) continue;
+
+    clearTimeout(pending.timeout);
+    travelRequests.delete(requestId);
+    pending.reject(new Error(reason));
+  }
+}
+
+function destroyHiddenTravelIframe() {
+  if (!travelTrackerFrame) return;
+
+  const frame = travelTrackerFrame;
+  travelTrackerFrame = null;
+
+  rejectTravelRequestsForFrame(frame);
+
+  try { frame.remove(); } catch {}
+}
+
+function waitForIframeLoad(frame) {
+  return new Promise((resolve, reject) => {
+    if (!frame) {
+      reject(new Error("Travel iframe unavailable."));
+      return;
+    }
+
+    if (frame.dataset.loaded === "1") {
+      resolve();
+      return;
+    }
+
+    let finished = false;
+
+    const timeout = setTimeout(() => {
+      if (finished) return;
+      finished = true;
+      reject(new Error("Travel iframe load timeout."));
+    }, TRAVEL_COMMAND_TIMEOUT_MS);
+
+    frame.addEventListener("load", () => {
+      if (finished) return;
+
+      finished = true;
+      clearTimeout(timeout);
+      frame.dataset.loaded = "1";
+      resolve();
+    }, { once: true });
+  });
+}
+
+async function sendTravelCommand(frame, command, params = {}) {
+  if (!frame?.contentWindow) {
+    throw new Error("Travel iframe is not available.");
+  }
+
+  await waitForIframeLoad(frame);
+
+  return new Promise((resolve, reject) => {
+    const requestId = makeTravelRequestId();
+
+    const timeout = setTimeout(() => {
+      travelRequests.delete(requestId);
+      reject(new Error(`Travel command timeout: ${command}`));
+    }, TRAVEL_COMMAND_TIMEOUT_MS);
+
+    travelRequests.set(requestId, {
+      resolve,
+      reject,
+      timeout,
+      frame
+    });
+
+    frame.contentWindow.postMessage({
+      type: "travel-command",
+      requestId,
+      command,
+      params
+    }, TRAVEL_ORIGIN);
+  });
+}
+
+/* Only accept responses from the exact Nali origin and our iframe windows. */
+window.addEventListener("message", (event) => {
+  if (event.origin !== TRAVEL_ORIGIN) return;
+
+  const trackerWindow = travelTrackerFrame?.contentWindow;
+  const viewerWindow = travelViewerFrame?.contentWindow;
+
+  if (event.source !== trackerWindow && event.source !== viewerWindow) return;
+
+  const data = event.data;
+  if (!data || data.type !== "travel-response" || !data.requestId) return;
+
+  const pending = travelRequests.get(data.requestId);
+  if (!pending) return;
+
+  clearTimeout(pending.timeout);
+  travelRequests.delete(data.requestId);
+
+  if (data.ok) {
+    pending.resolve(data.result);
+    return;
+  }
+
+  const message = data.error?.message ||
+    data.error ||
+    `Travel command failed: ${data.command || "unknown"}`;
+
+  pending.reject(new Error(message));
+});
+
+async function startTravelTracking(travelName) {
+  if (!travelName) return;
+
+  activeTravelName = travelName;
+  const frame = createHiddenTravelIframe();
+
+  try {
+    await sendTravelCommand(frame, "startTravel", {
+      name: travelName,
+      frequencyMs: TRAVEL_FREQUENCY_MS
+    });
+  } catch (err) {
+    /*
+      After reload, Nali may already have restored currentTravel.
+      An "already active" response therefore does not stop Herytech.
+    */
+    console.info("Travel start/resume:", err?.message || err);
+  }
+}
+
+function beginTravelTracking(travelName) {
+  travelStartPromise = startTravelTracking(travelName);
+  return travelStartPromise;
+}
+
+async function endTravelTracking(travelName = activeTravelName) {
+  /*
+    Avoid endTravel overtaking startTravel if Stop is pressed immediately.
+  */
+  if (travelStartPromise) {
+    try { await travelStartPromise; } catch {}
+  }
+
+  travelStartPromise = null;
+
+  if (!travelName) {
+    destroyHiddenTravelIframe();
+    return;
+  }
+
+  try {
+    if (travelTrackerFrame?.contentWindow) {
+      await sendTravelCommand(travelTrackerFrame, "endTravel", {
+        name: travelName
+      });
+    }
+  } catch (err) {
+    console.warn("Travel end failed:", err);
+  } finally {
+    activeTravelName = null;
+    destroyHiddenTravelIframe();
+  }
+}
+
+/* ============================================================
+   WORKOUT
+   ============================================================ */
+
+async function startWorkout() {
+  if (!trainings?.sports) {
+    statusEl.textContent = "Trainings not loaded.";
+    return;
+  }
+
+  if (workout.running) return;
+
+  if (!(await canTrainToday())) {
+    statusEl.textContent = "Weekly limit reached. Rest soldier!";
+    playBtn.disabled = true;
+    return;
   }
 
   workout.currentSport = sportSel.value || Object.keys(trainings.sports)[0];
 
-  // Build exercise queue for live coaching (not required for persistence)
   if (!workout.queue.length || workout.currentSport !== workout.queueSport) {
     workout.queue = buildQueueForSport(workout.currentSport);
     workout.queueSport = workout.currentSport;
   }
 
-  // Start time is the truth for elapsed time
   workout.startedAt = Date.now();
   workout.sessionSecs = 0;
   workout.globalSec = 0;
   workout.running = true;
 
+  /* Sport and language cannot be changed while running. */
+  setWorkoutSelectorsLocked(true);
+
+  activeTravelName = buildTravelName(
+    workout.startedAt,
+    workout.currentSport
+  );
+
   playBtn.disabled = true;
   stopBtn.disabled = false;
   skipBtn.disabled = false;
 
-  // Persist runtime to survive reload/crash/background
   await writeRuntime({
     running: true,
     startedAt: workout.startedAt,
     sport: workout.currentSport,
-    langPref: (langModeSel.value || "random")
+    langPref: langModeSel.value || "random",
+    travelName: activeTravelName
   });
+
+  /*
+    Start Nali without blocking workout coaching on GPS/network startup.
+  */
+  beginTravelTracking(activeTravelName);
 
   nextExercise();
   await requestScreenWakeLock();
 }
-//------------------------------------------------------------------------------
-function nextExercise(){
+
+function nextExercise() {
   if (!workout.running) return;
 
-  if (!workout.queue.length) workout.queue = buildQueueForSport(workout.currentSport);
+  if (!workout.queue.length) {
+    workout.queue = buildQueueForSport(workout.currentSport);
+  }
+
   workout.ex = workout.queue.pop();
-  workout.rep = 1; workout.repTime = 0; workout.pauseTime = 0; workout.inPause = false;
+  workout.rep = 1;
+  workout.repTime = 0;
+  workout.pauseTime = 0;
+  workout.inPause = false;
 
   const pref = langModeSel.value || "random";
-
-  // Decide display language now (text updates immediately)
   const langs = Object.keys(VOICE_LANG);
-  const chosen = pref === "random" ? langs[Math.floor(Math.random()*langs.length)] : pref;
+  const chosen = pref === "random"
+    ? langs[Math.floor(Math.random() * langs.length)]
+    : pref;
+
   workout.displayLang = chosen;
 
   exTitleEl.textContent = workout.ex.name;
-  exExplainEl.textContent = workout.ex.explanation[workout.displayLang] || workout.ex.explanation.en || "—";
+  exExplainEl.textContent =
+    workout.ex.explanation[workout.displayLang] ||
+    workout.ex.explanation.en ||
+    "—";
 
-  statusEl.textContent = `${workout.ex.reps} reps • ${workout.ex.duration}s / rep • pause ${workout.ex.pause||0}s`;
+  statusEl.textContent =
+    `${workout.ex.reps} reps • ${workout.ex.duration}s / rep • pause ${workout.ex.pause || 0}s`;
 
-  // Debounced intro that also waits out the mute window (auto-reschedules if needed)
   scheduleIntroForCurrentExercise(pref);
 
   if (workout.tickId) clearInterval(workout.tickId);
   workout.tickId = setInterval(tick, 1000);
 }
-//------------------------------------------------------------------------------
-function tick(){
+
+function tick() {
   if (!workout.running) return;
 
-  // Elapsed time based on startedAt → accurate even if the tab slept
   renderElapsedIntoUI();
 
-  // Live coaching (may miss ticks while hidden — acceptable)
   if (workout.inPause) {
     workout.pauseTime++;
-    subtimerEl.textContent = `Pause ${workout.pauseTime}/${workout.ex.pause||0}s`;
-    if (workout.pauseTime >= (workout.ex.pause||0)) {
-      workout.inPause = false; workout.repTime = 0;
-      if (canSpeak()) speakCommon("start", langModeSel.value);
+
+    subtimerEl.textContent =
+      `Pause ${workout.pauseTime}/${workout.ex.pause || 0}s`;
+
+    if (workout.pauseTime >= (workout.ex.pause || 0)) {
+      workout.inPause = false;
+      workout.repTime = 0;
+
+      if (canSpeak()) {
+        speakCommon("start", langModeSel.value);
+      }
     }
+
   } else {
     workout.repTime++;
-    subtimerEl.textContent = `Rep ${workout.rep}/${workout.ex.reps} • ${workout.repTime}/${workout.ex.duration}s`;
 
-    if (workout.repTime === Math.floor(workout.ex.duration/2)) {
-      if (canSpeak()) speakCommon("encourage", langModeSel.value);
+    subtimerEl.textContent =
+      `Rep ${workout.rep}/${workout.ex.reps} • ${workout.repTime}/${workout.ex.duration}s`;
+
+    if (
+      workout.repTime === Math.floor(workout.ex.duration / 2) &&
+      canSpeak()
+    ) {
+      speakCommon("encourage", langModeSel.value);
     }
 
     if (workout.repTime >= workout.ex.duration) {
       if (canSpeak()) speakCommon("stop", langModeSel.value);
+
       if (workout.rep < workout.ex.reps) {
-        workout.rep++; workout.inPause = !!workout.ex.pause; workout.pauseTime = 0;
+        workout.rep++;
+        workout.inPause = !!workout.ex.pause;
+        workout.pauseTime = 0;
       } else {
         updateMetrics();
         nextExercise();
@@ -631,53 +976,79 @@ function tick(){
     }
   }
 
-  // Milestones (respect mute if you want them quiet during skip bursts)
   const elapsed = getElapsedSecs();
-  if (elapsed === 1800 && canSpeak()) speakText("Thirty minutes. Ping.","en");
-  if (elapsed === 5400 && canSpeak()) speakText("One hour thirty. Ping.","en");
-  if (elapsed === 7200 && canSpeak()) speakText("Two hours reached. Warning.","en");
+
+  if (elapsed === 1800 && canSpeak()) {
+    speakText("Thirty minutes. Ping.", "en");
+  }
+
+  if (elapsed === 5400 && canSpeak()) {
+    speakText("One hour thirty. Ping.", "en");
+  }
+
+  if (elapsed === 7200 && canSpeak()) {
+    speakText("Two hours reached. Warning.", "en");
+  }
 
   updateMetrics();
 }
 
-// Minimal tick used during "resume" when we don't rebuild the full queue/exercise
+/*
+  Resume keeps total elapsed time exact even though the individual
+  exercise queue is not persisted.
+*/
 function backgroundTick() {
   if (!workout.running) return;
+
   renderElapsedIntoUI();
   subtimerEl.textContent = "Running in background…";
   updateMetrics();
 }
-//------------------------------------------------------------------------------
-function skipExercise(){
+
+function skipExercise() {
   if (!workout.running || !workout.ex) return;
 
-  // Cancel any current or pending speech
   try { speechSynthesis.cancel(); } catch {}
-  if (introTimer) { clearTimeout(introTimer); introTimer = null; }
 
-  // Extend mute window so rapid skipping stays silent
+  if (introTimer) {
+    clearTimeout(introTimer);
+    introTimer = null;
+  }
+
   skipMuteUntil = Date.now() + SKIP_SILENCE_MS;
 
-  // No "stop/rest" voice for skipped items
   updateMetrics();
-  nextExercise(); // scheduleIntroForCurrentExercise() accounts for mute window
+  nextExercise();
 }
-//------------------------------------------------------------------------------
-async function stopWorkout(){
+
+async function stopWorkout() {
   if (!workout.running) return;
+
   const realSecs = getElapsedSecs();
+  const travelToEnd = activeTravelName;
 
   workout.running = false;
-  clearInterval(workout.tickId);
+  setWorkoutSelectorsLocked(false);
+
+  if (workout.tickId) clearInterval(workout.tickId);
   workout.tickId = null;
 
-  // Clean speech timers
   try { speechSynthesis.cancel(); } catch {}
-  if (introTimer) { clearTimeout(introTimer); introTimer = null; }
+
+  if (introTimer) {
+    clearTimeout(introTimer);
+    introTimer = null;
+  }
 
   stopBtn.disabled = true;
   playBtn.disabled = false;
   skipBtn.disabled = true;
+
+  /*
+    End travel first so Nali can attempt its final GPS sample.
+    The iframe is removed by endTravelTracking().
+  */
+  await endTravelTracking(travelToEnd);
 
   await clearRuntime();
   await releaseScreenWakeLock();
@@ -685,248 +1056,616 @@ async function stopWorkout(){
   const fullDay = await saveSession(realSecs);
   await updateWeeklyChip();
 
-  // Last vs Today
   const hist = await getThisWeekHistory();
-  hist.sort((a,b)=>Number(a.date)-Number(b.date));
+  hist.sort((a, b) => Number(a.date) - Number(b.date));
+
   if (hist.length >= 2) {
-    const prev = hist[hist.length-2];
+    const prev = hist[hist.length - 2];
     const diff = realSecs - Number(prev.duration || 0);
     const sign = diff >= 0 ? "+" : "–";
-    lastPerfEl.textContent = `Last: ${formatMMSS(Number(prev.duration||0))} • Today: ${formatMMSS(realSecs)} (${sign}${formatMMSS(Math.abs(diff))})`;
+
+    lastPerfEl.textContent =
+      `Last: ${formatMMSS(Number(prev.duration || 0))} • ` +
+      `Today: ${formatMMSS(realSecs)} (${sign}${formatMMSS(Math.abs(diff))})`;
   } else {
     lastPerfEl.textContent = `Today: ${formatMMSS(realSecs)}`;
   }
 
-  // Update status message based on whether limits are enforced
   if (ENFORCE_WEEKLY_LIMIT) {
-    statusEl.textContent = fullDay ? "Full day logged. Hydrate and recover." : "Session logged (under 60 min).";
+    statusEl.textContent = fullDay
+      ? "Full day logged. Hydrate and recover."
+      : "Session logged (under 60 min).";
   } else {
-    // When not enforcing limits, just log the session without rest reminders
-    statusEl.textContent = fullDay ? "Full day logged!" : "Session logged!";
+    statusEl.textContent = fullDay
+      ? "Full day logged!"
+      : "Session logged!";
   }
 
-  // Freeze display at stop
   workout.sessionSecs = realSecs;
   renderElapsedIntoUI();
 }
-//------------------------------------------------------------------------------
-async function getHistoryAll(){
+
+/* ---------- HISTORY STORAGE ---------- */
+async function getHistoryAll() {
   return new Promise((resolve) => {
-    const tx = db.transaction("history","readonly");
+    const tx = db.transaction("history", "readonly");
     const req = tx.objectStore("history").getAll();
     req.onsuccess = () => resolve(req.result || []);
     req.onerror = () => resolve([]);
   });
 }
-//------------------------------------------------------------------------------
-async function updateHistoryRecord(id, patch){
+
+async function updateHistoryRecord(id, patch) {
   return new Promise((resolve) => {
-    const tx = db.transaction("history","readwrite");
+    const tx = db.transaction("history", "readwrite");
     const store = tx.objectStore("history");
     const g = store.get(id);
+
     g.onsuccess = () => {
       const row = g.result;
-      if (!row) return resolve(false);
+
+      if (!row) {
+        resolve(false);
+        return;
+      }
+
       store.put({ ...row, ...patch });
     };
+
     g.onerror = () => resolve(false);
     tx.oncomplete = () => resolve(true);
   });
 }
 
-
-//------------------------------------------------------------------------------
-async function recomputeFullDayForEndTs(endTs){
+async function recomputeFullDayForEndTs(endTs) {
   const d = new Date(Number(endTs));
   const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  const end = start + 24*60*60*1000;
+  const end = start + 24 * 60 * 60 * 1000;
 
   const all = await getHistoryAll();
-  const dayItems = all.filter(r => Number(r.date) >= start && Number(r.date) < end);
-  const dayTotal = dayItems.reduce((s,r)=> s + Number(r.duration||0), 0);
-  const fullDayFlag = dayTotal >= (MIN_FULL_DAY - 1);
+  const dayItems = all.filter(
+    (r) => Number(r.date) >= start && Number(r.date) < end
+  );
+
+  const dayTotal = dayItems.reduce(
+    (sum, r) => sum + Number(r.duration || 0),
+    0
+  );
+
+  const fullDayFlag = dayTotal >= MIN_FULL_DAY - 1;
 
   await new Promise((resolve) => {
-    const tx = db.transaction("history","readwrite");
+    const tx = db.transaction("history", "readwrite");
     const store = tx.objectStore("history");
-    dayItems.forEach(r => store.put({ ...r, fullDay: fullDayFlag }));
+
+    dayItems.forEach((r) => {
+      store.put({ ...r, fullDay: fullDayFlag });
+    });
+
     tx.oncomplete = () => resolve(true);
     tx.onerror = () => resolve(true);
   });
 }
 
-
-//------------------------------------------------------------------------------
-// edit history duration
-async function editHistoryDurationById(id){
+/* ---------- EDIT HISTORY DURATION ---------- */
+async function editHistoryDurationById(id) {
   const all = await getHistoryAll();
-  const it = all.find(x => String(x.id) === String(id));
+  const it = all.find((x) => String(x.id) === String(id));
   if (!it) return;
 
-  // minutes snap au 15 le plus proche, bornes 15..240
-  const currentMin = Math.max(15, Math.min(240, Math.round((Number(it.duration||0)/60)/15)*15 || 15));
+  const currentMin = Math.max(
+    15,
+    Math.min(
+      240,
+      Math.round((Number(it.duration || 0) / 60) / 15) * 15 || 15
+    )
+  );
 
-  const raw = prompt("Duration (minutes) — 15 to 240, step 15", String(currentMin));
+  const raw = prompt(
+    "Duration (minutes) — 15 to 240, step 15",
+    String(currentMin)
+  );
+
   if (raw == null) return;
 
   const m = Number(raw);
   if (!Number.isFinite(m)) return;
 
-  const snapped = Math.round(m/15)*15;
+  const snapped = Math.round(m / 15) * 15;
   const clamped = Math.max(15, Math.min(240, snapped));
   const newSec = clamped * 60;
 
-   const oldEnd = Number(it.date);
-   const oldSec = Number(it.duration || 0);
-   
-   // recalculate en (count on end date)
-   const newEnd = oldEnd - ((oldSec - newSec) * 1000);
-   
-   const ok = await updateHistoryRecord(it.id, { duration: newSec, date: newEnd });
-   if (!ok) return;
+  const oldEnd = Number(it.date);
+  const oldSec = Number(it.duration || 0);
+  const newEnd = oldEnd - ((oldSec - newSec) * 1000);
 
-// recalcul fullDay on old and updated date (day can change)
-await recomputeFullDayForEndTs(oldEnd);
-await recomputeFullDayForEndTs(newEnd);
+  const ok = await updateHistoryRecord(it.id, {
+    duration: newSec,
+    date: newEnd
+  });
 
-await updateWeeklyChip();
-await openHistory();
+  if (!ok) return;
+
+  await recomputeFullDayForEndTs(oldEnd);
+  await recomputeFullDayForEndTs(newEnd);
+  await updateWeeklyChip();
+  await openHistory();
 }
 
-
 /* ---------- HISTORY POPUP ---------- */
-async function openHistory(){
-  const tx = db.transaction("history","readonly");
+async function openHistory() {
+  const tx = db.transaction("history", "readonly");
   const req = tx.objectStore("history").getAll();
-    req.onsuccess = () => {
-      const items = (req.result||[]).sort((a,b)=>Number(b.date)-Number(a.date)); // newest first
 
-      if (!items.length) {
-        historyList.innerHTML = `<div class="hist-item"><div>No sessions yet.</div></div>`;
-        return;
-      }
+  req.onsuccess = () => {
+    const items = (req.result || [])
+      .sort((a, b) => Number(b.date) - Number(a.date));
 
+    if (!items.length) {
+      historyList.innerHTML =
+        `<div class="hist-item"><div>No sessions yet.</div></div>`;
+    } else {
       let html = "";
       let lastDay = null;
 
       for (const it of items) {
         const d = new Date(Number(it.date));
-        const dayKey = d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+        const dayKey = d.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric"
+        });
 
         if (dayKey !== lastDay) {
-          // start a new group with a header
           html += `<div class="hist-day-sep"><strong>${dayKey}</strong></div>`;
           lastDay = dayKey;
         }
+
         html += renderHistItem(it);
       }
 
       historyList.innerHTML = html;
 
-      historyList.querySelectorAll(".hist-item[data-id]").forEach(el => {
+      historyList.querySelectorAll(".hist-item[data-id]").forEach((el) => {
         el.addEventListener("click", (ev) => {
           ev.stopPropagation();
           editHistoryDurationById(el.getAttribute("data-id"));
         });
       });
+    }
 
-       
-      historyModal.classList.remove('hidden');
-      historyModal.style.display = 'grid';
-      historyModal.setAttribute('aria-hidden','false');
-      document.body.classList.add('modal-open');
-    };
-
+    historyModal.classList.remove("hidden");
+    historyModal.style.display = "grid";
+    historyModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
 }
 
-
-function renderHistItem(it){
+function renderHistItem(it) {
   const d = new Date(Number(it.date));
   const when = d.toLocaleString();
-  const dur = formatMMSS(Number(it.duration||0));
-  const badge = it.fullDay ? `<span class="badge green">🥇Full day</span>` : `<span class="badge gray">Partial</span>`;
-  const sportInitial = it.sport ? ([...it.sport][0] || '').toUpperCase() : '';
+  const dur = formatMMSS(Number(it.duration || 0));
+
+  const badge = it.fullDay
+    ? `<span class="badge green">🥇Full day</span>`
+    : `<span class="badge gray">Partial</span>`;
+
+  const sportInitial = it.sport
+    ? ([...it.sport][0] || "").toUpperCase()
+    : "";
 
   return `
     <div class="hist-item" data-id="${it.id}" style="cursor:pointer">
       <div class="hist-left">
         <strong>${when}</strong>
-        <span>Duration: ${dur} ${sportInitial ? ` • ${sportInitial}` : ''}</span>
+        <span>Duration: ${dur}${sportInitial ? ` • ${sportInitial}` : ""}</span>
       </div>
       ${badge}
     </div>
   `;
 }
 
-function closeHistoryModal(){
-  historyModal.classList.add('hidden');
-  historyModal.style.display = 'none';
-  historyModal.setAttribute('aria-hidden','true');
-  document.body.classList.remove('modal-open');
+function closeHistoryModal() {
+  historyModal.classList.add("hidden");
+  historyModal.style.display = "none";
+  historyModal.setAttribute("aria-hidden", "true");
+
+  if (!isAnyModalOpen()) {
+    document.body.classList.remove("modal-open");
+  }
+}
+
+/* ============================================================
+   TRAVEL LIST
+   ============================================================ */
+
+async function openTravelsModal() {
+  travelsList.innerHTML =
+    `<div class="hist-item"><div>Loading travels…</div></div>`;
+
+  travelsModal.classList.remove("hidden");
+  travelsModal.style.display = "grid";
+  travelsModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+
+  /*
+    Nali owns its travel IndexedDB.
+    Herytech retrieves the list through postMessage.
+  */
+  const frame = createHiddenTravelIframe();
+
+  try {
+    const result = await sendTravelCommand(frame, "listTravels", {});
+
+    const travels = Array.isArray(result)
+      ? result
+      : Array.isArray(result?.travels)
+        ? result.travels
+        : [];
+
+    renderTravelList(travels);
+
+  } catch (err) {
+    console.error("Unable to load travels:", err);
+
+    travelsList.innerHTML =
+      `<div class="hist-item"><div>Unable to load travels.</div></div>`;
+
+    if (!workout.running) destroyHiddenTravelIframe();
+  }
+}
+
+function renderTravelList(travels) {
+  if (!travels.length) {
+    travelsList.innerHTML =
+      `<div class="hist-item"><div>No travels yet.</div></div>`;
+    return;
+  }
+
+  const sorted = travels.slice().sort((a, b) => {
+    const da = Number(a.startTimestamp) || Number(a.date) || 0;
+    const db = Number(b.startTimestamp) || Number(b.date) || 0;
+    return db - da;
+  });
+
+  travelsList.innerHTML = sorted.map((travel) => {
+    const originalName = String(travel.name || "");
+    const displayName = escapeHtml(originalName || "Unnamed travel");
+
+    const rawDate =
+      Number(travel.startTimestamp) ||
+      Number(travel.date) ||
+      0;
+
+    const when = rawDate
+      ? new Date(rawDate).toLocaleString()
+      : "";
+
+    const durationMs = Number(travel.durationMs) || 0;
+    const durationText = durationMs > 0
+      ? formatTravelDuration(durationMs)
+      : "";
+
+    return `
+      <div class="hist-item">
+        <div class="hist-left">
+          <strong>${displayName}</strong>
+          <span>
+            ${escapeHtml(when)}
+            ${durationText ? ` • ${escapeHtml(durationText)}` : ""}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="chip travel-open-btn"
+          data-travel-name="${escapeHtmlAttribute(originalName)}"
+          aria-label="Open travel">
+          Open
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  travelsList.querySelectorAll(".travel-open-btn").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+
+      const name = button.getAttribute("data-travel-name");
+      if (name) openTravelViewer(name);
+    });
+  });
+}
+
+function formatTravelDuration(durationMs) {
+  const totalSec = Math.max(0, Math.floor(Number(durationMs) / 1000));
+  const hours = Math.floor(totalSec / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
+  const seconds = totalSec % 60;
+
+  if (hours) return `${hours}h ${minutes}m`;
+  if (minutes) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
+
+function escapeHtmlAttribute(value) {
+  return escapeHtml(value);
+}
+
+function closeTravelsModal() {
+  travelsModal.classList.add("hidden");
+  travelsModal.style.display = "none";
+  travelsModal.setAttribute("aria-hidden", "true");
+
+  /*
+    During a workout the hidden iframe is GPS tracking and must remain alive.
+  */
+  if (!workout.running && !isTravelViewerOpen()) {
+    destroyHiddenTravelIframe();
+  }
+
+  if (!isAnyModalOpen()) {
+    document.body.classList.remove("modal-open");
+  }
+}
+
+/* ============================================================
+   TRAVEL VIEWER
+   ============================================================ */
+
+async function openTravelViewer(name) {
+  if (!name) return;
+
+  destroyTravelViewerFrame();
+
+  travelViewerTitle.textContent = name;
+  travelViewerModal.classList.remove("hidden");
+  travelViewerModal.style.display = "grid";
+  travelViewerModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+
+  const frame = document.createElement("iframe");
+  frame.src = TRAVEL_URL;
+  frame.title = `Travel: ${name}`;
+  frame.allow = "geolocation";
+
+  Object.assign(frame.style, {
+    display: "block",
+    width: "100%",
+    height: "100%",
+    minHeight: "65vh",
+    border: "0"
+  });
+
+  frame.addEventListener("load", () => {
+    frame.dataset.loaded = "1";
+  });
+
+  travelViewerContainer.innerHTML = "";
+  travelViewerContainer.appendChild(frame);
+  travelViewerFrame = frame;
+
+  try {
+    await sendTravelCommand(frame, "openTravel", { name });
+  } catch (err) {
+    console.error("Unable to open travel:", err);
+  }
+}
+
+function destroyTravelViewerFrame() {
+  if (!travelViewerFrame) {
+    travelViewerContainer.innerHTML = "";
+    return;
+  }
+
+  const frame = travelViewerFrame;
+  travelViewerFrame = null;
+
+  rejectTravelRequestsForFrame(frame);
+
+  try { frame.remove(); } catch {}
+
+  travelViewerContainer.innerHTML = "";
+}
+
+function closeTravelViewerModal() {
+  travelViewerModal.classList.add("hidden");
+  travelViewerModal.style.display = "none";
+  travelViewerModal.setAttribute("aria-hidden", "true");
+
+  destroyTravelViewerFrame();
+
+  if (!isAnyModalOpen()) {
+    document.body.classList.remove("modal-open");
+  }
+}
+
+function isTravelViewerOpen() {
+  return travelViewerModal?.style.display !== "none";
+}
+
+function isAnyModalOpen() {
+  return (
+    historyModal?.style.display !== "none" ||
+    travelsModal?.style.display !== "none" ||
+    travelViewerModal?.style.display !== "none"
+  );
 }
 
 /* ---------- VISIBILITY & WAKE LOCK ---------- */
-async function requestScreenWakeLock(){
+async function requestScreenWakeLock() {
   try {
-    if ('wakeLock' in navigator) {
-      wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener?.('release', () => {});
+    if ("wakeLock" in navigator) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener?.("release", () => {});
     }
-  } catch (e) {
-    // Not supported or denied; non-fatal
-  }
+  } catch {}
 }
-async function releaseScreenWakeLock(){
+
+async function releaseScreenWakeLock() {
   try { await wakeLock?.release(); } catch {}
   wakeLock = null;
 }
-async function onVisibilityChange(){
+
+async function onVisibilityChange() {
   if (document.hidden) {
     try { speechSynthesis.cancel(); } catch {}
-  } else {
-    if (workout.running) {
-      renderElapsedIntoUI();
-      updateMetrics();
-      await requestScreenWakeLock();
-      // If we have an exercise and no pending intro, schedule one respecting mute window
-      if (!introTimer && workout.ex) scheduleIntroForCurrentExercise(langModeSel.value || "random");
-    }
+    return;
+  }
+
+  if (!workout.running) return;
+
+  renderElapsedIntoUI();
+  updateMetrics();
+  await requestScreenWakeLock();
+
+  if (!introTimer && workout.ex) {
+    scheduleIntroForCurrentExercise(langModeSel.value || "random");
   }
 }
 
-/* ---------- TRAININGS FALLBACK (minimal) ---------- */
+/* ---------- TRAININGS FALLBACK ---------- */
 const TRAININGS_FALLBACK = {
-  "commonPhrases":{
-    "start":{"en":["Start!","Go!"],"fr":["Commence!","C'est parti!"],"es":["¡Empieza!","¡Vamos!"],"zh":["开始!","出发!"],"ja":["開始!","行こう!"],"ru":["Начинай!","Вперед!"]},
-    "encourage":{"en":["Keep going!","Stay strong!"],"fr":["Continue!","Tiens bon!"],"es":["¡Sigue!","¡Fuerza!"],"zh":["坚持!","加油!"],"ja":["続けて!","頑張れ!"],"ru":["Продолжай!","Держись!"]},
-    "stop":{"en":["Stop!","Rest!"],"fr":["Stop!","Repos!"],"es":["¡Para!","¡Descansa!"],"zh":["停!","休息!"],"ja":["止め!","休め!"],"ru":["Стоп!","Отдых!"]}
+  commonPhrases: {
+    start: {
+      en: ["Start!", "Go!"],
+      fr: ["Commence!", "C'est parti!"],
+      es: ["¡Empieza!", "¡Vamos!"],
+      zh: ["开始!", "出发!"],
+      ja: ["開始!", "行こう!"],
+      ru: ["Начинай!", "Вперед!"]
+    },
+
+    encourage: {
+      en: ["Keep going!", "Stay strong!"],
+      fr: ["Continue!", "Tiens bon!"],
+      es: ["¡Sigue!", "¡Fuerza!"],
+      zh: ["坚持!", "加油!"],
+      ja: ["続けて!", "頑張れ!"],
+      ru: ["Продолжай!", "Держись!"]
+    },
+
+    stop: {
+      en: ["Stop!", "Rest!"],
+      fr: ["Stop!", "Repos!"],
+      es: ["¡Para!", "¡Descansa!"],
+      zh: ["停!", "休息!"],
+      ja: ["止め!", "休め!"],
+      ru: ["Стоп!", "Отдых!"]
+    }
   },
-  "sports":{
-    "boxing":{"exercises":[
-      {"name":"Jab–Cross Flow","duration":90,"reps":4,"pause":20,"explanation":{"en":"Left jab then right cross. Guard up, pivot rear foot.","fr":"Direct gauche puis croisé droit. Garde haute, pivote.","es":"Jab izq y cruzado der. Guarda alta.","zh":"左刺拳接右直拳，保持防守，后脚转体。","ja":"左ジャブ→右クロス。ガード高く、後足でピボット。","ru":"Левый джеб – правый кросс. Держи защиту, разворот стопы."}}
-    ]},
-    "judo":{"exercises":[
-      {"name":"Uchi-komi (entries)","duration":180,"reps":5,"pause":20,"explanation":{"en":"Repeat entries: kuzushi then tsukuri. Sleeve–lapel grips.","fr":"Entrées: kuzushi puis tsukuri. Manche–revers.","es":"Entradas: kuzushi y tsukuri. Manga–solapa.","zh":"先崩再入身；抓袖抓领。","ja":"崩してから作りへ。袖・襟取り。","ru":"Кузуси, затем цукури. Рукав-отворот."}}
-    ]},
-    "wushu":{"exercises":[
-      {"name":"Ma Bu (horse stance)","duration":180,"reps":3,"pause":20,"explanation":{"en":"Low stance, knees out, back straight.","fr":"Posture basse, genoux ouverts, dos droit.","es":"Postura baja, rodillas hacia fuera.","zh":"马步下沉，膝外撑，背直。","ja":"馬歩を低く、膝を外へ。","ru":"Ма бу низко, колени наружу."}}
-    ]},
-    "pushups":{"exercises":[
-      {"name":"Standard push-ups","duration":60,"reps":4,"pause":20,"explanation":{"en":"Body straight, chest close to floor, lockout.","fr":"Corps gainé, poitrine proche du sol, extension.","es":"Cuerpo alineado, extensión completa.","zh":"身体成一直线，完全伸直。","ja":"体を一直線に、肘を伸ばす。","ru":"Корпус прямой, полная фиксация."}}
-    ]},
-    "abs":{"exercises":[
-      {"name":"Plank hold","duration":90,"reps":3,"pause":20,"explanation":{"en":"Elbows under shoulders, core tight, back flat.","fr":"Coudes sous épaules, gainage serré, dos plat.","es":"Codos bajo hombros, core firme.","zh":"肘在肩下，核心收紧，背平直。","ja":"肘は肩の真下、体幹を締める。","ru":"Локти под плечами, корпус в тонусе."}}
-    ]},
-    "bike":{"exercises":[
-      {"name":"Endurance ride","duration":1800,"reps":1,"pause":0,"explanation":{"en":"Steady cadence ~90 RPM, moderate resistance.","fr":"Cadence régulière ~90 RPM, résistance modérée.","es":"Cadencia estable ~90 RPM.","zh":"踏频约90，中等阻力稳骑。","ja":"約90RPMで安定、適度な負荷。","ru":"Каденс ~90, среднее сопротивление."}}
-    ]}
+
+  sports: {
+    boxing: {
+      exercises: [{
+        name: "Jab–Cross Flow",
+        duration: 90,
+        reps: 4,
+        pause: 20,
+        explanation: {
+          en: "Left jab then right cross. Guard up, pivot rear foot.",
+          fr: "Direct gauche puis croisé droit. Garde haute, pivote.",
+          es: "Jab izq y cruzado der. Guarda alta.",
+          zh: "左刺拳接右直拳，保持防守，后脚转体。",
+          ja: "左ジャブ→右クロス。ガード高く、後足でピボット。",
+          ru: "Левый джеб – правый кросс. Держи защиту, разворот стопы."
+        }
+      }]
+    },
+
+    judo: {
+      exercises: [{
+        name: "Uchi-komi (entries)",
+        duration: 180,
+        reps: 5,
+        pause: 20,
+        explanation: {
+          en: "Repeat entries: kuzushi then tsukuri. Sleeve–lapel grips.",
+          fr: "Entrées: kuzushi puis tsukuri. Manche–revers.",
+          es: "Entradas: kuzushi y tsukuri. Manga–solapa.",
+          zh: "先崩再入身；抓袖抓领。",
+          ja: "崩してから作りへ。袖・襟取り。",
+          ru: "Кузуси, затем цукури. Рукав-отворот."
+        }
+      }]
+    },
+
+    wushu: {
+      exercises: [{
+        name: "Ma Bu (horse stance)",
+        duration: 180,
+        reps: 3,
+        pause: 20,
+        explanation: {
+          en: "Low stance, knees out, back straight.",
+          fr: "Posture basse, genoux ouverts, dos droit.",
+          es: "Postura baja, rodillas hacia fuera.",
+          zh: "马步下沉，膝外撑，背直。",
+          ja: "馬歩を低く、膝を外へ。",
+          ru: "Ма бу низко, колени наружу."
+        }
+      }]
+    },
+
+    pushups: {
+      exercises: [{
+        name: "Standard push-ups",
+        duration: 60,
+        reps: 4,
+        pause: 20,
+        explanation: {
+          en: "Body straight, chest close to floor, lockout.",
+          fr: "Corps gainé, poitrine proche du sol, extension.",
+          es: "Cuerpo alineado, extensión completa.",
+          zh: "身体成一直线，完全伸直。",
+          ja: "体を一直線に、肘を伸ばす。",
+          ru: "Корпус прямой, полная фиксация."
+        }
+      }]
+    },
+
+    abs: {
+      exercises: [{
+        name: "Plank hold",
+        duration: 90,
+        reps: 3,
+        pause: 20,
+        explanation: {
+          en: "Elbows under shoulders, core tight, back flat.",
+          fr: "Coudes sous épaules, gainage serré, dos plat.",
+          es: "Codos bajo hombros, core firme.",
+          zh: "肘在肩下，核心收紧，背平直。",
+          ja: "肘は肩の真下、体幹を締める。",
+          ru: "Локти под плечами, корпус в тонусе."
+        }
+      }]
+    },
+
+    bike: {
+      exercises: [{
+        name: "Endurance ride",
+        duration: 1800,
+        reps: 1,
+        pause: 0,
+        explanation: {
+          en: "Steady cadence ~90 RPM, moderate resistance.",
+          fr: "Cadence régulière ~90 RPM, résistance modérée.",
+          es: "Cadencia estable ~90 RPM.",
+          zh: "踏频约90，中等阻力稳骑。",
+          ja: "約90RPMで安定、適度な負荷。",
+          ru: "Каденс ~90, среднее сопротивление."
+        }
+      }]
+    }
   }
 };
-
-
-
-
-
-
-
-
