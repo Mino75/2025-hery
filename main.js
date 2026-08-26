@@ -21,6 +21,8 @@ const TRAVEL_URL = "https://nali.kahiether.com/";
 const TRAVEL_ORIGIN = "https://nali.kahiether.com";
 const TRAVEL_FREQUENCY_MS = 60000;
 const TRAVEL_COMMAND_TIMEOUT_MS = 15000;
+const TRAVEL_RETRY_DELAY_MS = 5000;
+const TRAVEL_MAX_ATTEMPTS = 3;
 
 /* ---------- GLOBAL STATE ---------- */
 let db, profile = null, trainings = null, voicesReady = false;
@@ -49,6 +51,7 @@ let travelTrackerFrame = null;
 let travelViewerFrame = null;
 let activeTravelName = null;
 let travelStartPromise = null;
+let travelRetryTimer = null;
 const travelRequests = new Map();
 
 /* ---------- DOM ---------- */
@@ -90,10 +93,11 @@ const travelViewerContainer = $("#travelViewerContainer");
 const closeTravelViewer = $("#closeTravelViewer");
 
 /* ---------- INDEXEDDB ---------- */
-const request = indexedDB.open("HerytechDB", 3);
+const request = indexedDB.open("HerytechDB", 4);
 
 request.onupgradeneeded = (e) => {
   db = e.target.result;
+  const upgradeTx = e.target.transaction;
 
   if (!db.objectStoreNames.contains("history")) {
     db.createObjectStore("history", { keyPath: "id" });
@@ -105,6 +109,30 @@ request.onupgradeneeded = (e) => {
 
   if (!db.objectStoreNames.contains("runtime")) {
     db.createObjectStore("runtime", { keyPath: "id" });
+  }
+
+  if (!db.objectStoreNames.contains("travelState")) {
+    const travelStateStore = db.createObjectStore("travelState", { keyPath: "id" });
+
+    if (db.objectStoreNames.contains("history")) {
+      const historyCursor = upgradeTx.objectStore("history").openCursor();
+
+      historyCursor.onsuccess = () => {
+        const cursor = historyCursor.result;
+        if (!cursor) return;
+
+        if (cursor.value?.travelName) {
+          travelStateStore.put({
+            id: String(cursor.value.travelName),
+            status: "available",
+            error: null,
+            updatedAt: Date.now()
+          });
+        }
+
+        cursor.continue();
+      };
+    }
   }
 };
 
@@ -236,6 +264,48 @@ async function clearRuntime() {
   });
 }
 
+/* ---------- TRAVEL STATE (LOCAL, NON-BLOCKING) ---------- */
+async function readTravelStates() {
+  if (!db?.objectStoreNames.contains("travelState")) return new Map();
+
+  return new Promise((resolve) => {
+    const tx = db.transaction("travelState", "readonly");
+    const req = tx.objectStore("travelState").getAll();
+
+    req.onsuccess = () => {
+      resolve(
+        new Map(
+          (req.result || []).map((state) => [String(state.id), state])
+        )
+      );
+    };
+    req.onerror = () => resolve(new Map());
+  });
+}
+
+async function writeTravelState(travelName, status, error = null) {
+  if (!travelName || !db?.objectStoreNames.contains("travelState")) return false;
+
+  return new Promise((resolve) => {
+    const tx = db.transaction("travelState", "readwrite");
+
+    tx.objectStore("travelState").put({
+      id: String(travelName),
+      status,
+      error: error ? String(error) : null,
+      updatedAt: Date.now()
+    });
+
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => resolve(false);
+    tx.onabort = () => resolve(false);
+  });
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /* ---------- RESUME ACTIVE SESSION ---------- */
 async function resumeIfRuntimeActive() {
   const rt = await readRuntime();
@@ -289,7 +359,7 @@ async function resumeIfRuntimeActive() {
 
   stopBtn.disabled = false;
 
-  beginTravelTracking(activeTravelName);
+  scheduleTravelTracking(activeTravelName);
 }
 
 /* ---------- UTILS ---------- */
@@ -1198,19 +1268,6 @@ window.addEventListener(
       return;
     }
 
-    const trackerWindow =
-      travelTrackerFrame?.contentWindow;
-
-    const viewerWindow =
-      travelViewerFrame?.contentWindow;
-
-    if (
-      event.source !== trackerWindow &&
-      event.source !== viewerWindow
-    ) {
-      return;
-    }
-
     const data = event.data;
 
     if (
@@ -1227,6 +1284,8 @@ window.addEventListener(
       );
 
     if (!pending) return;
+
+    if (event.source !== pending.frame?.contentWindow) return;
 
     clearTimeout(
       pending.timeout
@@ -1258,65 +1317,87 @@ async function startTravelTracking(travelName) {
   if (!travelName) return;
 
   activeTravelName = travelName;
+  await writeTravelState(travelName, "pending");
 
-  const frame =
-    createHiddenTravelIframe();
+  let lastError = null;
 
-  try {
-    await sendTravelCommand(
-      frame,
-      "startTravel",
-      {
+  for (let attempt = 1; attempt <= TRAVEL_MAX_ATTEMPTS; attempt += 1) {
+    if (!workout.running || activeTravelName !== travelName) return false;
+
+    const frame = createHiddenTravelIframe();
+
+    try {
+      await sendTravelCommand(frame, "startTravel", {
         name: travelName,
-        frequencyMs:
-          TRAVEL_FREQUENCY_MS
-      }
-    );
+        frequencyMs: TRAVEL_FREQUENCY_MS
+      });
 
-  } catch (err) {
-    console.info(
-      "Travel start/resume:",
-      err?.message || err
+      await writeTravelState(travelName, "available");
+      return true;
+    } catch (err) {
+      lastError = err;
+      destroyHiddenTravelIframe();
+
+      if (attempt < TRAVEL_MAX_ATTEMPTS) {
+        await wait(TRAVEL_RETRY_DELAY_MS);
+      }
+    }
+  }
+
+  await writeTravelState(
+    travelName,
+    "pending",
+    lastError?.message || lastError
+  );
+
+  if (workout.running && activeTravelName === travelName) {
+    clearTimeout(travelRetryTimer);
+    travelRetryTimer = setTimeout(
+      () => beginTravelTracking(travelName),
+      TRAVEL_FREQUENCY_MS
     );
   }
+
+  return false;
 }
 
 function beginTravelTracking(travelName) {
-  travelStartPromise =
-    startTravelTracking(
-      travelName
-    );
+  clearTimeout(travelRetryTimer);
+  travelRetryTimer = null;
+
+  travelStartPromise = startTravelTracking(travelName).catch((err) => {
+    console.info("Travel start/resume:", err?.message || err);
+    return false;
+  });
 
   return travelStartPromise;
 }
 
-async function endTravelTracking(
-  travelName = activeTravelName
-) {
-  if (travelStartPromise) {
+function scheduleTravelTracking(travelName) {
+  queueMicrotask(() => {
+    if (workout.running && activeTravelName === travelName) {
+      beginTravelTracking(travelName);
+    }
+  });
+}
+
+async function endTravelTracking(travelName, frame, startPromise) {
+  if (startPromise) {
     try {
-      await travelStartPromise;
+      await startPromise;
     } catch {}
   }
 
-  travelStartPromise = null;
-
   if (!travelName) {
-    destroyHiddenTravelIframe();
+    if (frame) frame.remove();
     return;
   }
 
   try {
-    if (
-      travelTrackerFrame?.contentWindow
-    ) {
-      await sendTravelCommand(
-        travelTrackerFrame,
-        "endTravel",
-        {
-          name: travelName
-        }
-      );
+    if (frame?.contentWindow) {
+      await sendTravelCommand(frame, "endTravel", { name: travelName });
+
+      await writeTravelState(travelName, "available");
     }
 
   } catch (err) {
@@ -1326,63 +1407,24 @@ async function endTravelTracking(
     );
 
   } finally {
-    activeTravelName = null;
-    destroyHiddenTravelIframe();
+    rejectTravelRequestsForFrame(frame);
+    try { frame?.remove(); } catch {}
   }
 }
 
-async function getAvailableTravelNames() {
-  const existingTracker =
-    !!travelTrackerFrame?.isConnected;
+function finishTravelTrackingInBackground(travelName) {
+  const frame = travelTrackerFrame;
+  const startPromise = travelStartPromise;
 
-  const frame =
-    createHiddenTravelIframe();
+  travelTrackerFrame = null;
+  travelStartPromise = null;
+  activeTravelName = null;
+  clearTimeout(travelRetryTimer);
+  travelRetryTimer = null;
 
-  try {
-    const result =
-      await sendTravelCommand(
-        frame,
-        "listTravels",
-        {}
-      );
-
-    const travels =
-      Array.isArray(result)
-        ? result
-        : Array.isArray(
-            result?.travels
-          )
-          ? result.travels
-          : [];
-
-    return new Set(
-      travels
-        .map(
-          (travel) =>
-            String(
-              travel?.name ||
-              ""
-            )
-        )
-        .filter(Boolean)
-    );
-
-  } catch (err) {
-    console.warn(
-      "Unable to retrieve travel availability:",
-      err
-    );
-
-    return new Set();
-
-  } finally {
-    if (
-      !workout.running &&
-      !existingTracker
-    ) {
-      destroyHiddenTravelIframe();
-    }
-  }
+  Promise.resolve()
+    .then(() => endTravelTracking(travelName, frame, startPromise))
+    .catch((err) => console.warn("Travel finalization failed:", err));
 }
 
 /* ============================================================
@@ -1458,11 +1500,11 @@ async function startWorkout() {
       activeTravelName
   });
 
-  beginTravelTracking(
+  nextExercise();
+
+  scheduleTravelTracking(
     activeTravelName
   );
-
-  nextExercise();
 
   await requestScreenWakeLock();
 }
@@ -1707,21 +1749,18 @@ async function stopWorkout() {
   }
 
   stopBtn.disabled = true;
-  playBtn.disabled = false;
+  playBtn.disabled = true;
   skipBtn.disabled = true;
 
-  await endTravelTracking(
+  finishTravelTrackingInBackground(
     travelForHistory
   );
 
-  await clearRuntime();
-  await releaseScreenWakeLock();
-
-  const fullDay =
-    await saveSession(
-      realSecs,
-      travelForHistory
-    );
+  const [fullDay] = await Promise.all([
+    saveSession(realSecs, travelForHistory),
+    clearRuntime(),
+    releaseScreenWakeLock()
+  ]);
 
   await updateWeeklyChip();
 
@@ -2035,12 +2074,9 @@ async function openHistory() {
   historyList.innerHTML =
     `<div class="hist-item"><div>Loading history…</div></div>`;
 
-  const [
-    items,
-    availableTravels
-  ] = await Promise.all([
+  const [items, travelStates] = await Promise.all([
     getHistoryAll(),
-    getAvailableTravelNames()
+    readTravelStates()
   ]);
 
   items.sort(
@@ -2082,16 +2118,14 @@ async function openHistory() {
       lastDay = dayKey;
     }
 
-    const travelAvailable =
-      !!it.travelName &&
-      availableTravels.has(
-        String(it.travelName)
-      );
+    const travelStatus = it.travelName
+      ? travelStates.get(String(it.travelName))?.status || "pending"
+      : "unavailable";
 
     html +=
       renderHistItem(
         it,
-        travelAvailable
+        travelStatus
       );
   }
 
@@ -2152,7 +2186,7 @@ async function openHistory() {
 
 function renderHistItem(
   it,
-  travelAvailable
+  travelStatus
 ) {
   const d =
     new Date(
@@ -2192,7 +2226,7 @@ function renderHistItem(
     );
 
   const travelButton =
-    travelAvailable
+    travelStatus === "available"
       ? `
         <button
           type="button"
@@ -2202,7 +2236,17 @@ function renderHistItem(
           View travel
         </button>
       `
-      : `
+      : it.travelName
+        ? `
+        <button
+          type="button"
+          class="chip travel-view-btn"
+          aria-label="Travel pending"
+          disabled>
+          Travel pending
+        </button>
+      `
+        : `
         <button
           type="button"
           class="chip travel-view-btn"
@@ -2270,52 +2314,56 @@ async function openTravelViewer(name) {
     "modal-open"
   );
 
-  const frame =
-    document.createElement("iframe");
+  let lastError = null;
 
-  frame.src = TRAVEL_URL;
-  frame.title = `Travel: ${name}`;
-  frame.allow = "geolocation";
+  for (let attempt = 1; attempt <= TRAVEL_MAX_ATTEMPTS; attempt += 1) {
+    if (travelViewerModal.getAttribute("aria-hidden") === "true") return;
 
-  Object.assign(
-    frame.style,
-    {
+    destroyTravelViewerFrame();
+    travelViewerContainer.innerHTML =
+      `<div class="hist-item"><div>Loading travel… (${attempt}/${TRAVEL_MAX_ATTEMPTS})</div></div>`;
+
+    const frame = document.createElement("iframe");
+    frame.src = TRAVEL_URL;
+    frame.title = `Travel: ${name}`;
+    frame.allow = "geolocation";
+
+    Object.assign(frame.style, {
       display: "block",
       width: "100%",
       height: "100%",
       minHeight: "65vh",
       border: "0"
-    }
-  );
+    });
 
-  frame.addEventListener(
-    "load",
-    () => {
+    frame.addEventListener("load", () => {
       frame.dataset.loaded = "1";
+    });
+
+    travelViewerContainer.innerHTML = "";
+    travelViewerContainer.appendChild(frame);
+    travelViewerFrame = frame;
+
+    try {
+      await sendTravelCommand(frame, "openTravel", { name });
+      await writeTravelState(name, "available");
+      return;
+    } catch (err) {
+      lastError = err;
+      destroyTravelViewerFrame();
+
+      if (attempt < TRAVEL_MAX_ATTEMPTS) {
+        travelViewerContainer.innerHTML =
+          `<div class="hist-item"><div>Travel unavailable. Retrying in ${TRAVEL_RETRY_DELAY_MS / 1000}s…</div></div>`;
+        await wait(TRAVEL_RETRY_DELAY_MS);
+      }
     }
-  );
-
-  travelViewerContainer.innerHTML = "";
-
-  travelViewerContainer.appendChild(
-    frame
-  );
-
-  travelViewerFrame = frame;
-
-  try {
-    await sendTravelCommand(
-      frame,
-      "openTravel",
-      { name }
-    );
-
-  } catch (err) {
-    console.error(
-      "Unable to open travel:",
-      err
-    );
   }
+
+  await writeTravelState(name, "pending", lastError?.message || lastError);
+  travelViewerContainer.innerHTML =
+    `<div class="hist-item"><div>Travel unavailable. Close and retry.</div></div>`;
+  console.error("Unable to open travel:", lastError);
 }
 
 function destroyTravelViewerFrame() {
